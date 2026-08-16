@@ -38,6 +38,14 @@ describe("vehicle dossiers", () => {
     }
   });
 
+  it("uses summaries for subject introductions rather than interface disclaimers", () => {
+    for (const dossier of Object.values(VEHICLE_DOSSIERS)) {
+      expect(dossier.missionSummary).not.toMatch(
+        /^(?:The )?(?:tour|interaction|dossier|explainer|comparison|guided profile|experience)\b/i,
+      );
+    }
+  });
+
   it("labels modern Orion and Daedalus reconstructions honestly", () => {
     const daedalus = getVehicleDossier("daedalus");
     const orion = getVehicleDossier("orion");

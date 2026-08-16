@@ -56,7 +56,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "Crossed the heliopause in August 2012.",
       "Its radio signal remains the only connection to the spacecraft.",
     ],
-    missionSummary: "The tour follows the measured JPL route from Earth past Jupiter and Saturn, through the heliopause, and onward to the latest ephemeris point.",
+    missionSummary: "Voyager 1 launched in 1977 to explore Jupiter and Saturn, using gravity assists and a rare planetary alignment to continue toward the outer Solar System. After transforming our view of both giant planets, it became the first spacecraft to cross the heliopause and still returns data from interstellar space.",
     canonicalNote: "Any line after the measured endpoint is a constant-speed distance comparison along Voyager's outbound heading; Voyager is not aimed at Proxima Centauri.",
   },
   f1: {
@@ -74,7 +74,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "The photographed 2006 Honda is representative of that Formula One programme.",
       "An F1 car has no propulsion, life support, or thermal control for space.",
     ],
-    missionSummary: "There is no space mission: the interaction freezes the record speed and points it toward Proxima solely to expose the scale of the distance.",
+    missionSummary: "Honda's RA106 was built for the 2006 Formula One season around a high-revving V8 engine, extreme aerodynamic downforce and minimum possible mass. A modified car from the programme later reached 397.36 km/h at Bonneville, setting the FIA speed record used here.",
     canonicalNote: "This is an openly impossible constant-speed comparison, not a proposed spacecraft trajectory.",
   },
   "737": {
@@ -92,7 +92,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "Mach 0.79 is a representative cruise speed, about 839 km/h at altitude.",
       "Its turbofan engines require an atmosphere and cannot operate as space drives.",
     ],
-    missionSummary: "The tour turns an everyday airline cruise speed into an impossible straight line from Earth to Proxima.",
+    missionSummary: "The Boeing 737 is a twin-engine narrow-body airliner designed to move passengers efficiently across short- and medium-range routes. The 737-8 typically cruises near Mach 0.79, combining swept wings, high-bypass turbofans and airline-scale carrying capacity.",
     canonicalNote: "No Boeing mission or performance claim supports vacuum travel; the route is a scale analogy only.",
   },
   concorde: {
@@ -110,7 +110,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "Its quoted maximum cruise speed is approximately 2,179 km/h.",
       "Four Olympus turbojets depended on atmospheric oxygen.",
     ],
-    missionSummary: "The interaction holds Concorde's atmospheric cruise speed forever on a fictional Earth-to-Proxima course.",
+    missionSummary: "Concorde was an Anglo-French supersonic passenger airliner created to cross oceans in roughly half the time of conventional jets. Its slender delta wing, movable nose and four Olympus engines sustained passenger service at about Mach 2 until retirement in 2003.",
     canonicalNote: "The aircraft never flew in space; this is a counterfactual speed ruler, not an engineering proposal.",
   },
   apollo10: {
@@ -129,7 +129,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "The crew reached roughly 39,897 km/h while returning to Earth.",
       "That record was a brief re-entry peak, not a sustainable cruise speed.",
     ],
-    missionSummary: "The real chapter goes from Earth to lunar orbit and home; the comparison then cuts to an explicitly impossible outward flight at the return peak.",
+    missionSummary: "Apollo 10 was the May 1969 full-dress rehearsal for the first Moon landing, testing the command module, lunar module, navigation and mission procedures in lunar orbit. Its crew descended to within about 15.6 kilometres of the surface and reached the highest speed ever recorded for humans on the return to Earth.",
     canonicalNote: "Apollo 10's record velocity came from falling toward Earth. Redirecting and sustaining it is a counterfactual discontinuity.",
   },
   parker: {
@@ -148,7 +148,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "Its speed record occurs near perihelion while falling through the Sun's gravity well.",
       "The spacecraft remains in a bound solar orbit.",
     ],
-    missionSummary: "The tour replays the measured JPL ephemeris from Earth through Venus assists and increasingly tight solar encounters.",
+    missionSummary: "Parker Solar Probe launched in 2018 to fly through the Sun's corona and investigate how the solar wind and energetic particles are produced. Repeated Venus gravity assists shrink its orbit, carrying its heat-shielded instruments closer to the Sun and faster than any previous spacecraft.",
     canonicalNote: "Parker has no outward escape chapter. A frozen-peak-speed branch, if shown, must be visibly separated as an impossible comparison.",
   },
   daedalus: {
@@ -186,7 +186,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "The headline cruise target is about 20 percent of light speed.",
       "The concept has no arrival braking stage.",
     ],
-    missionSummary: "The guided profile shows the brief laser boost near Earth, a roughly twenty-year coast, and an unbraked Proxima flyby.",
+    missionSummary: "Breakthrough Starshot studies whether gram-scale camera probes on reflective lightsails could be driven toward Alpha Centauri by a powerful ground-based laser array. A minutes-long boost to roughly twenty percent of light speed could permit an uncrewed flyby within about twenty years, with no planned arrival braking.",
     canonicalNote: "The image is a CC-licensed laser-sail concept, not a photograph of built Starshot hardware.",
   },
   orion: {
@@ -223,7 +223,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "The Escape Era uses fifteen increasingly extended solar passes and a planned Jupiter gravity assist.",
       "The 2,500-year plan carries one hundred generations toward Proxima Centauri and the New Sun Era.",
     ],
-    missionSummary: "The novel-continuity tour starts with Earth at 1 AU, shows the fifteen-pass escape and planned Jupiter gravity assist, then follows the acceleration, coast, deceleration, arrival and capture eras.",
+    missionSummary: "Liu Cixin's The Wandering Earth imagines humanity responding to a dying Sun by turning Earth itself into an interstellar vessel. Twelve thousand fusion-powered Earth Engines halt the planet's rotation, enlarge its solar orbit over fifteen passes, use Jupiter for a planned gravity assist and begin a 2,500-year migration toward Proxima Centauri.",
     canonicalNote: "The cover identifies Liu Cixin's story world; it is not a spacecraft image. The event order is canonical, while orbit shapes and unsupplied stage timings are labelled schematic or inferred rather than presented as an ephemeris.",
   },
   "natural-selection": {
@@ -241,7 +241,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "Acceleration functions as a political and moral choice in the story.",
       "The novel does not supply a single authoritative exterior image.",
     ],
-    missionSummary: "The comparison uses a continuity-derived acceleration and cruise profile, then labels the Proxima transfer and braking as modelling choices.",
+    missionSummary: "Natural Selection is an Asian Fleet stellar warship in Liu Cixin's The Dark Forest, built for the Solar System's future defence rather than ordinary exploration. Zhang Beihai commandeers it, orders maximum acceleration and commits its crew to an irreversible escape that forces the pursuing ships to confront survival far from Earth.",
     canonicalNote: "No canonical exterior is available. The official English-edition cover is shown as a source marker, not a depiction of the ship.",
   },
   discovery: {
@@ -259,7 +259,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "The long spine separates the crew sphere from the propulsion section.",
       "Neither continuity gives a canonical interstellar cruise speed.",
     ],
-    missionSummary: "The experience can describe the film's Jupiter route, but it stops rather than invent an outward interstellar leg.",
+    missionSummary: "Discovery One is the long-range spacecraft carrying five crew members and the HAL 9000 computer toward Jupiter in Stanley Kubrick's 1968 film 2001: A Space Odyssey. Its centrifuge, hibernation systems, nuclear propulsion section and isolated onboard intelligence embody the film's vision of routine but psychologically fragile deep-space travel.",
     canonicalNote: "The photograph shows an officially licensed reconstruction of the film miniature, not surviving flown hardware or an original production prop.",
   },
   enterprise: {
@@ -277,7 +277,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "Warp-factor formulae vary between Star Trek eras.",
       "A straight kilometre-per-hour conversion would be misleading.",
     ],
-    missionSummary: "The tour reaches a labelled physics break and hands the journey to warp instead of drawing a finite-speed line.",
+    missionSummary: "USS Enterprise NCC-1701 is the Constitution-class Federation starship at the centre of the original Star Trek television series. Built for exploration, diplomacy and defence, it combines a large saucer section, twin warp nacelles, sublight impulse engines and a crew able to operate for years beyond Earth.",
     canonicalNote: "The image is an officially licensed TOMY replica promoted by StarTrek.com; it represents the original-series ship.",
   },
   "millennium-falcon": {
@@ -295,7 +295,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "Hyperspace journeys depend on routes and narrative continuity.",
       "Screen travel times do not define one reusable velocity.",
     ],
-    missionSummary: "The interaction shows a hyperspace cut and declines to turn a drive class into fabricated kilometres per hour.",
+    missionSummary: "The Millennium Falcon is a heavily modified YT-1300 light freighter flown by Han Solo and Chewbacca in Star Wars. Its oversized engines, famously temperamental Class 0.5 hyperdrive and unconventional modifications turn a worn cargo ship into one of the galaxy's fastest and most evasive vessels.",
     canonicalNote: "The image and basic identity come from the official Star Wars Databank; no finite interstellar speed is inferred from them.",
   },
   droplet: {
@@ -313,7 +313,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "The novel does not define a complete Earth-to-Proxima transfer profile.",
       "There is no official canonical exterior image in the publisher material.",
     ],
-    missionSummary: "The dossier explains the attack-vector idea but stops before manufacturing a departure, cruise, and arrival profile.",
+    missionSummary: "The Droplet is a compact Trisolaran probe sent ahead of the main invasion fleet in Liu Cixin's The Dark Forest. Its perfectly reflective strong-interaction shell, extraordinary acceleration and abrupt direction changes allow it to transform from an apparent diplomatic object into a weapon against the human fleet.",
     canonicalNote: "No canonical exterior is available. The official English-edition cover identifies the source novel and is not an image of the probe.",
   },
   warhammer: {
@@ -331,7 +331,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "Warp duration and real-space arrival time are deliberately uncertain.",
       "Normal-space route length cannot predict the story's travel time.",
     ],
-    missionSummary: "The guided comparison marks the transition into the Warp and ends the linear map rather than plotting a false cruise speed.",
+    missionSummary: "Imperial voidships are immense gothic spacecraft that carry the Imperium of Man between worlds in Warhammer 40,000. Conventional drives move them through realspace, while Warp engines, a Navigator and a protective Gellar field enable dangerous faster-than-light passages through the Immaterium.",
     canonicalNote: "This is official franchise battlefleet art used representatively; it is not a technical portrait of a specific Imperial voidship.",
   },
 };
