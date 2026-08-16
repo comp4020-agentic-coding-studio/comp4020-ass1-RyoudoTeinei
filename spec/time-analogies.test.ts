@@ -2,13 +2,21 @@ import { describe, expect, it } from "vitest";
 import { timeAnalogyAt } from "../time-analogies";
 
 describe("human-scale time analogies", () => {
-  it("changes only after each sourced duration has actually elapsed", () => {
-    expect(timeAnalogyAt(5.99).sourceId).toBeUndefined();
+  it("selects the closest duration on a proportional scale", () => {
+    expect(timeAnalogyAt(0.5).headline).toBe("LESS THAN ONE YEAR");
+    expect(timeAnalogyAt(1).sourceId).toBe("earth-year");
+    expect(timeAnalogyAt(5).sourceId).toBe("wwi");
     expect(timeAnalogyAt(6).sourceId).toBe("wwii");
-    expect(timeAnalogyAt(73).sourceId).toBe("wwii");
+    expect(timeAnalogyAt(10).sourceId).toBe("apollo-program");
+    expect(timeAnalogyAt(30).sourceId).toBe("saturn-year");
+    expect(timeAnalogyAt(48.6).sourceId).toBe("cold-war");
     expect(timeAnalogyAt(73.1).sourceId).toBe("life-expectancy");
-    expect(timeAnalogyAt(1_227.9).sourceId).toBe("life-expectancy");
+    expect(timeAnalogyAt(100).headline).toBe("≈ ONE CENTURY");
+    expect(timeAnalogyAt(248).sourceId).toBe("pluto-year");
+    expect(timeAnalogyAt(500).headline).toBe("≈ HALF A MILLENNIUM");
+    expect(timeAnalogyAt(1_000).headline).toBe("≈ ONE MILLENNIUM");
     expect(timeAnalogyAt(1_228).sourceId).toBe("rome");
+    expect(timeAnalogyAt(2_500).headline).toBe("≈ TWENTY-FIVE CENTURIES");
   });
 
   it("rejects invalid mission time", () => {
