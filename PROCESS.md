@@ -8,11 +8,11 @@ past Jupiter, Neptune, the heliopause and a conservative 100,000 AU Oort Cloud
 edge, then into the nearby-star neighbourhood. Selecting a familiar vehicle,
 real spacecraft, engineering study or fictional machine changes the same map,
 arrival comparison and speed/phase profile. The map is always linear: at the
-12-light-year view the planets genuinely disappear, and presets or free zoom
-reveal them without changing any proportion. The point is not that every option
-is a plausible mission. It is that even spectacular human speeds barely alter
-the scale—and uncertainty should remain visible instead of becoming a confident
-number.
+interstellar view the planets genuinely disappear, and a craft-centred camera
+automatically expands at mission boundaries without changing any proportion.
+The point is not that every option is a plausible mission. It is that even
+spectacular human speeds barely alter the scale—and uncertainty should remain
+visible instead of becoming a confident number.
 
 ## The moments that mattered
 
@@ -50,7 +50,7 @@ milestone neatly, but that neatness contradicted the subject: it made 122 AU and
 100,000 AU look like neighbouring ticks. I replaced its tests with linear
 world/screen round trips, pointer-anchored zoom and exact ratio invariants
 ([`32d551a`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/32d551a)),
-then replaced the ruler with one pannable coordinate space. The first SVG pass
+then replaced the ruler with one linear coordinate space. The first SVG pass
 was mathematically linear but still read like an infographic. After comparing
 it with a working astronomical map, I wrote a new Canvas contract
 ([`d57a9e9`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/d57a9e9)),
@@ -65,8 +65,8 @@ orbit was still visibly faceted at five-day intervals, so I regenerated it at
 six-hour cadence, retained the Horizons velocity vectors and used them for
 state interpolation
 ([`6a0c59a`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/6a0c59a)). At 1920×1080 and 390×844 I
-verified the catalogue, Oort, heliopause and planetary presets; resizing
-preserves camera, vehicle and progress.
+verified the automatic planetary, heliopause, Inner Oort, Outer Oort and
+interstellar camera ranges; resizing preserves vehicle and progress.
 
 ### 4. Throwing away a persuasive but false Parker result
 
@@ -93,3 +93,11 @@ novel's Earth-at-1-AU sequence, fifteen widening solar passes and planned Jupite
 assist, marking all unsupplied geometry as schematic
 ([`2ae87f2`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/2ae87f2),
 [`2aa7c7b`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/2aa7c7b)).
+Long stages were still either tedious at 1× or easy to skip at a fixed high
+rate. I added an automatic director that assigns each physical stage about seven
+seconds of screen time, holds at boundaries, exposes the changing multiplier,
+and keeps a non-draggable camera centred on the craft while it expands through
+true-linear scale bands. The live panel now explains the stage and counts down
+to the next one; redundant pass rendering was removed to keep the inner-system
+sequence smooth
+([`196c8c0`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/196c8c0)).

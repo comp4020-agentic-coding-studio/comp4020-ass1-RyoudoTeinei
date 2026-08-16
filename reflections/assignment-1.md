@@ -5,14 +5,14 @@
 The breakthrough was realising that a tidy scale was weakening the argument.
 My logarithmic ruler made 122 AU and 100,000 AU coexist elegantly, but also made
 them feel like neighbouring stops. I replaced it with one linear space where
-zoom changes only the camera. The first SVG version remained too much like a
+an automatic camera changes only the visible range. The first SVG version remained too much like a
 labelled ruler, so I rebuilt it as an astronomical Canvas: radial range rings, a
 physical scale bar, scale-dependent detail, collision-aware labels and
 selectable objects share one ecliptic coordinate system. At the nearby-star
 view, Neptune is correctly smaller than a pixel while the Oort Cloud remains a
-visible region around an almost invisible Sun. Having to zoom through those
-scales explains **crossing the heliopause is not leaving the Solar System** more
-clearly than a paragraph could.
+visible region around an almost invisible Sun. Watching the camera expand at
+planetary, heliopause and Oort boundaries explains **crossing the heliopause is
+not leaving the Solar System** more clearly than a paragraph could.
 
 The scientific data also stopped being decoration. Twenty-eight CNS5 catalogue
 rows establish the real local neighbourhood; JPL vectors draw Voyager's
@@ -22,7 +22,10 @@ measured mission first and makes any frozen-speed thought experiment cross a
 visible counterfactual cut. The credited image dossier gives the vehicle a
 recognisable physical or cultural context before the scale animation begins.
 Playback itself now carries evidence: 1× is literal wall-clock time, and the map
-states every chosen acceleration rate. Fictional routes receive the same care;
+states every chosen acceleration rate. An automatic stage-paced mode now makes
+long crossings watchable without hiding that acceleration: the current
+multiplier, stage explanation and time to the next boundary remain visible.
+Fictional routes receive the same care;
 *The Wandering Earth* begins with Earth at 1 AU and follows its novel-described
 solar passes and Jupiter assist while inferred geometry stays visibly labelled.
 
