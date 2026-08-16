@@ -4,13 +4,15 @@
 
 I built **The Edge Is Not the Exit**, an interactive journey plotter about the
 misleading phrase “leaving the Solar System”. Its single route runs from Earth
-past Jupiter, Neptune, the heliopause and a conservative 100,000 AU outer edge
-of the Oort Cloud, then to Proxima Centauri. Selecting a familiar vehicle, real
-spacecraft, engineering study or fictional machine changes the same distance
-track, arrival time and speed/phase profile. The point is not that every option
+past Jupiter, Neptune, the heliopause and a conservative 100,000 AU Oort Cloud
+edge, then into the nearby-star neighbourhood. Selecting a familiar vehicle,
+real spacecraft, engineering study or fictional machine changes the same map,
+arrival comparison and speed/phase profile. The map is always linear: at the
+12-light-year view the planets genuinely disappear, and presets or free zoom
+reveal them without changing any proportion. The point is not that every option
 is a plausible mission. It is that even spectacular human speeds barely alter
-the scale—and that uncertainty should be visible instead of converted into a
-confident-looking number.
+the scale—and uncertainty should remain visible instead of becoming a confident
+number.
 
 ## The moments that mattered
 
@@ -28,35 +30,41 @@ new spec tests produced a genuine red state against the starter.
 
 ### 2. Making evidence level part of the model
 
-The obvious implementation was one table of impressive speeds. That would have
-put a recorded Voyager velocity, a Daedalus design target and a Star Trek warp
+The obvious implementation was one table of impressive speeds. That would put
+a recorded Voyager velocity, a Daedalus design target and a Star Trek warp
 factor on the same epistemic footing. I instead encoded `MEASURED`,
 `COUNTERFACTUAL`, `DESIGN STUDY`, `FICTION / INFERRED` and `NOT COMPARABLE` as
 data, and made missing arrival times a supported result rather than an error
 ([`2a36163`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/2a36163)).
-Unit tests verify the logarithmic milestone order, Voyager's sourced scale
-comparison and the absence of invented arrival times for FTL craft. This kept
-adding more vehicles from turning the project into an uncritical catalogue.
+Later I vendored 2,358 NASA/JPL Horizons samples for Voyager and Parker plus 12
+CNS5 catalogue anchors, with a reproducible fetch script and source metadata
+([`9abba54`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/9abba54)).
+Runtime stays offline, while tests protect the coordinate frame, endpoint radii
+and the absence of invented arrival times for FTL craft.
 
-### 3. One interaction survived both marking viewports
+### 3. Deleting the persuasive ruler
 
-The visual system and interaction landed together in
-[`9b3d47b`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/9b3d47b):
-a launch manifest drives one log-distance route, live boundary times and one
-phase chart. I tested the built page at 1920×1080, launched Daedalus, then
-resized it mid-flight to 390×844. The selected vehicle, phase and non-zero
-progress survived; `scrollWidth` remained below the viewport width. I also used
-arrow keys to change the manifest selection and confirmed that an incomparable
-Enterprise disables launch while still explaining why.
+My first finished interaction used a logarithmic distance ruler. It fit every
+milestone neatly, but that neatness contradicted the subject: it made 122 AU and
+100,000 AU look like neighbouring ticks. I replaced its tests with linear
+world/screen round trips, pointer-anchored zoom and exact ratio invariants
+([`32d551a`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/32d551a)),
+then replaced the ruler with one pannable SVG coordinate space
+([`772d409`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/772d409)).
+At 1920×1080 I verified the 10-light-year context ring and Oort shell; at
+390×844 I switched into Parker's real shrinking ellipses and checked the
+touch-sized map controls without horizontal overflow. Resizing preserves camera,
+vehicle and progress.
 
 ### 4. Throwing away a persuasive but false Parker result
 
-Browser verification exposed a contradiction: Parker's chart showed its real
+Earlier browser verification exposed a contradiction: Parker's chart showed its
 repeated acceleration and deceleration around the Sun, while its arrival number
 quietly assumed the 430,000 mph perihelion peak lasted forever. I removed the
 outbound result, kept the real orbital profile visible, and made “no outward
 arrival” an explicit model state
 ([`595f3c3`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/595f3c3)).
-A regression test now prevents Parker's speed record becoming an interstellar
-mission again. The impossible 6,628-year comparison survives only as labelled
-context, not as the answer the interface asks a visitor to trust.
+A regression test prevents Parker's speed record becoming an interstellar
+mission again. The final map goes further: Parker's launch control now plays its
+real Horizons ephemeris, while the impossible 6,628-year comparison survives
+only as labelled context—not as a route.

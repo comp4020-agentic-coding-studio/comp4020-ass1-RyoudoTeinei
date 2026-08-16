@@ -2,19 +2,20 @@
 
 ## What was the breakthrough that moved the work forward?
 
-The breakthrough was replacing “how fast are these vehicles?” with a sharper
-claim: **crossing the heliopause is not leaving the Solar System**. That gave
-every part of the prototype one job. The logarithmic route makes 122 AU and
-100,000 AU coexist on screen; each vehicle changes the same route rather than
-opening another fact page; and the phase chart explains why a headline speed is
-not automatically a journey speed.
+The breakthrough was realising that a tidy scale was weakening the argument.
+My first logarithmic ruler made 122 AU and 100,000 AU coexist elegantly, but it
+also made them feel like neighbouring stops. I replaced it with a single linear
+space where zoom changes only the camera. At the nearby-star view, Neptune is
+correctly smaller than a pixel and the Oort Cloud becomes a visible region
+around an almost invisible Sun. The visitor has to zoom through those scales;
+that action now explains **crossing the heliopause is not leaving the Solar
+System** more clearly than a paragraph could.
 
-The moment this became real was the Parker correction. Its 430,000 mph record
-made a wonderful-looking result, but Parker earns that speed by falling deep
-into the Sun's gravity well and remains on a bound orbit. Removing its arrival
-time made the explainer more truthful and, unexpectedly, more interesting. “No
-comparable answer” became part of the interaction rather than an embarrassment
-to hide.
+The scientific data also stopped being decoration. CNS5 stars establish the
+real local neighbourhood; JPL vectors draw Voyager's planetary turns and
+Parker's repeated shrinking solar orbits. Parker's 430,000 mph record therefore
+cannot masquerade as an outbound cruise. “No outward arrival” is now visible in
+the path itself.
 
 ## What did this change about the developer I want to be?
 
@@ -25,7 +26,7 @@ inferred or deliberately incomparable. Those distinctions now live in types,
 tests and visible labels instead of relying on a disclaimer at the bottom.
 
 I also want verification to change the work, not merely approve it. Running the
-interaction, resizing it mid-flight and reading the result as a visitor exposed
-a conceptual error that typechecking could not. My preferred workflow now has
-two loops: automated sensors protect contracts, while browser use tests whether
-the explanation itself remains honest and legible.
+interaction, resizing it mid-flight and reading it as a visitor exposed a
+conceptual error that typechecking could not. My preferred workflow now has two
+loops: automated sensors protect geometry and evidence, while browser use asks
+whether the visual effect is honest, legible and actually teaches the claim.
