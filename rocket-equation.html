@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="An interactive explanation of the Tsiolkovsky rocket equation and why carrying reaction mass to 0.1c becomes exponentially difficult." />
+    <title>The Tyranny of the Rocket Equation — Exit Vector</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./rocket-equation.css" />
+  </head>
+  <body class="rocket-page">
+    <a class="skip-link" href="#calculator">Skip to the mass-ratio calculator</a>
+    <nav class="site-nav" aria-label="Primary">
+      <a class="wordmark" href="./index.html" aria-label="Return to The Edge Is Not the Exit">
+        <span aria-hidden="true">←</span> EXIT VECTOR
+      </a>
+      <div class="nav-links">
+        <a href="#inventor">Inventor</a>
+        <a href="#equation">Equation</a>
+        <a href="#calculator">Try 0.1c</a>
+        <a href="./index.html#journey">Distance model</a>
+      </div>
+    </nav>
+
+    <main>
+      <header class="rocket-hero">
+        <div class="rocket-hero-copy">
+          <p class="eyebrow">A MACHINE THAT MUST THROW ITSELF AWAY</p>
+          <h1>THE TYRANNY<br />OF THE <em>ROCKET</em><br />EQUATION.</h1>
+          <p class="rocket-deck">A rocket gains speed by discarding mass. But the propellant discarded at the end must first be accelerated by propellant discarded earlier. That recursion turns ambition into an exponential.</p>
+          <a class="primary-cta" href="#calculator">PUT 0.1c INTO THE EQUATION <span aria-hidden="true">↓</span></a>
+        </div>
+        <div class="hero-ratio" aria-label="Chemical rocket mass ratio for one tenth of light speed">
+          <p>CHEMICAL ROCKET · 0.1c · ACCELERATION ONLY</p>
+          <strong>10<sup>2969</sup>:1</strong>
+          <span>INITIAL MASS : ARRIVING MASS</span>
+        </div>
+      </header>
+
+      <section class="inventor-section" id="inventor">
+        <figure class="inventor-portrait">
+          <img src="./assets/rocket-equation/tsiolkosvky.gif" alt="Black-and-white portrait of Konstantin Tsiolkovsky wearing round spectacles" />
+          <figcaption><span>1857—1935</span><a href="https://www.nasa.gov/history/sputnik/kon.html">NASA HISTORY · SOURCE ↗</a></figcaption>
+        </figure>
+        <div class="inventor-copy">
+          <p class="eyebrow">01 / THE SCHOOLTEACHER WHO QUANTIFIED THE DREAM</p>
+          <h2>KONSTANTIN<br />TSIOLKOVSKY.</h2>
+          <div class="inventor-columns">
+            <p>Konstantin Eduardovich Tsiolkovsky was a Russian mathematics teacher, largely self-educated and deaf from childhood, who spent his life working far from the laboratories that would later build rockets. Inspired by speculative literature and the possibility of interplanetary travel, he asked a question that fiction usually skipped: <strong>what must a vehicle physically do to accelerate in empty space?</strong></p>
+            <p>In 1903 he published <em>Exploration of Cosmic Space by Means of Reaction Devices</em>. He advocated liquid propellants and derived the relationship between exhaust velocity, changing vehicle mass and achievable velocity. Later he developed ideas for multistage rockets, orbital stations, airlocks and closed life-support systems. He did not build the rockets; he established the mathematics that every rocket would have to obey.</p>
+          </div>
+          <blockquote>“The Earth is the cradle of humanity, but one cannot live in the cradle forever.”<cite>— Tsiolkovsky, letter of 1911</cite></blockquote>
+        </div>
+      </section>
+
+      <section class="equation-section" id="equation">
+        <div class="equation-heading">
+          <p class="eyebrow">02 / CONSERVATION OF MOMENTUM, WRITTEN AS A LIMIT</p>
+          <h2>THE FORMULA IS<br /><em>SIMPLE.</em></h2>
+        </div>
+        <div class="equation-panel">
+          <div class="formula" aria-label="Delta v equals exhaust velocity multiplied by the natural logarithm of initial mass divided by final mass">
+            <span>Δv</span><b>=</b><span>v<sub>e</sub></span><b>ln</b><span class="fraction"><i>m<sub>0</sub></i><i>m<sub>f</sub></i></span>
+          </div>
+          <dl class="term-register">
+            <div><dt>Δv</dt><dd>The total velocity change the rocket can produce—not distance travelled and not simply its top speed.</dd></div>
+            <div><dt>v<sub>e</sub></dt><dd>Effective exhaust velocity. Faster exhaust extracts more vehicle velocity from each kilogram thrown away.</dd></div>
+            <div><dt>m<sub>0</sub></dt><dd>Initial or “wet” mass: payload, engines, tanks, structure and every kilogram of propellant.</dd></div>
+            <div><dt>m<sub>f</sub></dt><dd>Final mass after the burn. It still includes the payload, engines, empty tanks and anything needed later.</dd></div>
+          </dl>
+          <p class="equation-explanation">Rearrange it and the trap becomes visible: <strong>m<sub>0</sub>/m<sub>f</sub> = e<sup>Δv/v<sub>e</sub></sup></strong>. Required mass does not grow in proportion to speed. It grows exponentially because propellant must accelerate the propellant that will be used later. Tanks and engines worsen the result; gravity and drag losses worsen it again.</p>
+          <aside class="relativistic-note"><strong>AT 0.1c /</strong> The classical equation is already an excellent approximation, but this page uses its relativistic form: <code>atanh(v/c) = (v<sub>e</sub>/c) ln(m<sub>0</sub>/m<sub>f</sub>)</code>. The correction at 0.1c is about 0.34%—small enough that relativity is not the problem. The mass ratio is.</aside>
+        </div>
+      </section>
+
+      <section class="calculator-section" id="calculator">
+        <div class="calculator-heading">
+          <p class="eyebrow">03 / PUT A STARSHIP INTO THE EQUATION</p>
+          <h2>HOW MUCH ROCKET<br />MUST ONE PAYLOAD<br /><em>CARRY?</em></h2>
+          <p>Choose a target speed and an effective exhaust velocity. The first result is a flyby burn. The second assumes the spacecraft carries everything required to remove the same velocity at the destination.</p>
+        </div>
+
+        <div class="calculator-console">
+          <div class="speed-control">
+            <label for="target-speed">TARGET CRUISE SPEED</label>
+            <output id="speed-percent" for="target-speed">10.0% c</output>
+            <input id="target-speed" type="range" min="1" max="20" step="0.1" value="10" />
+            <div class="speed-presets" aria-label="Target speed presets">
+              <button type="button" data-speed="1">0.01c</button>
+              <button type="button" data-speed="5">0.05c</button>
+              <button type="button" data-speed="10">0.10c</button>
+              <button type="button" data-speed="20">0.20c</button>
+            </div>
+          </div>
+
+          <div class="engine-control">
+            <label for="engine-preset">PROPULSION / EFFECTIVE EXHAUST</label>
+            <select id="engine-preset"></select>
+            <strong id="exhaust-readout">4.4 KM/S</strong>
+            <p id="engine-note">High thrust; exhaust below 4.4 km/s.</p>
+          </div>
+
+          <div class="mission-readout">
+            <div><span>CRUISE SPEED</span><strong id="speed-kms">29,979 KM/S</strong></div>
+            <div><span>PROXIMA CRUISE FLOOR</span><strong id="cruise-time">42.5 YEARS</strong></div>
+          </div>
+
+          <div class="ratio-results">
+            <article>
+              <p>ACCELERATE ONCE · FLYBY</p>
+              <strong id="launch-ratio">10^2969:1</strong>
+              <span id="launch-exponent">ln R = 6,836 · log₁₀ R = 2,969</span>
+            </article>
+            <article class="stop-result">
+              <p>ACCELERATE + BRAKE · ARRIVAL</p>
+              <strong id="stop-ratio">10^5938:1</strong>
+              <span id="stop-exponent">ln R = 13,672 · log₁₀ R = 5,938</span>
+            </article>
+          </div>
+
+          <div class="mass-stack" id="mass-stack" aria-hidden="true">
+            <div class="propellant-field"></div>
+            <div class="payload-pixel"><span>1 UNIT ARRIVING MASS</span></div>
+          </div>
+          <p class="console-note">IDEAL SINGLE VEHICLE · NO TANK MASS · NO ENGINE MASS · NO SHIELD · NO POWER SYSTEM · NO GRAVITY LOSS · PERFECTLY DIRECTED EXHAUST</p>
+        </div>
+      </section>
+
+      <section class="conclusion-section">
+        <div class="conclusion-title">
+          <p class="eyebrow">04 / WHAT THE NUMBERS ACTUALLY SAY</p>
+          <h2>0.1c IS NOT ONE<br />ENGINE UPGRADE.</h2>
+        </div>
+        <div class="conclusion-grid">
+          <article><span>CHEMICAL</span><h3>THE EXPONENT ENDS THE DISCUSSION.</h3><p>With 4.4 km/s exhaust, one acceleration to 0.1c demands a mass ratio near 10<sup>2969</sup>:1. Staging can discard empty hardware and improve a real launch vehicle, but it cannot turn this exponent into a buildable machine.</p></article>
+          <article><span>ION</span><h3>HIGH EFFICIENCY IS NOT HIGH POWER.</h3><p>NASA's NEXT ion engine reaches about 41 km/s effective exhaust velocity, yet its thrust is measured in fractions of a newton. Even ignoring acceleration time and power supply, the 0.1c mass ratio remains around 10<sup>318</sup>:1.</p></article>
+          <article><span>FUSION STUDY</span><h3>THE FIRST PLAUSIBLE NUMBER IS STILL ENORMOUS.</h3><p>A Daedalus-like 10,000 km/s exhaust brings the ideal ratio down to about 20:1 for acceleration and roughly 410:1 when braking is included. The actual Daedalus study required about 54,000 tonnes for a 450-tonne payload—and it deliberately remained a flyby.</p></article>
+          <article><span>THE ESCAPE</span><h3>STOP CARRYING THE ENERGY SOURCE.</h3><p>Laser sails and other beamed systems step outside the onboard-propellant equation. They replace propellant mass with a colossal external beam, delicate sail, pointing accuracy and a new braking problem. The equation is not defeated; the architecture has changed.</p></article>
+        </div>
+        <div class="final-statement"><strong>ROCKETS CAN CROSS INTERSTELLAR SPACE.</strong><span>The equation says a reaction-mass rocket needs exhaust velocity of the same order as its desired cruise velocity—or an absurd mass ratio. Reaching 0.1c is therefore not mainly a fuel-storage problem. It is a propulsion-physics problem.</span></div>
+      </section>
+
+      <section class="equation-sources" aria-label="Rocket equation sources">
+        <details>
+          <summary><span>05 / SOURCES &amp; ASSUMPTIONS</span><span>OPEN REGISTER +</span></summary>
+          <div>
+            <a href="https://www.nasa.gov/history/sputnik/kon.html">NASA History · Tsiolkovsky biography ↗</a>
+            <a href="https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Exploration/Konstantin_Tsiolkovsky">ESA · Tsiolkovsky and the 1911 quotation ↗</a>
+            <a href="https://science.nasa.gov/learn/basics-of-space-flight/chapter3-2/">NASA · classical rocket equation ↗</a>
+            <a href="https://www1.grc.nasa.gov/wp-content/uploads/High-Isp-Propulsion-Presentation.pdf">NASA Glenn · propulsion exhaust-velocity comparison ↗</a>
+            <a href="https://discovery.larc.nasa.gov/pdf_files/01-NEXT-SBenson-2.pdf">NASA · NEXT ion-thruster performance ↗</a>
+            <a href="https://bis-space.com/shop/wp-content/uploads/2023/07/jbis-076-05-0163-Baxter.pdf">JBIS · Daedalus exhaust velocity context ↗</a>
+            <a href="https://www.bis-space.com/technical-projects/">British Interplanetary Society · Project Daedalus ↗</a>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <footer>
+      <p>THE EQUATION IS NOT A VERDICT. IT IS THE PRICE TAG.</p>
+      <p><a href="./index.html">RETURN TO THE DISTANCE MODEL →</a></p>
+    </footer>
+    <script type="module" src="./rocket-equation.ts"></script>
+  </body>
+</html>

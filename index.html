@@ -18,7 +18,8 @@
       </a>
       <div class="nav-links">
         <a href="#journey">Plotter</a>
-        <a href="#method">Method</a>
+        <a href="#method">The 0.2c trap</a>
+        <a href="./rocket-equation.html">Equation</a>
         <a href="#sources">Sources</a>
       </div>
     </nav>
@@ -356,14 +357,58 @@
 
       <section class="method-section" id="method">
         <div class="method-heading">
-          <p class="eyebrow">02 / READ THE MODEL BEFORE THE NUMBER</p>
-          <h2>THE HONESTY LAYER</h2>
+          <p class="eyebrow">02 / SPEED SOLVES DISTANCE. IT DOES NOT SOLVE ARRIVAL.</p>
+          <h2>THE 0.2c<br /><em>TRAP.</em></h2>
         </div>
-        <div class="method-copy">
-          <p>The map never switches to a logarithmic ruler: every object uses the same AU-per-pixel scale. Its locked camera automatically expands at planetary, heliopause, Inner Oort, Outer Oort and interstellar boundaries. The view changes; the proportions never do.</p>
-          <p>Positions use a top-down J2000 ecliptic projection. The map draws the supplied x and y coordinates directly, so real JPL trajectories keep their observed planar shape; the out-of-plane z coordinate remains in the selected-object readout. Like any flat star map, it is an orthographic view of three-dimensional space rather than a claim that every object lies on one sheet.</p>
-          <p><strong>Measured</strong> means a speed was recorded. <strong>Counterfactual</strong> means that speed is frozen forever to expose scale—not predict a mission. <strong>Design study</strong> preserves a published profile. Fiction stays labelled, and ships with no comparable linear speed receive no invented arrival time.</p>
-          <p>The heliopause is represented by Voyager 1's crossing near 122 AU, not a fixed spherical wall. The Oort Cloud has not been directly observed; its 100,000 AU outer edge is a conservative model boundary, not a wall a spacecraft can photograph while crossing.</p>
+        <div class="method-copy method-argument">
+          <p class="method-lead">At one fifth of light speed, Proxima Centauri is only <strong>21.2 ideal cruise years</strong> away. That number sounds like the problem has been solved. It has not. At 0.2c, the thin interstellar medium becomes a forward beam of energetic particles; a grain too small to see can arrive with the energy of heavy machinery; and a probe that cannot shed its velocity does not arrive at all. It performs a flyby and disappears.</p>
+
+          <div class="relativity-readout" aria-label="Relativistic kinetic energy at twenty percent of light speed">
+            <span class="relativity-speed">0.2c</span>
+            <div><strong>59,958 KM/S</strong><small>γ = 1.0206 · 1.85 PJ OF KINETIC ENERGY PER KG</small></div>
+          </div>
+
+          <article class="method-block">
+            <p class="method-kicker">01 / THE VACUUM BECOMES WEATHER</p>
+            <h3>AN ATOM IS NOW A RADIATION EVENT.</h3>
+            <p>Interstellar space is sparse, not empty. At 0.2c, every stationary hydrogen or helium nucleus meets the bow of the spacecraft at roughly <strong>19 MeV per nucleon</strong>. A single iron atom carries about <strong>1.1 GeV</strong> of kinetic energy. One atom does not punch a macroscopic hole, but heavy ions leave concentrated ionisation tracks, displace atoms in the lattice and progressively alter electronics and shielding.</p>
+            <p>The danger is cumulative. A published model of an Alpha Centauri crossing found gas bombardment capable of damaging roughly <strong>0.1 mm of quartz</strong>, while dust could erode roughly <strong>0.5 mm</strong> under its assumed interstellar columns. Those are model-dependent depths, not universal shield specifications—but they show why “almost vacuum” cannot be ignored for four light-years.</p>
+          </article>
+
+          <article class="method-block impact-calculation">
+            <p class="method-kicker">02 / THE CUBIC COST OF DUST</p>
+            <h3>DOUBLE THE GRAIN; EIGHT TIMES THE ENERGY.</h3>
+            <p>For a spherical rock grain of density 3,000 kg/m³, the exact relativistic calculation is <code>E = (γ − 1)mc²</code>. The table uses grain <strong>diameter</strong>, not radius. It reports incident kinetic energy; the resulting crater, plasma plume and secondary radiation depend on the shield material and impact angle.</p>
+            <div class="impact-table" role="table" aria-label="Dust impact energy at twenty percent of light speed">
+              <div class="impact-row impact-head" role="row"><span role="columnheader">GRAIN DIAMETER</span><span role="columnheader">ENERGY AT 0.2c</span><span role="columnheader">SCALE</span></div>
+              <div class="impact-row" role="row"><strong role="cell">1 µm</strong><span role="cell">2.9 J</span><span role="cell">macroscopic energy in a microscopic grain</span></div>
+              <div class="impact-row" role="row"><strong role="cell">10 µm</strong><span role="cell">2.9 kJ</span><span role="cell">roughly a rifle bullet's kinetic energy</span></div>
+              <div class="impact-row" role="row"><strong role="cell">100 µm</strong><span role="cell">2.9 MJ</span><span role="cell">about 0.7 kg of TNT</span></div>
+              <div class="impact-row" role="row"><strong role="cell">1 mm</strong><span role="cell">2.9 GJ</span><span role="cell">about 0.7 tonnes of TNT</span></div>
+            </div>
+            <p class="calculation-note">ASSUMPTIONS / ρ = 3,000 KG/M³ · SPHERICAL GRAIN · HEAD-ON IMPACT · γ = 1 / √(1 − 0.2²). TNT figures are energy equivalents, not claims that an impact behaves like a chemical explosive.</p>
+          </article>
+
+          <article class="method-block method-wide">
+            <p class="method-kicker">03 / THE RARE EVENT SETS THE SHIELD</p>
+            <h3>AVERAGE DUST IS NOT THE WHOLE RISK.</h3>
+            <p>Most particles are tiny. Larger grains are much rarer—but because mass and impact energy grow with the cube of diameter, the tail of the size distribution matters disproportionately. A mission must survive not only the expected erosion but also a low-probability strike that can destroy its leading edge. That pushes the design toward a narrow frontal silhouette, sacrificial shielding, separated layers, redundant systems and—because no shield can be made arbitrarily thick—a swarm of probes rather than faith in one vehicle.</p>
+            <p>Speed therefore creates a trade: every reduction in cruise time increases particle energy, heat, radiation damage and shielding mass. More shield then demands more launch energy. At relativistic speed, “go faster” is not a free improvement; it changes the environment the vehicle must survive.</p>
+          </article>
+
+          <article class="method-block arrival-block">
+            <p class="method-kicker">04 / FLYBY IS NOT ARRIVAL</p>
+            <h3>THE SECOND HALF OF THE MISSION IS BRAKING.</h3>
+            <p>A 0.2c probe crosses one astronomical unit in only <strong>41.6 minutes</strong>. That is enough for a rapid imaging pass, not prolonged exploration. Breakthrough Starshot is consequently framed as a flyby: its laser remains at the departure system, and the craft carries no equal destination-side beam with which to stop.</p>
+            <p>To enter a bound orbit around Proxima, the spacecraft must remove almost all of its incoming kinetic energy and match the target system's velocity. In the ideal limit, accelerating one kilogram to 0.2c requires <strong>1.85 petajoules</strong>; braking it requires approximately the same amount again. A one-tonne vehicle therefore has a minimum acceleration-plus-braking kinetic-energy change of <strong>3.71 × 10¹⁸ joules</strong>—about <strong>0.89 gigatonnes of TNT equivalent</strong>—before propulsion inefficiency, reaction mass, shielding, power systems or course corrections are counted.</p>
+            <p>Possible escape clauses all move the difficulty rather than erase it: carry propellant and pay an extreme mass ratio; build a second beam at a destination where no infrastructure exists; deploy a vast magnetic or electric sail and brake against tenuous plasma; or use stellar photons and accept a much lower injection speed. One published photon-sail study found that a sail light enough to brake into the Alpha Centauri system could enter at roughly <strong>4.6% of light speed</strong>: about 95 years to Alpha Centauri A/B, followed by another 46 years to reach Proxima.</p>
+          </article>
+
+          <div class="method-conclusion">
+            <p>THE PARADOX</p>
+            <strong>0.2c makes the distance human. It makes the vehicle nearly impossible.</strong>
+            <span>The honest question is not only “how fast can it go?” It is “what survives the crossing—and what makes it stop?”</span>
+          </div>
         </div>
       </section>
 
@@ -383,6 +428,10 @@
             <a id="source-concorde" href="https://heritage.baesystems.com/page/bac-concorde">BAE Systems · Concorde ↗</a>
             <a id="source-daedalus" href="https://www.bis-space.com/technical-projects/">BIS · Project Daedalus ↗</a>
             <a id="source-starshot" href="https://breakthroughinitiatives.org/initiative/3">Breakthrough Initiatives · Starshot ↗</a>
+            <a id="source-ism-damage" href="https://arxiv.org/abs/1608.05284">Hoang et al. · relativistic spacecraft versus gas and dust ↗</a>
+            <a id="source-ism-implantation" href="https://arxiv.org/abs/2103.07517">Drobny et al. · impact-gas accumulation and shielding damage ↗</a>
+            <a id="source-starshot-roadmap" href="https://www.nasa.gov/wp-content/uploads/2015/05/roadmap_to_interstellar_flight_tagged.pdf">NASA Starlight · interstellar-flight roadmap and dust risk ↗</a>
+            <a id="source-photon-braking" href="https://arxiv.org/abs/1701.08803">Heller &amp; Hippke · photon-sail braking at Alpha Centauri ↗</a>
             <a id="source-orion" href="https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20000096503.pdf">NASA NTRS · Project Orion ↗</a>
             <a id="source-wandering-earth" href="https://us.macmillan.com/books/9781250796844/thewanderingearth/">Macmillan · The Wandering Earth ↗</a>
             <a href="https://www.bloomsbury.com/uk/wandering-earth-9781784978518/">Bloomsbury · novel edition and Proxima destination ↗</a>

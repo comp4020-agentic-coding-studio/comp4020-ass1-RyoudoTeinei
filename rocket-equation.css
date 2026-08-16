@@ -1,0 +1,745 @@
+/* stylelint-disable no-descending-specificity -- shared component rules intentionally precede state and responsive overrides */
+
+.rocket-page {
+  background-color: #07110f;
+  background-image:
+    linear-gradient(rgb(34 53 47 / 24%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(34 53 47 / 24%) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.rocket-page main {
+  overflow: hidden;
+}
+
+.rocket-page .site-nav {
+  background: rgb(7 17 15 / 92%);
+}
+
+.rocket-hero,
+.inventor-section,
+.equation-section,
+.calculator-section,
+.conclusion-section,
+.equation-sources {
+  width: min(100% - 4rem, var(--max-width));
+  margin-inline: auto;
+}
+
+.rocket-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+  min-height: calc(100svh - 76px);
+  border-inline: 1px solid var(--line);
+}
+
+.rocket-hero-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(4rem, 8vw, 9rem) clamp(1.5rem, 5vw, 6rem);
+}
+
+.rocket-hero h1 {
+  margin: 1.5rem 0 2rem;
+  font-family: "Arial Narrow", "Aptos Narrow", Arial, sans-serif;
+  font-size: clamp(3.8rem, 7.6vw, 9rem);
+  line-height: 0.78;
+  letter-spacing: -0.075em;
+}
+
+.rocket-hero h1 em,
+.equation-heading h2 em,
+.calculator-heading h2 em {
+  color: var(--acid);
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+}
+
+.rocket-deck {
+  max-width: 38rem;
+  margin: 0 0 3rem;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 1.5vw, 1.35rem);
+  line-height: 1.65;
+}
+
+.rocket-hero .primary-cta {
+  align-self: flex-start;
+}
+
+.hero-ratio {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-width: 0;
+  padding: clamp(2rem, 4vw, 4rem);
+  overflow: hidden;
+  background: var(--acid);
+  color: var(--ink);
+}
+
+.hero-ratio p,
+.hero-ratio span {
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+
+.hero-ratio strong {
+  display: block;
+  margin-block: 1rem;
+  font-family: "Arial Narrow", "Aptos Narrow", Arial, sans-serif;
+  font-size: clamp(4rem, 8vw, 9rem);
+  line-height: 0.85;
+  letter-spacing: -0.065em;
+}
+
+.hero-ratio sup {
+  display: inline-block;
+  font-size: 0.3em;
+  line-height: 1;
+  letter-spacing: 0;
+  vertical-align: top;
+  transform: translateY(0.08em);
+}
+
+.inventor-section {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.58fr) minmax(0, 1.42fr);
+  gap: clamp(2rem, 6vw, 7rem);
+  padding-block: clamp(6rem, 12vw, 12rem);
+  border-top: 1px solid var(--line);
+}
+
+.inventor-portrait {
+  align-self: start;
+  margin: 0;
+  border: 1px solid var(--line);
+  box-shadow: 8px 8px 0 #000;
+}
+
+.inventor-portrait img {
+  display: block;
+  width: 100%;
+  min-height: 470px;
+  object-fit: cover;
+  image-rendering: auto;
+  filter: grayscale(1) contrast(1.15);
+}
+
+.inventor-portrait figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.6rem;
+}
+
+.inventor-portrait a {
+  color: inherit;
+}
+
+.inventor-copy h2,
+.equation-heading h2,
+.calculator-heading h2,
+.conclusion-title h2 {
+  margin: 1rem 0 3rem;
+  font-family: "Arial Narrow", "Aptos Narrow", Arial, sans-serif;
+  font-size: clamp(3.4rem, 6vw, 7.5rem);
+  line-height: 0.82;
+  letter-spacing: -0.065em;
+}
+
+.inventor-columns {
+  columns: 2 280px;
+  column-gap: clamp(2rem, 4vw, 4rem);
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+.inventor-columns p {
+  margin: 0;
+}
+
+.inventor-columns strong {
+  color: var(--paper);
+}
+
+.inventor-copy blockquote {
+  margin: 3rem 0 0;
+  padding: 2rem;
+  border-left: 4px solid var(--solar);
+  background: rgb(12 26 23 / 86%);
+  color: var(--paper);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.4rem, 2.2vw, 2.2rem);
+  font-style: italic;
+}
+
+.inventor-copy cite {
+  display: block;
+  margin-top: 1rem;
+  color: var(--muted);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.64rem;
+  font-style: normal;
+}
+
+.equation-section {
+  display: grid;
+  grid-template-columns: minmax(0, 0.65fr) minmax(320px, 1.35fr);
+  gap: clamp(3rem, 7vw, 8rem);
+  padding-block: clamp(6rem, 10vw, 10rem);
+  border-top: 1px solid var(--line);
+}
+
+.equation-panel {
+  border: 1px solid var(--line);
+  background: var(--ink);
+  box-shadow: 8px 8px 0 #000;
+}
+
+.formula {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.6rem, 2vw, 2rem);
+  min-height: 250px;
+  padding: 2rem;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.6rem, 5vw, 6rem);
+}
+
+.formula b {
+  color: var(--solar);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.42em;
+  font-weight: 500;
+}
+
+.formula sub {
+  font-size: 0.45em;
+}
+
+.fraction {
+  display: inline-grid;
+  align-items: center;
+  text-align: center;
+}
+
+.fraction i {
+  min-width: 1.6em;
+  padding: 0.08em 0.2em;
+}
+
+.fraction i:first-child {
+  border-bottom: 0.06em solid currentcolor;
+}
+
+.term-register {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.term-register div {
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.term-register div:nth-child(2n) {
+  border-right: 0;
+}
+
+.term-register dt {
+  color: var(--acid);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.6rem;
+}
+
+.term-register dd {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.equation-explanation,
+.relativistic-note {
+  margin: 0;
+  padding: clamp(1.5rem, 3vw, 3rem);
+  line-height: 1.7;
+}
+
+.equation-explanation {
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.equation-explanation strong {
+  color: var(--paper);
+  white-space: nowrap;
+}
+
+.relativistic-note {
+  border-top: 1px solid var(--line);
+  color: var(--faint);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.68rem;
+}
+
+.relativistic-note strong,
+.relativistic-note code {
+  color: var(--cyan);
+}
+
+.calculator-section {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.6fr) minmax(0, 1.4fr);
+  gap: clamp(2rem, 5vw, 6rem);
+  padding-block: clamp(6rem, 10vw, 10rem);
+  border-top: 1px solid var(--line);
+}
+
+.calculator-heading > p:last-child {
+  max-width: 30rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.calculator-console {
+  align-self: start;
+  border: 1px solid var(--line);
+  background: var(--ink);
+  box-shadow: 8px 8px 0 #000;
+}
+
+.speed-control,
+.engine-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  padding: clamp(1.5rem, 3vw, 3rem);
+  border-bottom: 1px solid var(--line);
+}
+
+.speed-control label,
+.engine-control label,
+.mission-readout span,
+.ratio-results p,
+.console-note {
+  color: var(--faint);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+}
+
+.speed-control output {
+  color: var(--acid);
+  font-family: "Arial Narrow", "Aptos Narrow", Arial, sans-serif;
+  font-size: clamp(2.3rem, 5vw, 5rem);
+  font-weight: 800;
+  line-height: 0.8;
+}
+
+.speed-control input {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: var(--acid);
+}
+
+.speed-presets {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.speed-presets button {
+  min-height: 44px;
+  border: 0;
+  background: var(--panel);
+  color: var(--paper);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  cursor: pointer;
+}
+
+.speed-presets button:hover,
+.speed-presets button:focus-visible {
+  background: var(--acid);
+  color: var(--ink);
+}
+
+.engine-control select {
+  grid-column: 1 / -1;
+  min-height: 52px;
+  padding-inline: 1rem;
+  border: 1px solid var(--muted);
+  border-radius: 0;
+  background: var(--panel);
+  color: var(--paper);
+  font-family: "Cascadia Mono", Consolas, monospace;
+}
+
+.engine-control strong {
+  color: var(--cyan);
+  font-family: "Arial Narrow", "Aptos Narrow", Arial, sans-serif;
+  font-size: clamp(1.5rem, 2.5vw, 2.8rem);
+}
+
+.engine-control p {
+  max-width: 28rem;
+  margin: 0;
+  color: var(--muted);
+  text-align: right;
+}
+
+.mission-readout,
+.ratio-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mission-readout div,
+.ratio-results article {
+  padding: clamp(1.25rem, 2.5vw, 2.5rem);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.mission-readout div:last-child,
+.ratio-results article:last-child {
+  border-right: 0;
+}
+
+.mission-readout strong {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--paper);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: clamp(1rem, 1.8vw, 1.65rem);
+}
+
+.ratio-results article {
+  min-width: 0;
+}
+
+.ratio-results strong {
+  display: block;
+  margin-block: 0.75rem;
+  overflow-wrap: anywhere;
+  color: var(--acid);
+  font-family: "Arial Narrow", "Aptos Narrow", Arial, sans-serif;
+  font-size: clamp(2rem, 4vw, 4.5rem);
+  line-height: 0.9;
+}
+
+.ratio-results span {
+  color: var(--muted);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.62rem;
+}
+
+.ratio-results .stop-result {
+  background: var(--solar);
+}
+
+.stop-result p,
+.stop-result strong,
+.stop-result span {
+  color: var(--ink);
+}
+
+.mass-stack {
+  --propellant-height: 100%;
+
+  position: relative;
+  height: 240px;
+  margin: clamp(1.5rem, 3vw, 3rem);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #030706;
+}
+
+.propellant-field {
+  position: absolute;
+  inset: auto 0 0;
+  height: var(--propellant-height);
+  background-image:
+    linear-gradient(45deg, rgb(184 255 61 / 8%) 25%, transparent 25%),
+    linear-gradient(-45deg, rgb(184 255 61 / 8%) 25%, transparent 25%);
+  background-size: 12px 12px;
+  border-top: 1px solid var(--acid);
+}
+
+.payload-pixel {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  width: 8px;
+  height: 8px;
+  background: var(--cyan);
+  box-shadow: 0 0 0 3px var(--ink);
+}
+
+.payload-pixel span {
+  position: absolute;
+  right: 1rem;
+  bottom: -0.2rem;
+  width: max-content;
+  color: var(--cyan);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.58rem;
+}
+
+.console-note {
+  margin: 0;
+  padding: 0 clamp(1.5rem, 3vw, 3rem) clamp(1.5rem, 3vw, 3rem);
+  line-height: 1.6;
+}
+
+.conclusion-section {
+  padding-block: clamp(6rem, 10vw, 10rem);
+  border-top: 1px solid var(--line);
+}
+
+.conclusion-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  box-shadow: 8px 8px 0 #000;
+}
+
+.conclusion-grid article {
+  padding: clamp(1.5rem, 3vw, 3rem);
+  background: var(--ink);
+}
+
+.conclusion-grid span {
+  color: var(--cyan);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.65rem;
+}
+
+.conclusion-grid h3 {
+  max-width: 18ch;
+  margin: 1.5rem 0;
+  color: var(--paper);
+  font-family: "Arial Narrow", "Aptos Narrow", Arial, sans-serif;
+  font-size: clamp(1.6rem, 2.7vw, 3.1rem);
+  line-height: 0.95;
+}
+
+.conclusion-grid p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.final-statement {
+  display: grid;
+  grid-template-columns: 0.75fr 1.25fr;
+  gap: clamp(2rem, 5vw, 6rem);
+  padding: clamp(2rem, 5vw, 6rem);
+  background: var(--acid);
+  color: var(--ink);
+}
+
+.final-statement strong {
+  font-family: "Arial Narrow", "Aptos Narrow", Arial, sans-serif;
+  font-size: clamp(2rem, 4vw, 4.5rem);
+  line-height: 0.9;
+}
+
+.final-statement span {
+  align-self: end;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.equation-sources {
+  padding-bottom: 7rem;
+}
+
+.equation-sources details {
+  border-block: 1px solid var(--line);
+}
+
+.equation-sources summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-block: 1.5rem;
+  color: var(--paper);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.68rem;
+  cursor: pointer;
+}
+
+.equation-sources summary::marker {
+  content: "";
+}
+
+.equation-sources details > div {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem 3rem;
+  padding: 2rem 0 3rem;
+}
+
+.equation-sources a,
+.rocket-page footer a {
+  color: var(--acid);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.72rem;
+}
+
+@media (width <= 1000px) {
+  .rocket-hero,
+  .inventor-section,
+  .equation-section,
+  .calculator-section {
+    grid-template-columns: 1fr;
+  }
+
+  .rocket-hero {
+    min-height: auto;
+  }
+
+  .hero-ratio {
+    min-height: 420px;
+  }
+
+  .inventor-portrait {
+    max-width: 440px;
+  }
+}
+
+@media (width <= 760px) {
+  .rocket-hero,
+  .inventor-section,
+  .equation-section,
+  .calculator-section,
+  .conclusion-section,
+  .equation-sources {
+    width: min(100% - 1.5rem, var(--max-width));
+  }
+
+  .rocket-page .nav-links {
+    gap: 0.65rem;
+  }
+
+  .rocket-page .nav-links a:nth-child(1),
+  .rocket-page .nav-links a:nth-child(2) {
+    display: none;
+  }
+
+  .rocket-hero-copy {
+    padding: 5rem 1rem;
+  }
+
+  .rocket-hero h1 {
+    font-size: clamp(3.4rem, 17vw, 5.5rem);
+  }
+
+  .hero-ratio {
+    min-height: 310px;
+    padding: 1.5rem;
+  }
+
+  .inventor-section,
+  .equation-section,
+  .calculator-section,
+  .conclusion-section {
+    padding-block: 5rem;
+  }
+
+  .inventor-copy h2,
+  .equation-heading h2,
+  .calculator-heading h2,
+  .conclusion-title h2 {
+    font-size: clamp(3rem, 15vw, 5rem);
+  }
+
+  .inventor-columns {
+    columns: auto;
+  }
+
+  .inventor-columns p + p {
+    margin-top: 1.5rem;
+  }
+
+  .inventor-portrait img {
+    min-height: 390px;
+  }
+
+  .formula {
+    min-height: 190px;
+    gap: 0.5rem;
+    padding: 1rem;
+    font-size: clamp(2rem, 12vw, 3.4rem);
+  }
+
+  .term-register,
+  .mission-readout,
+  .ratio-results,
+  .conclusion-grid,
+  .final-statement,
+  .equation-sources details > div {
+    grid-template-columns: 1fr;
+  }
+
+  .term-register div,
+  .mission-readout div,
+  .ratio-results article {
+    border-right: 0;
+  }
+
+  .speed-control,
+  .engine-control {
+    grid-template-columns: 1fr;
+  }
+
+  .speed-control output {
+    margin-top: 0.5rem;
+  }
+
+  .engine-control p {
+    text-align: left;
+  }
+
+  .speed-presets {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ratio-results strong {
+    font-size: clamp(2.4rem, 12vw, 4rem);
+  }
+
+  .mass-stack {
+    height: 180px;
+  }
+
+  .final-statement {
+    padding: 2rem 1.5rem;
+  }
+
+  .equation-sources summary {
+    font-size: 0.56rem;
+  }
+}
