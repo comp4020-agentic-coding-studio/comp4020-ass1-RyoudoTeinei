@@ -737,6 +737,14 @@ h1 em {
   background: var(--acid);
 }
 
+.map-controls button:disabled {
+  cursor: not-allowed;
+  border-color: rgb(129 145 138 / 35%);
+  color: var(--muted);
+  background: rgb(7 17 15 / 72%);
+  opacity: 0.72;
+}
+
 .space-map-stage {
   position: relative;
   isolation: isolate;
@@ -1325,7 +1333,7 @@ h1 em {
 
 .live-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 0.85fr 0.9fr 1.35fr 1.35fr;
   border-bottom: 1px solid var(--line);
 }
 
@@ -1357,6 +1365,23 @@ h1 em {
   font-family: "Cascadia Mono", Consolas, monospace;
   font-size: clamp(0.75rem, 1.1vw, 1rem);
   font-weight: 400;
+}
+
+.live-grid small {
+  display: block;
+  margin-top: 0.55rem;
+  color: var(--muted);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: clamp(0.56rem, 0.72vw, 0.68rem);
+  line-height: 1.55;
+}
+
+.next-stage-readout strong {
+  color: var(--acid);
+}
+
+.next-stage-readout small {
+  color: var(--orange);
 }
 
 .speed-figure {

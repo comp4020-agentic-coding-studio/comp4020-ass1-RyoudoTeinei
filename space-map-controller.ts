@@ -8,7 +8,6 @@ import {
   boundsOf,
   eclipticLatitudeDegrees,
   fitBounds,
-  panByPixels,
   worldToScreen,
   zoomAt,
   type Bounds,
@@ -34,6 +33,36 @@ const BARNARD_ID = "barnards-star";
 const OUTER_OORT_AU = 100_000;
 const INNER_OORT_AU = 2_000;
 const HELIOPAUSE_AU = 121.6;
+
+export interface AutomaticCameraBand {
+  id: "inner-system" | "planetary" | "heliopause" | "inner-oort" | "outer-oort" | "interstellar";
+  label: string;
+  spanAu: number;
+}
+
+/** Fixed true-linear view ranges. Crossing a boundary expands the view; the
+ * craft remains the centre and no logarithmic coordinate distortion is used. */
+export function automaticCameraBand(
+  radialAu: number,
+  cue: TourCameraCue,
+): AutomaticCameraBand {
+  if (cue === "destination" || radialAu >= OUTER_OORT_AU) {
+    return { id: "interstellar", label: "INTERSTELLAR RANGE", spanAu: AU_PER_LIGHT_YEAR * 6 };
+  }
+  if (cue === "outer-oort" || radialAu >= 20_000) {
+    return { id: "outer-oort", label: "OUTER OORT RANGE", spanAu: 220_000 };
+  }
+  if (cue === "inner-oort" || radialAu >= INNER_OORT_AU) {
+    return { id: "inner-oort", label: "INNER OORT RANGE · 2,000–20,000 AU", spanAu: 44_000 };
+  }
+  if (cue === "heliopause" || radialAu >= HELIOPAUSE_AU) {
+    return { id: "heliopause", label: "HELIOPAUSE RANGE", spanAu: 380 };
+  }
+  if (cue === "pluto" || radialAu >= 8) {
+    return { id: "planetary", label: "OUTER PLANETARY RANGE", spanAu: 112 };
+  }
+  return { id: "inner-system", label: "INNER SOLAR SYSTEM RANGE", spanAu: 14 };
+}
 
 interface HorizonsSample extends JplStateVector {}
 
@@ -444,8 +473,7 @@ export function createSpaceMapController(): SpaceMapController {
   let progress = 0;
   let tourFrame: MissionTourSample | undefined;
   let cameraTransition: { chapterIndex: number; from: Camera; to: Camera } | undefined;
-  let tourChapterIndex = -1;
-  let followCraft = false;
+  let followCraft = true;
   let initialized = false;
   let dpr = 1;
   let destroyed = false;
@@ -604,56 +632,18 @@ export function createSpaceMapController(): SpaceMapController {
     );
   }
 
-  function cameraForTour(cue: TourCameraCue, frame: MissionTourSample): Camera {
-    const canonicalSequenceRoute = canonicalMapRoute(selectedVehicle);
-    if (
-      canonicalSequenceRoute &&
-      frame.routeProgress <= canonicalSequenceRoute.jupiterProgress + Number.EPSILON
-    ) {
-      return radialCamera(
-        Math.hypot(
-          canonicalSequenceRoute.jupiterPoint.x,
-          canonicalSequenceRoute.jupiterPoint.y,
-        ) * 1.34,
-      );
-    }
-    if (cue === "mission") {
-      const actual = actualTrajectory();
-      if (actual) {
-        const points = trajectoryPoints(actual);
-        const span = Math.max(...points.map((point) => Math.hypot(point.x, point.y)), 1);
-        return fitBounds(expandedBounds(points, span * 0.13), viewport, viewport.width < 700 ? 48 : 88);
-      }
-      const canonical = canonicalSequenceRoute;
-      if (canonical) {
-        const radius = Math.hypot(canonical.jupiterPoint.x, canonical.jupiterPoint.y);
-        return radialCamera(radius * 1.34);
-      }
-      const target = targetStar();
-      if (target) {
-        const current = craftPosition().point;
-        const margin = Math.max(Math.hypot(current.x, current.y) * 0.15, 2);
-        return fitBounds(expandedBounds([{ x: 0, y: 0 }, current], margin), viewport, viewport.width < 700 ? 48 : 88);
-      }
-    }
-    if (cue === "pluto") return radialCamera(54);
-    if (cue === "heliopause") return radialCamera(172);
-    if (cue === "inner-oort") return radialCamera(2_650);
-    if (cue === "outer-oort") return radialCamera(116_000);
-    if (cue === "destination") {
-      const endpoint = frame.routeMode === "comparison" && frame.destination
-        ? comparisonPoint(frame, frame.destination.au)
-        : targetStar()
-          ? starWorld(targetStar() as Cns5NearbyStarRecord)
-          : craftPosition().point;
-      const span = Math.max(Math.hypot(endpoint.x, endpoint.y), OUTER_OORT_AU);
-      return fitBounds(
-        expandedBounds([{ x: 0, y: 0 }, endpoint], span * 0.12),
-        viewport,
-        viewport.width < 700 ? 42 : 76,
-      );
-    }
-    return camera;
+  function cameraForTour(cue: TourCameraCue): Camera {
+    const craft = craftPosition();
+    const band = selectedVehicle?.id === "parker" && cue === "mission"
+      ? { spanAu: 2.4 }
+      : automaticCameraBand(craft.radialAu, cue);
+    const halfSpan = band.spanAu / 2;
+    return fitBounds({
+      minX: craft.point.x - halfSpan,
+      maxX: craft.point.x + halfSpan,
+      minY: craft.point.y - halfSpan,
+      maxY: craft.point.y + halfSpan,
+    }, viewport, viewport.width < 700 ? 38 : 68);
   }
 
   function blendCamera(from: Camera, to: Camera, amount: number): Camera {
@@ -747,18 +737,6 @@ export function createSpaceMapController(): SpaceMapController {
       }
     }
     return undefined;
-  }
-
-  function focusEntity(entity: CanvasMapEntity): void {
-    if (entity.world) {
-      const span = entity.focusSpanAu ?? viewport.width / camera.pxPerAu;
-      camera = fitBounds({ minX: entity.world.x - span / 2, maxX: entity.world.x + span / 2, minY: entity.world.y - span / 2, maxY: entity.world.y + span / 2 }, viewport, viewport.width < 700 ? 44 : 76);
-    } else if (entity.focusSpanAu) {
-      const half = entity.focusSpanAu / 2;
-      camera = fitBounds({ minX: -half, maxX: half, minY: -half, maxY: half }, viewport, viewport.width < 700 ? 44 : 76);
-    }
-    followCraft = false;
-    schedule();
   }
 
   function queueLabel(label: CanvasLabel): void {
@@ -1274,9 +1252,6 @@ export function createSpaceMapController(): SpaceMapController {
 
     const routePoints = route.points.map(({ x, y }) => ({ x, y }));
     drawPath(routePoints, color, [4, 7], 0.14, 1.2);
-    for (const pass of route.solarPasses) {
-      drawPath(pass, color, [2, 5], 0.22, 1.05);
-    }
     const travelled = canonicalMapRoutePrefix(route, routeProgress);
     const path = drawPath(
       travelled,
@@ -1540,11 +1515,11 @@ export function createSpaceMapController(): SpaceMapController {
 
   function drawHud(): void {
     const visibleAu = viewport.width / camera.pxPerAu;
-    if (visibleAu >= AU_PER_LIGHT_YEAR * 12) elements.scope.textContent = `CATALOG RADIUS 12 LY · VIEW ${(visibleAu / AU_PER_LIGHT_YEAR).toFixed(1)} LY WIDE`;
-    else if (visibleAu >= 180_000) elements.scope.textContent = `ECLIPTIC XY · ${Math.round(visibleAu).toLocaleString("en-AU")} AU WIDE`;
-    else if (visibleAu >= 800) elements.scope.textContent = `OORT SCALE · ${Math.round(visibleAu).toLocaleString("en-AU")} AU WIDE`;
-    else if (visibleAu >= 300) elements.scope.textContent = `HELIOPAUSE SCALE · ${Math.round(visibleAu).toLocaleString("en-AU")} AU WIDE`;
-    else elements.scope.textContent = `PLANETARY SCALE · ${visibleAu.toFixed(visibleAu < 1 ? 3 : 1)} AU WIDE`;
+    const band = automaticCameraBand(craftPosition().radialAu, tourFrame?.chapter.cameraCue ?? "mission");
+    const width = visibleAu >= AU_PER_LIGHT_YEAR
+      ? `${(visibleAu / AU_PER_LIGHT_YEAR).toFixed(2)} LY WIDE`
+      : `${visibleAu.toLocaleString("en-AU", { maximumFractionDigits: visibleAu < 1 ? 3 : 0 })} AU WIDE`;
+    elements.scope.textContent = `AUTO CAMERA · ${band.label} · ${width}`;
     const neptunePixels = 30.1104 * camera.pxPerAu;
     elements.resolution.textContent = `NEPTUNE ORBIT = ${neptunePixels < 0.01 ? "<0.01" : neptunePixels.toFixed(neptunePixels < 10 ? 2 : 0)} PX`;
     elements.coordinate.textContent = hovered ? `${hovered.name.toUpperCase()} · ${hovered.meta}` : craftReadout;
@@ -1556,7 +1531,24 @@ export function createSpaceMapController(): SpaceMapController {
 
   function render(): void {
     if (destroyed || viewport.width <= 0 || viewport.height <= 0) return;
-    if (followCraft && selectedVehicle) camera = { ...camera, centerAu: craftPosition().point };
+    let cameraSettling = false;
+    if (followCraft && selectedVehicle && tourFrame) {
+      const target = cameraForTour(tourFrame.chapter.cameraCue);
+      cameraTransition = {
+        chapterIndex: tourFrame.chapterIndex,
+        from: camera,
+        to: target,
+      };
+      const smoothed = blendCamera(cameraTransition.from, cameraTransition.to, 0.18);
+      const scaleError = Math.abs(Math.log(smoothed.pxPerAu / target.pxPerAu));
+      camera = {
+        centerAu: target.centerAu,
+        pxPerAu: scaleError < 0.002 ? target.pxPerAu : smoothed.pxPerAu,
+      };
+      cameraSettling = scaleError >= 0.002;
+    } else if (followCraft && selectedVehicle) {
+      camera = { ...camera, centerAu: craftPosition().point };
+    }
     const ctx = elements.context;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, viewport.width, viewport.height);
@@ -1574,6 +1566,7 @@ export function createSpaceMapController(): SpaceMapController {
     drawLabels();
     drawScale();
     drawHud();
+    if (cameraSettling) schedule();
   }
 
   function telemetry(): MapTelemetry {
@@ -1619,10 +1612,6 @@ export function createSpaceMapController(): SpaceMapController {
 
   function onWheel(event: WheelEvent): void {
     event.preventDefault();
-    cameraTransition = undefined;
-    camera = zoomAt(camera, localPoint(event), Math.exp(-event.deltaY * 0.0015), viewport);
-    followCraft = false;
-    schedule();
   }
 
   function onPointerDown(event: PointerEvent): void {
@@ -1645,35 +1634,13 @@ export function createSpaceMapController(): SpaceMapController {
       }
       if (entity) showTooltip(entity, point);
       else hideTooltip();
-      canvas.style.cursor = entity ? "pointer" : "grab";
+      canvas.style.cursor = entity ? "pointer" : "crosshair";
       return;
     }
-    const previous = new Map(pointers);
     const current = localPoint(event);
     const start = pointerStarts.get(event.pointerId);
     if (start && Math.hypot(current.x - start.x, current.y - start.y) > 4) dragMoved = true;
     pointers.set(event.pointerId, current);
-    const pair = [...pointers.entries()].slice(0, 2);
-    if (pair.length === 2) {
-      const firstEntry = pair[0];
-      const secondEntry = pair[1];
-      if (!firstEntry || !secondEntry) return;
-      const [firstId, first] = firstEntry;
-      const [secondId, second] = secondEntry;
-      const oldFirst = previous.get(firstId) ?? first;
-      const oldSecond = previous.get(secondId) ?? second;
-      const centre = { x: (first.x + second.x) / 2, y: (first.y + second.y) / 2 };
-      const oldCentre = { x: (oldFirst.x + oldSecond.x) / 2, y: (oldFirst.y + oldSecond.y) / 2 };
-      camera = panByPixels(camera, { x: centre.x - oldCentre.x, y: centre.y - oldCentre.y });
-      const oldDistance = Math.hypot(oldFirst.x - oldSecond.x, oldFirst.y - oldSecond.y);
-      const distance = Math.hypot(first.x - second.x, first.y - second.y);
-      if (oldDistance > 0) camera = zoomAt(camera, centre, distance / oldDistance, viewport);
-    } else {
-      const old = previous.get(event.pointerId);
-      if (old) camera = panByPixels(camera, { x: current.x - old.x, y: current.y - old.y });
-    }
-    followCraft = false;
-    schedule();
   }
 
   function onPointerUp(event: PointerEvent): void {
@@ -1693,7 +1660,7 @@ export function createSpaceMapController(): SpaceMapController {
     const entity = findHit(localPoint(event));
     if (!entity) return;
     setSelection(entity);
-    focusEntity(entity);
+    schedule();
   }
 
   function onPointerLeave(): void {
@@ -1704,22 +1671,9 @@ export function createSpaceMapController(): SpaceMapController {
   }
 
   function onKeyDown(event: KeyboardEvent): void {
-    const centre = { x: viewport.width / 2, y: viewport.height / 2 };
-    if (["+", "="].includes(event.key)) camera = zoomAt(camera, centre, 1.7, viewport);
-    else if (event.key === "-") camera = zoomAt(camera, centre, 1 / 1.7, viewport);
-    else if (event.key === "ArrowLeft") camera = panByPixels(camera, { x: viewport.width * 0.12, y: 0 });
-    else if (event.key === "ArrowRight") camera = panByPixels(camera, { x: -viewport.width * 0.12, y: 0 });
-    else if (event.key === "ArrowUp") camera = panByPixels(camera, { x: 0, y: viewport.height * 0.12 });
-    else if (event.key === "ArrowDown") camera = panByPixels(camera, { x: 0, y: -viewport.height * 0.12 });
-    else if (["0", "Home"].includes(event.key)) return preset("full-route");
-    else if (event.key === "1") return preset("planets");
-    else if (event.key === "2") return preset("oort");
-    else if (event.key === "3") return preset("full-route");
-    else if (event.key === "4") return preset("local-stars");
-    else return;
-    event.preventDefault();
-    followCraft = false;
-    schedule();
+    if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "+", "=", "-"].includes(event.key)) {
+      event.preventDefault();
+    }
   }
 
   function onControl(event: Event): void {
@@ -1760,7 +1714,6 @@ export function createSpaceMapController(): SpaceMapController {
       selectedVehicle = vehicle;
       progress = 0;
       tourFrame = undefined;
-      tourChapterIndex = -1;
       cameraTransition = undefined;
       if (focus) focusVehicle();
       const craft = craftPosition();
@@ -1779,22 +1732,7 @@ export function createSpaceMapController(): SpaceMapController {
     setTourFrame(frame): MapTelemetry {
       tourFrame = frame;
       progress = frame.routeProgress;
-      if (frame.chapterIndex !== tourChapterIndex) {
-        tourChapterIndex = frame.chapterIndex;
-        cameraTransition = {
-          chapterIndex: frame.chapterIndex,
-          from: camera,
-          to: cameraForTour(frame.chapter.cameraCue, frame),
-        };
-      }
-      if (cameraTransition?.chapterIndex === frame.chapterIndex) {
-        camera = blendCamera(
-          cameraTransition.from,
-          cameraTransition.to,
-          Math.min(1, frame.chapterProgress * 2.15),
-        );
-        if (frame.chapterProgress >= 0.47) cameraTransition = undefined;
-      }
+      followCraft = true;
       schedule();
       return telemetry();
     },

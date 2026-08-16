@@ -27,6 +27,11 @@ import {
   SIMULATION_RATE_OPTIONS,
   advanceSimulationClock,
 } from "./simulation-clock";
+import {
+  autoTimeFlowForStage,
+  formatAutoPace,
+  type AutoTimeStage,
+} from "./auto-time-flow";
 import { getVehicleDossier } from "./vehicle-dossiers";
 
 function required<T extends Element>(selector: string): T {
@@ -59,6 +64,9 @@ const missionFlowList = required<HTMLOListElement>("#mission-flow-list");
 const elapsedReadout = required<HTMLElement>("#elapsed-readout");
 const speedReadout = required<HTMLElement>("#speed-readout");
 const phaseReadout = required<HTMLElement>("#phase-readout");
+const phaseDescription = required<HTMLElement>("#phase-description");
+const nextStageReadout = required<HTMLElement>("#next-stage-readout");
+const nextStageTime = required<HTMLElement>("#next-stage-time");
 const profileScale = required<HTMLElement>("#profile-scale");
 const speedLine = required<SVGPolylineElement>("#speed-line");
 const chartCursor = required<SVGLineElement>("#chart-cursor");
@@ -94,6 +102,8 @@ let physicalElapsedSeconds = 0;
 let animationFrame: number | undefined;
 let lastAnimationTimestamp: number | undefined;
 let simulationRate = 1;
+let timeFlowMode: "auto" | "manual" = "auto";
+let autoStageHoldUntil: number | undefined;
 let activeFlowIndex = -1;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -121,11 +131,14 @@ type PlaybackState = "ready" | "running" | "paused" | "complete";
 
 interface MissionFlowStage {
   label: string;
+  description: string;
   chapterIndex: number;
   chapterStart?: number;
   chapterEnd?: number;
   routeStart?: number;
   routeEnd?: number;
+  physicalStartSeconds?: number;
+  physicalEndSeconds?: number;
 }
 
 let missionFlowStages: MissionFlowStage[] = [];
@@ -164,33 +177,33 @@ function setPlaybackState(state: PlaybackState): void {
 function openingFlowStages(vehicle: Vehicle): MissionFlowStage[] | undefined {
   if (vehicle.id === "voyager") {
     return [
-      { label: "EARTH LAUNCH · 1977", chapterIndex: 0, chapterStart: 0, chapterEnd: 0.035 },
-      { label: "JUPITER ASSIST · 1979", chapterIndex: 0, chapterStart: 0.035, chapterEnd: 0.055 },
-      { label: "SATURN / TITAN · 1980", chapterIndex: 0, chapterStart: 0.055, chapterEnd: 0.68 },
-      { label: "HELIOPAUSE CROSSING · 2012", chapterIndex: 0, chapterStart: 0.68, chapterEnd: 0.98 },
-      { label: "EPHEMERIS END · 2026", chapterIndex: 0, chapterStart: 0.98, chapterEnd: 1.01 },
+      { label: "EARTH LAUNCH · 1977", description: "Titan IIIE launch and departure from Earth's 1 AU orbit.", chapterIndex: 0, chapterStart: 0, chapterEnd: 0.035 },
+      { label: "JUPITER ASSIST · 1979", description: "Jupiter bends the trajectory and raises Voyager's heliocentric escape speed.", chapterIndex: 0, chapterStart: 0.035, chapterEnd: 0.055 },
+      { label: "SATURN / TITAN · 1980", description: "The Titan encounter redirects Voyager out of the planetary plane.", chapterIndex: 0, chapterStart: 0.055, chapterEnd: 0.68 },
+      { label: "HELIOPAUSE CROSSING · 2012", description: "Voyager crosses the solar-wind boundary into interstellar plasma.", chapterIndex: 0, chapterStart: 0.68, chapterEnd: 0.98 },
+      { label: "EPHEMERIS END · 2026", description: "The recorded JPL path reaches its current data endpoint.", chapterIndex: 0, chapterStart: 0.98, chapterEnd: 1.01 },
     ];
   }
 
   if (vehicle.id === "parker") {
     return [
-      { label: "EARTH LAUNCH · 2018", chapterIndex: 0, chapterStart: 0, chapterEnd: 0.06 },
-      { label: "VENUS ASSISTS + SOLAR LOOPS", chapterIndex: 0, chapterStart: 0.06, chapterEnd: 0.72 },
-      { label: "RECORD PERIHELION SERIES", chapterIndex: 0, chapterStart: 0.72, chapterEnd: 0.96 },
-      { label: "BOUND EPHEMERIS END", chapterIndex: 0, chapterStart: 0.96, chapterEnd: 1.01 },
+      { label: "EARTH LAUNCH · 2018", description: "Launch and the first transfer inward from Earth's orbit.", chapterIndex: 0, chapterStart: 0, chapterEnd: 0.06 },
+      { label: "VENUS ASSISTS + SOLAR LOOPS", description: "Repeated Venus flybys lower perihelion without pretending the probe is escaping.", chapterIndex: 0, chapterStart: 0.06, chapterEnd: 0.72 },
+      { label: "RECORD PERIHELION SERIES", description: "Near-Sun passages reach record speed while remaining on a bound orbit.", chapterIndex: 0, chapterStart: 0.72, chapterEnd: 0.96 },
+      { label: "BOUND EPHEMERIS END", description: "The measured mission path ends; any outward leg after this is counterfactual.", chapterIndex: 0, chapterStart: 0.96, chapterEnd: 1.01 },
     ];
   }
 
   if (vehicle.id === "wandering-earth") {
     return [
-      { label: "EARTH @ 1 AU · 42-YEAR ROTATION BRAKE", chapterIndex: 0, routeStart: 0, routeEnd: 42 / 2_500 },
-      { label: "15-YEAR / 15-ORBIT ESCAPE SEQUENCE", chapterIndex: 0, routeStart: 42 / 2_500, routeEnd: 56.8 / 2_500 },
-      { label: "PLANNED JUPITER GRAVITY ASSIST", chapterIndex: 0, routeStart: 56.8 / 2_500, routeEnd: 58 / 2_500 },
-      { label: "500-YEAR FULL-THRUST ACCELERATION", chapterIndex: 0, routeStart: 58 / 2_500, routeEnd: 557 / 2_500 },
-      { label: "1,300-YEAR COAST @ 0.005C", chapterIndex: 0, routeStart: 557 / 2_500, routeEnd: 1_857 / 2_500 },
-      { label: "500-YEAR DECELERATION", chapterIndex: 0, routeStart: 1_857 / 2_500, routeEnd: 2_357 / 2_500 },
-      { label: "PROXIMA ARRIVAL · YEAR 2400", chapterIndex: 0, routeStart: 2_357 / 2_500, routeEnd: 2_400 / 2_500 },
-      { label: "100-YEAR ORBIT CAPTURE", chapterIndex: 0, routeStart: 2_400 / 2_500, routeEnd: 1.01 },
+      { label: "EARTH @ 1 AU · 42-YEAR ROTATION BRAKE", description: "Earth is the vehicle. The engines first halt its rotation while it remains at a true 1 AU radius.", chapterIndex: 0, routeStart: 0, routeEnd: 42 / 2_500 },
+      { label: "15-YEAR / 15-ORBIT ESCAPE SEQUENCE", description: "Fifteen increasingly eccentric solar passes raise aphelion from 1 AU to Jupiter's 5.2 AU orbit.", chapterIndex: 0, routeStart: 42 / 2_500, routeEnd: 56.8 / 2_500 },
+      { label: "PLANNED JUPITER GRAVITY ASSIST", description: "The novel's planned Jupiter encounter supplies the final turn onto a solar-escape path.", chapterIndex: 0, routeStart: 56.8 / 2_500, routeEnd: 58 / 2_500 },
+      { label: "500-YEAR FULL-THRUST ACCELERATION", description: "The Earth Engines continue at full thrust toward the novel-stated 0.005c cruise speed.", chapterIndex: 0, routeStart: 58 / 2_500, routeEnd: 557 / 2_500 },
+      { label: "1,300-YEAR COAST @ 0.005C", description: "The longest stage is an interstellar coast; the plotted distance is normalised to the canonical destination.", chapterIndex: 0, routeStart: 557 / 2_500, routeEnd: 1_857 / 2_500 },
+      { label: "500-YEAR DECELERATION", description: "The engines reverse so Earth can shed speed before the destination system.", chapterIndex: 0, routeStart: 1_857 / 2_500, routeEnd: 2_357 / 2_500 },
+      { label: "PROXIMA ARRIVAL · YEAR 2400", description: "The route closes on Proxima Centauri after the main interstellar crossing.", chapterIndex: 0, routeStart: 2_357 / 2_500, routeEnd: 2_400 / 2_500 },
+      { label: "100-YEAR ORBIT CAPTURE", description: "A final century of braking and manoeuvring places Earth into the new system.", chapterIndex: 0, routeStart: 2_400 / 2_500, routeEnd: 1.01 },
     ];
   }
 
@@ -201,15 +214,22 @@ function buildMissionFlow(vehicle: Vehicle): void {
   const opening = openingFlowStages(vehicle);
   missionFlowStages = opening ?? selectedTour.chapters.map((chapter, chapterIndex) => ({
     label: chapter.title,
+    description: chapter.note,
     chapterIndex,
   }));
 
   if (opening) {
     missionFlowStages.push(...selectedTour.chapters.slice(1).map((chapter, offset) => ({
       label: chapter.title,
+      description: chapter.note,
       chapterIndex: offset + 1,
     })));
   }
+
+  missionFlowStages = missionFlowStages.map((stage) => ({
+    ...stage,
+    ...physicalBoundsForFlowStage(stage),
+  }));
 
   const mission = vehicle.route.mission;
   missionFlowContext.textContent = vehicle.id === "wandering-earth"
@@ -231,8 +251,64 @@ function buildMissionFlow(vehicle: Vehicle): void {
   activeFlowIndex = -1;
 }
 
-function updateMissionFlow(frame: MissionTourSample): void {
+function physicalSecondsAtRouteProgress(routeProgress: number): number | undefined {
+  if (!selectedTimeline) return undefined;
+  const boundedProgress = Math.max(0, Math.min(1, routeProgress));
+  const chapterIndex = selectedTour.chapters.findIndex((chapter, index) => {
+    const isLast = index === selectedTour.chapters.length - 1;
+    return boundedProgress >= chapter.routeStart && (
+      boundedProgress < chapter.routeEnd || isLast && boundedProgress <= chapter.routeEnd
+    );
+  });
+  const chapter = selectedTour.chapters[chapterIndex];
+  const segment = selectedTimeline.segments[chapterIndex];
+  if (!chapter || !segment) return undefined;
+  const routeSpan = chapter.routeEnd - chapter.routeStart;
+  const localProgress = routeSpan <= 0
+    ? 0
+    : Math.max(0, Math.min(1, (boundedProgress - chapter.routeStart) / routeSpan));
+  return segment.startSeconds + segment.durationSeconds * localProgress;
+}
+
+function physicalBoundsForFlowStage(stage: MissionFlowStage): Pick<
+  MissionFlowStage,
+  "physicalStartSeconds" | "physicalEndSeconds"
+> {
+  if (!selectedTimeline) return {};
+  if (stage.routeStart !== undefined || stage.routeEnd !== undefined) {
+    if (selectedVehicle.id === "wandering-earth") {
+      return {
+        physicalStartSeconds: selectedTimeline.totalSeconds
+          * Math.max(0, Math.min(1, stage.routeStart ?? 0)),
+        physicalEndSeconds: selectedTimeline.totalSeconds
+          * Math.max(0, Math.min(1, stage.routeEnd ?? 1)),
+      };
+    }
+    return {
+      physicalStartSeconds: physicalSecondsAtRouteProgress(stage.routeStart ?? 0),
+      physicalEndSeconds: physicalSecondsAtRouteProgress(stage.routeEnd ?? 1),
+    };
+  }
+  const segment = selectedTimeline.segments[stage.chapterIndex];
+  if (!segment) return {};
+  return {
+    physicalStartSeconds: segment.startSeconds
+      + segment.durationSeconds * (stage.chapterStart ?? 0),
+    physicalEndSeconds: segment.startSeconds
+      + segment.durationSeconds * (stage.chapterEnd ?? 1),
+  };
+}
+
+function currentMissionFlowIndex(frame: MissionTourSample): number {
   let currentIndex = missionFlowStages.findIndex((stage) => {
+    if (
+      stage.physicalStartSeconds !== undefined
+      && stage.physicalEndSeconds !== undefined
+      && selectedTimeline
+    ) {
+      return physicalElapsedSeconds >= stage.physicalStartSeconds
+        && physicalElapsedSeconds < stage.physicalEndSeconds;
+    }
     if (stage.routeStart !== undefined || stage.routeEnd !== undefined) {
       const start = stage.routeStart ?? 0;
       const end = stage.routeEnd ?? 1.01;
@@ -251,6 +327,13 @@ function updateMissionFlow(frame: MissionTourSample): void {
       }
     }
   }
+  return currentIndex;
+}
+
+function updateMissionFlow(frame: MissionTourSample): number {
+  const currentIndex = currentMissionFlowIndex(frame);
+
+  if (currentIndex === activeFlowIndex) return currentIndex;
 
   for (const [index, item] of missionFlowItems.entries()) {
     item.dataset.state = index < currentIndex
@@ -270,12 +353,14 @@ function updateMissionFlow(frame: MissionTourSample): void {
     });
   }
   activeFlowIndex = currentIndex;
+  return currentIndex;
 }
 
 function cancelAnimation(nextState: PlaybackState = progress >= 1 ? "complete" : "ready"): void {
   if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
   animationFrame = undefined;
   lastAnimationTimestamp = undefined;
+  autoStageHoldUntil = undefined;
   setPlaybackState(nextState);
 }
 
@@ -304,6 +389,54 @@ function formatPhysicalElapsed(seconds: number): string {
   return formatDuration(seconds / JULIAN_YEAR_SECONDS);
 }
 
+function timedMissionStage(): (MissionFlowStage & AutoTimeStage) | undefined {
+  if (!selectedTimeline) return undefined;
+  const stage = missionFlowStages.find((candidate) => {
+    const start = candidate.physicalStartSeconds;
+    const end = candidate.physicalEndSeconds;
+    return start !== undefined && end !== undefined && end > start
+      && physicalElapsedSeconds >= start && physicalElapsedSeconds < end;
+  }) ?? missionFlowStages.find((candidate) => {
+    const end = candidate.physicalEndSeconds;
+    return end !== undefined && end > physicalElapsedSeconds;
+  });
+  if (stage?.physicalStartSeconds === undefined || stage.physicalEndSeconds === undefined) {
+    return undefined;
+  }
+  return {
+    ...stage,
+    startSeconds: stage.physicalStartSeconds,
+    endSeconds: stage.physicalEndSeconds,
+  };
+}
+
+function formatRateMultiplier(multiplier: number): string {
+  if (multiplier < 1_000) {
+    return `${multiplier.toLocaleString("en-AU", { maximumFractionDigits: 1 })}×`;
+  }
+  return `${multiplier.toLocaleString("en-AU", {
+    notation: "compact",
+    maximumFractionDigits: 2,
+  })}×`;
+}
+
+function effectiveTimeFlow(): {
+  multiplier: number;
+  stage?: MissionFlowStage & AutoTimeStage;
+  remainingSeconds?: number;
+} {
+  const stage = timedMissionStage();
+  if (timeFlowMode === "auto" && stage) {
+    const pace = autoTimeFlowForStage(stage, physicalElapsedSeconds);
+    return {
+      multiplier: pace.multiplier,
+      stage,
+      remainingSeconds: pace.remainingSeconds,
+    };
+  }
+  return { multiplier: simulationRate, stage };
+}
+
 function updateTimeFlow(): void {
   if (!selectedTimeline) {
     mapTimeFlow.textContent = "TIME FLOW · NO FINITE PHYSICAL CLOCK";
@@ -311,6 +444,12 @@ function updateTimeFlow(): void {
     return;
   }
   playbackRateSelect.disabled = false;
+  const effective = effectiveTimeFlow();
+  if (timeFlowMode === "auto") {
+    const stageLabel = effective.stage?.label ?? "MISSION END";
+    mapTimeFlow.textContent = `AUTO TIME FLOW · ${formatRateMultiplier(effective.multiplier)} · ${formatAutoPace(effective.multiplier)} · ${stageLabel}`;
+    return;
+  }
   const option = SIMULATION_RATE_OPTIONS.find(
     ({ multiplier }) => multiplier === simulationRate,
   );
@@ -375,10 +514,12 @@ function renderProfile(vehicle: Vehicle): void {
 function renderTourStory(frame: MissionTourSample): void {
   const chapterNumber = String(frame.chapterIndex + 1).padStart(2, "0");
   const chapterCount = String(selectedTour.chapters.length).padStart(2, "0");
-  tourStep.textContent = `CHAPTER ${chapterNumber} / ${chapterCount}`;
-  tourHeadline.textContent = frame.chapter.title;
-  tourNote.textContent = frame.chapter.note;
-  tourEvidence.textContent = `EVIDENCE / ${frame.evidence}`;
+  const step = `CHAPTER ${chapterNumber} / ${chapterCount}`;
+  const evidence = `EVIDENCE / ${frame.evidence}`;
+  if (tourStep.textContent !== step) tourStep.textContent = step;
+  if (tourHeadline.textContent !== frame.chapter.title) tourHeadline.textContent = frame.chapter.title;
+  if (tourNote.textContent !== frame.chapter.note) tourNote.textContent = frame.chapter.note;
+  if (tourEvidence.textContent !== evidence) tourEvidence.textContent = evidence;
   tourStory.dataset.evidence = frame.evidence;
 }
 
@@ -469,9 +610,24 @@ function renderProgress(): void {
   speedReadout.textContent = frame.routeMode === "off-map"
     ? "NOT COMPARABLE"
     : formatSpeed(mapTelemetry.speedKmh ?? frame.speedKmh ?? sample.speedKmh);
-  phaseReadout.textContent = frame.phase;
   renderTourStory(frame);
-  updateMissionFlow(frame);
+  const flowIndex = updateMissionFlow(frame);
+  const flowStage = missionFlowStages[flowIndex];
+  const nextStage = missionFlowStages[flowIndex + 1];
+  phaseReadout.textContent = flowStage?.label ?? frame.phase;
+  phaseDescription.textContent = flowStage?.description ?? frame.chapter.note;
+  nextStageReadout.textContent = nextStage?.label ?? "MISSION COMPLETE";
+  if (
+    flowStage?.physicalEndSeconds !== undefined
+    && flowStage.physicalEndSeconds > physicalElapsedSeconds
+  ) {
+    nextStageTime.textContent = `IN ${formatPhysicalElapsed(
+      flowStage.physicalEndSeconds - physicalElapsedSeconds,
+    )}`;
+  } else {
+    nextStageTime.textContent = nextStage ? "AT THE NEXT ROUTE BOUNDARY" : "FINAL STATE";
+  }
+  updateTimeFlow();
 
   const chartX = frame.routeProgress * 1_000;
   const chartY = 184 - speedFactorAt(selectedVehicle, frame.routeProgress) * 142;
@@ -510,22 +666,35 @@ function animate(timestamp: number): void {
     animationFrame = requestAnimationFrame(animate);
     return;
   }
+  if (autoStageHoldUntil !== undefined && timestamp < autoStageHoldUntil) {
+    lastAnimationTimestamp = timestamp;
+    animationFrame = requestAnimationFrame(animate);
+    return;
+  }
+  autoStageHoldUntil = undefined;
   const realElapsedSeconds = Math.max(
     0,
     (timestamp - lastAnimationTimestamp) / 1_000,
   );
   lastAnimationTimestamp = timestamp;
+  const effective = effectiveTimeFlow();
+  const stageBoundary = timeFlowMode === "auto" && effective.stage
+    ? Math.min(effective.stage.endSeconds, selectedTimeline.totalSeconds)
+    : selectedTimeline.totalSeconds;
   const clock = advanceSimulationClock(
     physicalElapsedSeconds,
     realElapsedSeconds,
-    simulationRate,
-    selectedTimeline.totalSeconds,
+    effective.multiplier,
+    stageBoundary,
   );
   physicalElapsedSeconds = clock.elapsedSeconds;
-  progress = clock.progress;
+  progress = physicalElapsedSeconds / selectedTimeline.totalSeconds;
   renderProgress();
 
-  if (!clock.complete) {
+  if (physicalElapsedSeconds < selectedTimeline.totalSeconds) {
+    if (clock.complete && stageBoundary < selectedTimeline.totalSeconds) {
+      autoStageHoldUntil = timestamp + 650;
+    }
     animationFrame = requestAnimationFrame(animate);
     return;
   }
@@ -560,6 +729,7 @@ function toggleLaunch(): void {
     physicalElapsedSeconds = 0;
   }
   lastAnimationTimestamp = undefined;
+  autoStageHoldUntil = undefined;
   setPlaybackState("running");
   animationFrame = requestAnimationFrame(animate);
 }
@@ -603,15 +773,26 @@ progressInput.addEventListener("input", () => {
 });
 
 playbackRateSelect.addEventListener("change", () => {
+  if (playbackRateSelect.value === "auto") {
+    timeFlowMode = "auto";
+    lastAnimationTimestamp = undefined;
+    autoStageHoldUntil = undefined;
+    updateTimeFlow();
+    renderProgress();
+    return;
+  }
   const nextRate = Number(playbackRateSelect.value);
   if (!Number.isFinite(nextRate) || nextRate < 1) {
-    playbackRateSelect.value = String(simulationRate);
+    playbackRateSelect.value = timeFlowMode === "auto" ? "auto" : String(simulationRate);
     return;
   }
 
+  timeFlowMode = "manual";
   simulationRate = nextRate;
   lastAnimationTimestamp = undefined;
+  autoStageHoldUntil = undefined;
   updateTimeFlow();
+  renderProgress();
 });
 
 renderVehicle(selectedVehicle);

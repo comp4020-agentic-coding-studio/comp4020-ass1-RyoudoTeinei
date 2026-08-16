@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { VEHICLES } from "../mission-data";
 import {
+  automaticCameraBand,
   buildCanonicalMapRoute,
   canonicalMapRoutePrefix,
   sampleCanonicalMapRoute,
@@ -9,6 +10,18 @@ import {
 const wanderingEarth = VEHICLES.find(({ id }) => id === "wandering-earth");
 
 describe("Wandering Earth canonical map route", () => {
+  it("expands a craft-centred true-linear camera at physical boundaries", () => {
+    expect(automaticCameraBand(1, "mission").spanAu).toBe(14);
+    expect(automaticCameraBand(40, "pluto").spanAu).toBe(112);
+    expect(automaticCameraBand(122, "heliopause").spanAu).toBe(380);
+    expect(automaticCameraBand(2_000, "inner-oort")).toMatchObject({
+      id: "inner-oort",
+      spanAu: 44_000,
+    });
+    expect(automaticCameraBand(100_000, "destination").spanAu)
+      .toBeGreaterThan(220_000);
+  });
+
   it("starts at Earth on the true 1 AU radius and never originates at the Sun", () => {
     expect(wanderingEarth).toBeTruthy();
     const route = buildCanonicalMapRoute(wanderingEarth!);
