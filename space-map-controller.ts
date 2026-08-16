@@ -28,6 +28,7 @@ import {
   trajectoryPrefix,
   type JplStateVector,
 } from "./trajectory-math";
+import type { MissionTourSample, TourCameraCue } from "./mission-tour";
 
 const PROXIMA_ID = "proxima-centauri";
 const BARNARD_ID = "barnards-star";
@@ -52,6 +53,7 @@ interface HorizonsBundle {
 export interface SpaceMapController {
   setVehicle(vehicle: Vehicle, focus?: boolean): void;
   setProgress(progress: number): MapTelemetry;
+  setTourFrame(frame: MissionTourSample): MapTelemetry;
   resetView(): void;
   destroy(): void;
 }
@@ -230,6 +232,9 @@ export function createSpaceMapController(): SpaceMapController {
   let camera: Camera = { centerAu: { x: 0, y: 0 }, pxPerAu: 0.001 };
   let selectedVehicle: Vehicle | undefined;
   let progress = 0;
+  let tourFrame: MissionTourSample | undefined;
+  let cameraTransition: { chapterIndex: number; from: Camera; to: Camera } | undefined;
+  let tourChapterIndex = -1;
   let followCraft = false;
   let initialized = false;
   let dpr = 1;
@@ -274,7 +279,14 @@ export function createSpaceMapController(): SpaceMapController {
   }
 
   function targetStar(vehicle = selectedVehicle): Cns5NearbyStarRecord | undefined {
-    if (!vehicle?.phases?.length || vehicle.outbound === false) return undefined;
+    if (!vehicle) return undefined;
+    const mission = vehicle.route.mission;
+    if (mission.kind === "profile") return starById(mission.targetStarId);
+    const onward = vehicle.route.onward;
+    if (onward.kind === "constant" && onward.destination.kind === "target") {
+      return starById(onward.destination.starId);
+    }
+    if (!vehicle.phases?.length || vehicle.outbound === false) return undefined;
     return starById(vehicle.id === "daedalus" ? BARNARD_ID : PROXIMA_ID);
   }
 
@@ -282,16 +294,44 @@ export function createSpaceMapController(): SpaceMapController {
     return trajectory.samples.map(({ x, y }) => ({ x, y }));
   }
 
+  function unit(vector: Vec2): Vec2 {
+    const length = Math.hypot(vector.x, vector.y) || 1;
+    return { x: vector.x / length, y: vector.y / length };
+  }
+
+  function comparisonPoint(frame: MissionTourSample, distanceAu = frame.currentAu ?? 0): Vec2 {
+    if (frame.direction?.kind === "last-velocity") {
+      const trajectory = actualTrajectory();
+      const last = trajectory?.samples.at(-1);
+      if (last) {
+        const direction = unit({ x: last.vx, y: last.vy });
+        const originAu = frame.chapter.startAu ?? Math.hypot(last.x, last.y, last.z);
+        const travelledAu = Math.max(0, distanceAu - originAu);
+        return { x: last.x + direction.x * travelledAu, y: last.y + direction.y * travelledAu };
+      }
+    }
+    const target = frame.destination?.kind === "target"
+      ? starById(frame.destination.starId)
+      : starById(PROXIMA_ID);
+    const direction = unit(starWorld(target));
+    return { x: direction.x * distanceAu, y: direction.y * distanceAu };
+  }
+
   function craftPosition(): { point: Vec2; radialAu: number; source?: HorizonsSample; target?: Cns5NearbyStarRecord } {
     const trajectory = actualTrajectory();
-    if (trajectory) {
-      const source = sampleTrajectory(trajectory, progress);
+    if (trajectory && (!tourFrame || tourFrame.routeMode === "ephemeris")) {
+      const source = sampleTrajectory(trajectory, tourFrame?.routeProgress ?? progress);
       return { point: { x: source.x, y: source.y }, radialAu: Math.hypot(source.x, source.y, source.z), source };
+    }
+    if (tourFrame?.routeMode === "comparison") {
+      const point = comparisonPoint(tourFrame);
+      return { point, radialAu: tourFrame.currentAu ?? Math.hypot(point.x, point.y) };
     }
     const target = targetStar();
     if (!selectedVehicle || !target) return { point: { x: 0, y: 0 }, radialAu: 0 };
     const destination = starWorld(target);
-    const sample = journeySample(selectedVehicle, progress);
+    const routeProgress = tourFrame?.routeMode === "profile" ? tourFrame.routeProgress : progress;
+    const sample = journeySample(selectedVehicle, routeProgress);
     return {
       point: { x: destination.x * sample.distanceFraction, y: destination.y * sample.distanceFraction },
       radialAu: sample.currentAu,
@@ -314,7 +354,66 @@ export function createSpaceMapController(): SpaceMapController {
     followCraft = false;
   }
 
+  function radialCamera(radiusAu: number): Camera {
+    const padding = viewport.width < 700 ? 42 : 76;
+    return fitBounds(
+      { minX: -radiusAu, maxX: radiusAu, minY: -radiusAu, maxY: radiusAu },
+      viewport,
+      padding,
+    );
+  }
+
+  function cameraForTour(cue: TourCameraCue, frame: MissionTourSample): Camera {
+    if (cue === "mission") {
+      const actual = actualTrajectory();
+      if (actual) {
+        const points = trajectoryPoints(actual);
+        const span = Math.max(...points.map((point) => Math.hypot(point.x, point.y)), 1);
+        return fitBounds(expandedBounds(points, span * 0.13), viewport, viewport.width < 700 ? 48 : 88);
+      }
+      const target = targetStar();
+      if (target) {
+        const current = craftPosition().point;
+        const margin = Math.max(Math.hypot(current.x, current.y) * 0.15, 2);
+        return fitBounds(expandedBounds([{ x: 0, y: 0 }, current], margin), viewport, viewport.width < 700 ? 48 : 88);
+      }
+    }
+    if (cue === "pluto") return radialCamera(54);
+    if (cue === "heliopause") return radialCamera(172);
+    if (cue === "inner-oort") return radialCamera(2_650);
+    if (cue === "outer-oort") return radialCamera(116_000);
+    if (cue === "destination") {
+      const endpoint = frame.routeMode === "comparison" && frame.destination
+        ? comparisonPoint(frame, frame.destination.au)
+        : targetStar()
+          ? starWorld(targetStar() as Cns5NearbyStarRecord)
+          : craftPosition().point;
+      const span = Math.max(Math.hypot(endpoint.x, endpoint.y), OUTER_OORT_AU);
+      return fitBounds(
+        expandedBounds([{ x: 0, y: 0 }, endpoint], span * 0.12),
+        viewport,
+        viewport.width < 700 ? 42 : 76,
+      );
+    }
+    return camera;
+  }
+
+  function blendCamera(from: Camera, to: Camera, amount: number): Camera {
+    const t = Math.max(0, Math.min(1, amount));
+    const eased = t * t * (3 - 2 * t);
+    return {
+      centerAu: {
+        x: from.centerAu.x + (to.centerAu.x - from.centerAu.x) * eased,
+        y: from.centerAu.y + (to.centerAu.y - from.centerAu.y) * eased,
+      },
+      pxPerAu: Math.exp(
+        Math.log(from.pxPerAu) + (Math.log(to.pxPerAu) - Math.log(from.pxPerAu)) * eased,
+      ),
+    };
+  }
+
   function preset(name: string): void {
+    cameraTransition = undefined;
     const padding = viewport.width < 700 ? 44 : 84;
     if (name === "local-stars") camera = fitBounds(catalogueBounds(), viewport, padding);
     else if (name === "full-route") camera = fitBounds(fullRouteBounds(), viewport, padding);
@@ -763,16 +862,55 @@ export function createSpaceMapController(): SpaceMapController {
         id: `trajectory-${actual.id}`, kind: "trajectory", name: `${actual.name} ephemeris`, meta: "NASA/JPL HORIZONS · J2000 ECLIPTIC XY",
         description: "A vendored geometric state-vector path. Source x/y samples are drawn directly, with z retained in the craft readout.",
       };
-      drawPath(trajectoryPoints(actual), "#6adfff", [3, 7], 0.16, 1);
-      const travelled = trajectoryPrefix(actual.samples, progress).map(({ x, y }) => ({ x, y }));
+      const actualProgress = tourFrame?.routeMode === "ephemeris"
+        ? tourFrame.routeProgress
+        : tourFrame?.routeMode === "comparison"
+          ? 1
+          : progress;
+      const currentActual = sampleTrajectory(actual, actualProgress);
+      drawPath(trajectoryPoints(actual), "#6adfff", [3, 7], 0.14, 1);
+      const travelled = trajectoryPrefix(actual.samples, actualProgress).map(({ x, y }) => ({ x, y }));
       const path = drawPath(travelled, "#6adfff", [], emphasized(entity.id) ? 1 : 0.86, emphasized(entity.id) ? 3.6 : 2.4);
       hits.push({ type: "path", entity, points: path, tolerance: 7, priority: 8 });
       if (actual.id === "voyager1") {
-        drawEvent(actual, "1979-03-05", "JUPITER ASSIST", craft.source?.date);
-        drawEvent(actual, "1980-11-12", "SATURN / TITAN TURN", craft.source?.date);
-        drawEvent(actual, "2012-08-25", "HELIOPAUSE EVENT · 2012", craft.source?.date);
+        drawEvent(actual, "1979-03-05", "JUPITER ASSIST", currentActual.date);
+        drawEvent(actual, "1980-11-12", "SATURN / TITAN TURN", currentActual.date);
+        drawEvent(actual, "2012-08-25", "HELIOPAUSE EVENT · 2012", currentActual.date);
+      } else {
+        drawEvent(actual, "2018-10-03", "VENUS ASSIST 1", currentActual.date);
+        drawEvent(actual, "2020-07-11", "VENUS ASSIST 3", currentActual.date);
+        drawEvent(actual, "2021-10-16", "VENUS ASSIST 5", currentActual.date);
+        drawEvent(actual, "2024-11-06", "VENUS ASSIST 7", currentActual.date);
       }
-    } else {
+    }
+
+    if (tourFrame?.routeMode === "comparison" && tourFrame.destination) {
+      const onward = selectedVehicle.route.onward;
+      const originAu = onward.kind === "constant" ? onward.startAu : tourFrame.chapter.startAu ?? 0;
+      const origin = tourFrame.direction?.kind === "last-velocity" && actual
+        ? { x: actual.samples.at(-1)?.x ?? 0, y: actual.samples.at(-1)?.y ?? 0 }
+        : comparisonPoint(tourFrame, originAu);
+      const destination = comparisonPoint(tourFrame, tourFrame.destination.au);
+      const evidenceColor = tourFrame.evidence === "COUNTERFACTUAL" ? "#ff5a36" : "#b8ff3d";
+      const entity: CanvasMapEntity = {
+        id: `trajectory-comparison-${selectedVehicle.id}`,
+        kind: "trajectory",
+        name: `${selectedVehicle.name} comparison branch`,
+        meta: `${tourFrame.evidence} · ${tourFrame.destination.label.toUpperCase()}`,
+        description: tourFrame.chapter.note,
+      };
+      drawPath([origin, destination], evidenceColor, [9, 8], 0.16, 1.2);
+      const path = drawPath([origin, craft.point], evidenceColor, [9, 6], emphasized(entity.id) ? 1 : 0.92, emphasized(entity.id) ? 3.6 : 2.6);
+      hits.push({ type: "path", entity, points: path, tolerance: 7, priority: 9 });
+      if (onward.kind === "constant" && onward.discontinuity) {
+        const cutPoint = worldToScreen(origin, camera, viewport);
+        if (cutPoint.x > 12 && cutPoint.x < viewport.width - 12 && cutPoint.y > 12 && cutPoint.y < viewport.height - 12) {
+          elements.context.fillStyle = "#ff5a36";
+          elements.context.fillRect(cutPoint.x - 4, cutPoint.y - 4, 8, 8);
+          queueLabel({ anchor: cutPoint, lines: ["COUNTERFACTUAL CUT", "REAL PATH ENDS"], priority: 94, color: "#ff5a36" });
+        }
+      }
+    } else if (!actual) {
       const target = targetStar();
       if (target) {
         const destination = starWorld(target);
@@ -781,16 +919,28 @@ export function createSpaceMapController(): SpaceMapController {
           id: `trajectory-model-${selectedVehicle.id}`, kind: "trajectory", name: `${selectedVehicle.name} route model`,
           meta: `${selectedVehicle.evidence} · ECLIPTIC XY PROJECTION`, description: selectedVehicle.modelNote,
         };
-        const path = drawPath([{ x: 0, y: 0 }, destination], color, selectedVehicle.category === "fiction" ? [4, 7] : [10, 7], emphasized(entity.id) ? 1 : 0.76, emphasized(entity.id) ? 3.6 : 2.2);
+        drawPath([{ x: 0, y: 0 }, destination], color, [4, 8], 0.14, 1.1);
+        const path = drawPath([{ x: 0, y: 0 }, craft.point], color, selectedVehicle.category === "fiction" ? [4, 7] : [10, 7], emphasized(entity.id) ? 1 : 0.82, emphasized(entity.id) ? 3.6 : 2.4);
         hits.push({ type: "path", entity, points: path, tolerance: 7, priority: 8 });
       }
     }
 
     const point = worldToScreen(craft.point, camera, viewport);
+    const craftColor = tourFrame?.evidence === "COUNTERFACTUAL"
+      ? "#ff5a36"
+      : selectedVehicle.category === "fiction"
+        ? "#c6a8ff"
+        : tourFrame?.routeMode === "profile"
+          ? "#b8ff3d"
+          : "#6adfff";
     const craftEntity: CanvasMapEntity = {
       id: `craft-${selectedVehicle.id}`, kind: "craft", name: selectedVehicle.name,
-      meta: actual ? `${craft.source?.date.slice(0, 10)} · ${formatDistance(craft.radialAu)}` : `${selectedVehicle.evidence} · ${formatDistance(craft.radialAu)}`,
-      description: actual ? "Position interpolated by elapsed ephemeris time from the vendored JPL Horizons samples." : selectedVehicle.modelNote,
+      meta: craft.source
+        ? `${craft.source.date.slice(0, 10)} · ${formatDistance(craft.radialAu)}`
+        : `${tourFrame?.evidence ?? selectedVehicle.evidence} · ${formatDistance(craft.radialAu)}`,
+      description: craft.source
+        ? "Position interpolated from the vendored JPL Horizons position and velocity vectors."
+        : tourFrame?.chapter.note ?? selectedVehicle.modelNote,
       world: craft.point, focusSpanAu: Math.max(0.04, craft.radialAu * 0.35),
     };
     if (selected?.id === craftEntity.id) setSelection(craftEntity);
@@ -802,15 +952,17 @@ export function createSpaceMapController(): SpaceMapController {
       ctx.arc(point.x, point.y, emphasized(craftEntity.id) ? 8.5 : 6.5, 0, Math.PI * 2);
       ctx.fillStyle = "#020906";
       ctx.fill();
-      ctx.strokeStyle = "#6adfff";
+      ctx.strokeStyle = craftColor;
       ctx.lineWidth = emphasized(craftEntity.id) ? 3.5 : 2.5;
       ctx.stroke();
       hits.push({ type: "point", entity: craftEntity, point, radius: 12, priority: 35 });
-      queueLabel({ anchor: point, lines: [selectedVehicle.name.toUpperCase()], priority: 106, color: "#6adfff" });
+      queueLabel({ anchor: point, lines: [selectedVehicle.name.toUpperCase()], priority: 106, color: craftColor });
     }
 
     if (craft.source) {
       craftReadout = `${selectedVehicle.name.toUpperCase()} · ${craft.source.date.slice(0, 10)} · ${formatDistance(craft.radialAu)} · β ${eclipticLatitudeDegrees(craft.source).toFixed(1)}°`;
+    } else if (tourFrame?.routeMode === "comparison") {
+      craftReadout = `${selectedVehicle.name.toUpperCase()} · ${tourFrame.evidence} · ${formatDistance(craft.radialAu)} · ${tourFrame.chapter.title}`;
     } else if (craft.target) {
       const targetAu = craft.target.distanceLy * AU_PER_LIGHT_YEAR;
       craftReadout = `${selectedVehicle.name.toUpperCase()} · ${formatDistance(craft.radialAu)} · ${(craft.radialAu / targetAu * 100).toFixed(1)}% TO ${craft.target.name.toUpperCase()}`;
@@ -893,6 +1045,14 @@ export function createSpaceMapController(): SpaceMapController {
       const speedKmh = Math.hypot(craft.source.vx, craft.source.vy, craft.source.vz) * AU_KM / 24;
       return { mode: "ephemeris", date: craft.source.date.slice(0, 10), elapsedYears, speedKmh, radialAu: craft.radialAu };
     }
+    if (tourFrame?.routeMode === "profile" || tourFrame?.routeMode === "comparison") {
+      return {
+        mode: "model",
+        elapsedYears: tourFrame.elapsedYears,
+        speedKmh: tourFrame.speedKmh,
+        radialAu: tourFrame.currentAu ?? craft.radialAu,
+      };
+    }
     if (craft.target) return { mode: "model", radialAu: craft.radialAu };
     return { mode: "unavailable", radialAu: 0 };
   }
@@ -919,12 +1079,14 @@ export function createSpaceMapController(): SpaceMapController {
 
   function onWheel(event: WheelEvent): void {
     event.preventDefault();
+    cameraTransition = undefined;
     camera = zoomAt(camera, localPoint(event), Math.exp(-event.deltaY * 0.0015), viewport);
     followCraft = false;
     schedule();
   }
 
   function onPointerDown(event: PointerEvent): void {
+    cameraTransition = undefined;
     canvas.setPointerCapture(event.pointerId);
     const point = localPoint(event);
     pointers.set(event.pointerId, point);
@@ -1057,6 +1219,9 @@ export function createSpaceMapController(): SpaceMapController {
     setVehicle(vehicle, focus = false): void {
       selectedVehicle = vehicle;
       progress = 0;
+      tourFrame = undefined;
+      tourChapterIndex = -1;
+      cameraTransition = undefined;
       if (focus) focusVehicle();
       const craft = craftPosition();
       setSelection({
@@ -1066,7 +1231,30 @@ export function createSpaceMapController(): SpaceMapController {
       schedule();
     },
     setProgress(nextProgress): MapTelemetry {
+      tourFrame = undefined;
       progress = Math.max(0, Math.min(1, nextProgress));
+      schedule();
+      return telemetry();
+    },
+    setTourFrame(frame): MapTelemetry {
+      tourFrame = frame;
+      progress = frame.routeProgress;
+      if (frame.chapterIndex !== tourChapterIndex) {
+        tourChapterIndex = frame.chapterIndex;
+        cameraTransition = {
+          chapterIndex: frame.chapterIndex,
+          from: camera,
+          to: cameraForTour(frame.chapter.cameraCue, frame),
+        };
+      }
+      if (cameraTransition?.chapterIndex === frame.chapterIndex) {
+        camera = blendCamera(
+          cameraTransition.from,
+          cameraTransition.to,
+          Math.min(1, frame.chapterProgress * 2.15),
+        );
+        if (frame.chapterProgress >= 0.47) cameraTransition = undefined;
+      }
       schedule();
       return telemetry();
     },
