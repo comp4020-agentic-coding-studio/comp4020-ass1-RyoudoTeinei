@@ -26,6 +26,18 @@
   box-sizing: border-box;
 }
 
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -577,10 +589,14 @@ h1 em {
 
 .space-map-stage {
   position: relative;
+  isolation: isolate;
   height: clamp(560px, 68svh, 820px);
   min-height: 560px;
   overflow: hidden;
   background: #020906;
+  box-shadow:
+    inset 0 0 0 1px rgb(106 223 255 / 18%),
+    inset 0 0 90px rgb(0 0 0 / 78%);
 }
 
 #space-map {
@@ -602,168 +618,184 @@ h1 em {
   outline-offset: -3px;
 }
 
-.map-background {
-  fill: #020906;
-}
-
-.map-grid-line,
-.map-axis-line,
-.map-shell,
-.map-orbit,
-.map-trajectory,
-.map-connection,
-.map-leader {
-  vector-effect: non-scaling-stroke;
-}
-
-.map-grid-line {
-  stroke: rgb(106 223 255 / 9%);
-  stroke-width: 1;
-}
-
-.map-axis-line {
-  stroke: rgb(106 223 255 / 17%);
-  stroke-width: 1;
-}
-
-.map-shell {
-  fill: none;
-  stroke: var(--grid);
-  stroke-width: 1.25;
-  stroke-dasharray: 7 6;
-}
-
-.map-shell.is-heliopause {
-  stroke: var(--orange);
-}
-
-.map-shell.is-outer-oort {
-  stroke: var(--acid);
-  stroke-width: 2;
-}
-
-.map-shell.is-local {
-  stroke: rgb(198 168 255 / 35%);
-}
-
-.map-orbit {
-  fill: none;
-  stroke: rgb(241 238 226 / 30%);
-  stroke-width: 1;
-}
-
-.map-orbit.is-earth {
-  stroke: var(--cyan);
-}
-
-.map-sun {
-  fill: var(--paper);
-  stroke: var(--orange);
-  stroke-width: 3;
-  vector-effect: non-scaling-stroke;
-}
-
-.map-star {
-  fill: var(--paper);
-  stroke: var(--cyan);
-  stroke-width: 1.5;
-  vector-effect: non-scaling-stroke;
-}
-
-.map-star.is-proxima {
-  fill: var(--acid);
-  stroke: var(--acid);
-}
-
-.map-star.is-brown-dwarf {
-  fill: var(--orange);
-  stroke: var(--orange);
-}
-
-.map-connection {
-  stroke: rgb(106 223 255 / 40%);
-  stroke-width: 1;
-}
-
-.map-label,
-.map-star-label,
-.map-boundary-label,
-.map-craft-label,
-.map-star-meta {
-  paint-order: stroke;
-  stroke: #020906;
-  stroke-linejoin: round;
-  stroke-width: 5px;
-  fill: var(--paper);
+.map-reticle {
+  position: absolute;
+  z-index: 3;
+  top: 4.1rem;
+  right: 1rem;
+  display: grid;
+  grid-template-columns: auto 52px;
+  grid-template-rows: 52px auto;
+  gap: 0.25rem 0.45rem;
+  align-items: center;
+  color: var(--muted);
   font-family: "Cascadia Mono", Consolas, monospace;
-  font-size: 12px;
-  letter-spacing: 0.04em;
+  font-size: 0.48rem;
+  letter-spacing: 0.08em;
   pointer-events: none;
 }
 
-.map-star-label {
-  font-size: 11px;
-  font-weight: 700;
+.map-reticle > span:first-child {
+  align-self: start;
+  color: var(--paper);
 }
 
-.map-star-meta {
-  fill: var(--muted);
-  font-size: 9px;
-  stroke-width: 4px;
+.map-reticle i {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgb(106 223 255 / 42%);
+  border-radius: 50%;
 }
 
-.map-boundary-label {
-  fill: var(--acid);
-  font-size: 10px;
+.map-reticle i::before,
+.map-reticle i::after {
+  position: absolute;
+  content: "";
+  background: rgb(106 223 255 / 55%);
 }
 
-.map-trajectory {
-  fill: none;
-  stroke: var(--cyan);
-  stroke-linecap: square;
-  stroke-linejoin: bevel;
-  stroke-width: 2.5;
+.map-reticle i::before {
+  top: -6px;
+  bottom: -6px;
+  left: 50%;
+  width: 1px;
 }
 
-.map-trajectory.is-ephemeris {
-  stroke: var(--cyan);
+.map-reticle i::after {
+  top: 50%;
+  right: -6px;
+  left: -6px;
+  height: 1px;
 }
 
-.map-trajectory.is-model {
-  stroke: var(--acid);
-  stroke-dasharray: 10 7;
+.map-reticle > span:last-child {
+  grid-column: 1 / -1;
+  text-align: right;
 }
 
-.map-trajectory.is-fiction {
-  stroke: var(--violet);
-  stroke-dasharray: 4 7;
+.map-scale-bar {
+  position: absolute;
+  z-index: 4;
+  bottom: 2.35rem;
+  left: 0.9rem;
+  display: grid;
+  gap: 0.35rem;
+  color: var(--paper);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.07em;
+  pointer-events: none;
 }
 
-.map-trajectory.is-future {
-  opacity: 0.5;
-  stroke-dasharray: 3 8;
+.map-scale-bar i {
+  position: relative;
+  display: block;
+  width: 135px;
+  border-top: 2px solid var(--paper);
 }
 
-.map-craft-marker {
-  fill: var(--ink);
-  stroke: var(--cyan);
-  stroke-width: 3;
-  vector-effect: non-scaling-stroke;
+.map-scale-bar i::before,
+.map-scale-bar i::after {
+  position: absolute;
+  top: -6px;
+  width: 2px;
+  height: 10px;
+  content: "";
+  background: var(--paper);
 }
 
-.map-craft-label {
-  fill: var(--cyan);
-  font-size: 10px;
-  font-weight: 700;
+.map-scale-bar i::before {
+  left: 0;
 }
 
-.map-leader {
-  stroke: rgb(241 238 226 / 45%);
-  stroke-width: 1;
+.map-scale-bar i::after {
+  right: 0;
+}
+
+.map-tooltip {
+  position: absolute;
+  z-index: 12;
+  display: grid;
+  min-width: 180px;
+  max-width: 260px;
+  gap: 0.25rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--cyan);
+  color: var(--paper);
+  background: rgb(2 9 6 / 94%);
+  box-shadow: 5px 5px 0 rgb(0 0 0 / 75%);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.56rem;
+  pointer-events: none;
+}
+
+.map-tooltip[hidden] {
+  display: none;
+}
+
+.map-tooltip strong {
+  color: var(--acid);
+  font-size: 0.66rem;
+}
+
+.map-tooltip span {
+  color: var(--muted);
+}
+
+.map-inspector {
+  position: absolute;
+  z-index: 4;
+  top: 4rem;
+  left: 1rem;
+  display: grid;
+  width: min(315px, calc(100% - 2rem));
+  gap: 0.35rem;
+  padding: 0.75rem 0.85rem;
+  border-left: 3px solid var(--cyan);
+  color: var(--paper);
+  background: rgb(2 9 6 / 86%);
+  box-shadow: 5px 5px 0 rgb(0 0 0 / 55%);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  pointer-events: none;
+}
+
+.map-inspector p,
+.map-inspector strong,
+.map-inspector span,
+.map-inspector small {
+  margin: 0;
+}
+
+.map-inspector p {
+  color: var(--muted);
+  font-size: 0.48rem;
+  letter-spacing: 0.1em;
+}
+
+.map-inspector strong {
+  color: var(--acid);
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+}
+
+.map-inspector span {
+  color: var(--cyan);
+  font-size: 0.52rem;
+}
+
+.map-inspector small {
+  color: var(--muted);
+  font-family: "Arial Narrow", "Aptos Narrow", Arial, sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.35;
 }
 
 .map-hud {
   position: absolute;
+  z-index: 4;
   right: 0.75rem;
   left: 0.75rem;
   display: flex;
@@ -788,8 +820,9 @@ h1 em {
 
 .map-thesis {
   position: absolute;
-  top: 4rem;
-  left: 1rem;
+  z-index: 4;
+  right: 1rem;
+  bottom: 4rem;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 0.25rem 0.65rem;
@@ -798,6 +831,7 @@ h1 em {
   border-left: 3px solid var(--orange);
   color: var(--muted);
   background: rgb(2 9 6 / 82%);
+  box-shadow: 5px 5px 0 rgb(0 0 0 / 55%);
   font-family: "Cascadia Mono", Consolas, monospace;
   font-size: 0.54rem;
   pointer-events: none;
@@ -1384,16 +1418,28 @@ footer p:first-child {
   }
 
   .map-thesis {
-    top: 3rem;
-    font-size: 0.48rem;
-  }
-
-  .map-star-label {
-    font-size: 10px;
-  }
-
-  .map-star-meta {
     display: none;
+  }
+
+  .map-inspector {
+    top: 3rem;
+    left: 0.7rem;
+    width: min(210px, calc(100% - 1.4rem));
+    padding: 0.55rem 0.65rem;
+  }
+
+  .map-inspector p,
+  .map-inspector small {
+    display: none;
+  }
+
+  .map-reticle {
+    display: none;
+  }
+
+  .map-scale-bar {
+    bottom: 2.1rem;
+    left: 0.7rem;
   }
 
   .mission-controls {

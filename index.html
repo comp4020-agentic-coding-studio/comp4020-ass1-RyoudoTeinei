@@ -65,9 +65,9 @@
           <p class="eyebrow">01 / ONE ROUTE, MANY MACHINES</p>
           <h2>HOW LONG IS “OUT”?</h2>
           <p>
-            Every object now shares one undistorted AU coordinate system. Start
-            with twelve light-years, then zoom until the Solar System stops being
-            a dot.
+            Every plotted x/y coordinate now shares one linear AU scale. Start
+            with the twelve-light-year catalogue, then zoom until the Solar
+            System stops being a dot.
           </p>
         </header>
 
@@ -153,7 +153,7 @@
             <figure class="space-figure">
               <figcaption class="map-toolbar">
                 <div>
-                  <span>HELIOCENTRIC MAP · TRUE LINEAR SCALE</span>
+                  <span>ECLIPTIC NAVIGATION MAP · TRUE LINEAR SCALE</span>
                   <strong id="map-scope">LOCAL STARS · 12 LY</strong>
                 </div>
                 <div class="map-controls" aria-label="Map controls">
@@ -169,27 +169,49 @@
               </figcaption>
 
               <div class="space-map-stage">
-                <svg
+                <canvas
                   id="space-map"
                   data-testid="space-map"
-                  viewBox="0 0 1200 700"
                   role="img"
                   tabindex="0"
-                  aria-labelledby="space-map-title space-map-desc"
+                  aria-label="True-scale local space and Solar System route map"
+                  aria-describedby="space-map-desc"
                 >
-                  <title id="space-map-title">True-scale local space and Solar System route map</title>
-                  <desc id="space-map-desc">A zoomable linear-scale map in astronomical units. Direction uses ecliptic longitude while each radial distance remains true; latitude is reported in labels.</desc>
-                  <rect class="map-background" width="100%" height="100%"></rect>
-                  <g id="map-grid-layer" aria-hidden="true"></g>
-                  <g id="map-boundary-layer" aria-hidden="true"></g>
-                  <g id="map-star-layer"></g>
-                  <g id="map-trajectory-layer" aria-hidden="true"></g>
-                  <g id="map-marker-layer" aria-hidden="true"></g>
-                  <g id="map-label-layer"></g>
-                </svg>
+                  A zoomable, true-linear map of the Solar System and nearby stars.
+                </canvas>
+                <p class="sr-only" id="space-map-desc">
+                  A zoomable linear-scale, top-down ecliptic map in astronomical
+                  units. Every plotted x and y position and trajectory sample
+                  shares one scale; out-of-plane z distance is reported in the
+                  object details.
+                </p>
+
+                <div class="map-reticle" aria-hidden="true">
+                  <span>N</span><i></i><span>ECLIPTIC PLANE</span>
+                </div>
+
+                <div class="map-scale-bar" aria-hidden="true">
+                  <i id="map-scale-rule"></i>
+                  <span id="map-scale-label">1 LY</span>
+                </div>
+
+                <div class="map-tooltip" id="map-tooltip" role="tooltip" hidden>
+                  <strong id="map-tooltip-name">SUN</strong>
+                  <span id="map-tooltip-meta">0 AU</span>
+                </div>
+
+                <aside class="map-inspector" data-testid="map-inspector" aria-live="polite">
+                  <p>SELECTED OBJECT</p>
+                  <strong id="map-selection-name">SUN</strong>
+                  <span id="map-selection-meta">G2V STAR · ORIGIN · 0 AU</span>
+                  <small id="map-selection-description">
+                    The fixed origin of this heliocentric map. Double-click any
+                    visible object to focus the camera on it.
+                  </small>
+                </aside>
 
                 <div class="map-hud map-hud-top">
-                  <span id="map-scale">1 PX = 1.00 LY</span>
+                  <span id="map-scale">VIEW WIDTH · 12.00 LY</span>
                   <span id="map-resolution">NEPTUNE ORBIT = &lt;0.01 PX</span>
                 </div>
                 <div class="map-hud map-hud-bottom">
@@ -207,11 +229,11 @@
               <div class="map-legend" aria-label="Map legend">
                 <span><i class="legend-line legend-ephemeris"></i>JPL EPHEMERIS</span>
                 <span><i class="legend-line legend-model"></i>COMPARISON / DESIGN MODEL</span>
-                <span><i class="legend-star"></i>CNS5 CATALOGUE STAR</span>
-                <span><i class="legend-shell"></i>REFERENCE BOUNDARY</span>
+                <span><i class="legend-star"></i>CNS5 CATALOGUE LOCATOR</span>
+                <span><i class="legend-shell"></i>TRUE-RADIUS BOUNDARY</span>
               </div>
               <p class="projection-note">
-                SAME LINEAR AU SCALE AT EVERY ZOOM · RADIAL DISTANCE TRUE · ECLIPTIC LONGITUDE SETS DIRECTION · LABELS AND MARKERS NOT TO SCALE
+                ECLIPTIC TOP-DOWN · X/Y POSITION TRUE · Z REPORTED IN OBJECT DETAILS · LOCATORS NOT TO SCALE · FAINT BACKDROP SPECKLES ARE ORIENTATION TEXTURE, NOT CATALOGUE OBJECTS
               </p>
             </figure>
 
@@ -274,7 +296,7 @@
         </div>
         <div class="method-copy">
           <p>The map never switches to a logarithmic ruler: every object uses the same AU-per-pixel scale. At the twelve-light-year view, even Neptune's orbit is far below one pixel. Zooming changes the camera, never the proportions.</p>
-          <p>Positions use a radial ecliptic projection. Distance from the Sun is preserved exactly; ecliptic longitude sets the on-screen direction and latitude remains in the data readout. This makes the scale legible without pretending a flat screen is three-dimensional space.</p>
+          <p>Positions use a top-down J2000 ecliptic projection. The map draws the supplied x and y coordinates directly, so real JPL trajectories keep their observed planar shape; the out-of-plane z coordinate remains in the selected-object readout. Like any flat star map, it is an orthographic view of three-dimensional space rather than a claim that every object lies on one sheet.</p>
           <p><strong>Measured</strong> means a speed was recorded. <strong>Counterfactual</strong> means that speed is frozen forever to expose scale—not predict a mission. <strong>Design study</strong> preserves a published profile. Fiction stays labelled, and ships with no comparable linear speed receive no invented arrival time.</p>
           <p>The heliopause is represented by Voyager 1's crossing near 122 AU, not a fixed spherical wall. The Oort Cloud has not been directly observed; its 100,000 AU outer edge is a conservative model boundary, not a wall a spacecraft can photograph while crossing.</p>
         </div>
