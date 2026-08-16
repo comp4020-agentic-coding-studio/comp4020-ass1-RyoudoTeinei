@@ -3,22 +3,277 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>COMP4020 prototype</title>
+    <meta
+      name="description"
+      content="An interactive scale model of what it really means to leave the Solar System."
+    />
+    <title>The Edge Is Not the Exit — Leaving the Solar System</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <header>
-      <nav aria-label="Primary">
-        <a href="./">Home</a>
-      </nav>
+    <a class="skip-link" href="#journey">Skip to the journey plotter</a>
+    <nav class="site-nav" aria-label="Primary">
+      <a class="wordmark" href="#top" aria-label="The Edge Is Not the Exit, home">
+        <span aria-hidden="true">→</span> EXIT VECTOR
+      </a>
+      <div class="nav-links">
+        <a href="#journey">Plotter</a>
+        <a href="#method">Method</a>
+        <a href="#sources">Sources</a>
+      </div>
+    </nav>
+
+    <header class="hero" id="top">
+      <div class="hero-copy">
+        <p class="eyebrow">A SCALE MODEL OF THE LONG WAY OUT</p>
+        <h1>THE EDGE IS<br />NOT THE <em>EXIT.</em></h1>
+        <p class="hero-deck">
+          Voyager crossed the edge of the Sun's wind. It did not leave the Solar
+          System. Choose a machine and watch where the journey really begins.
+        </p>
+        <a class="text-link" href="#journey">RUN THE DISTANCE <span aria-hidden="true">↓</span></a>
+      </div>
+
+      <div class="boundary-proof" aria-label="Three boundary distances">
+        <p class="proof-intro">THE WORD “EDGE” HIDES A RATIO</p>
+        <div class="proof-row proof-row-heliopause">
+          <span class="proof-label">HELIOPAUSE</span>
+          <strong>122</strong>
+          <span>AU</span>
+        </div>
+        <div class="proof-rule" aria-hidden="true"><span></span></div>
+        <div class="proof-row proof-row-oort">
+          <span class="proof-label">OUTER OORT</span>
+          <strong>100,000</strong>
+          <span>AU</span>
+        </div>
+        <p class="proof-conclusion">
+          CROSS THE HELIOPAUSE,<br />THEN TRAVEL <strong>~820× FARTHER</strong> TO
+          CLEAR THE OORT CLOUD.
+        </p>
+      </div>
     </header>
+
     <main>
-      <h1>COMP4020 prototype</h1>
-      <p data-testid="intro">
-        Replace this with your prototype. This week's brief is on the course website;
-        <code>spec/README.md</code> explains how the checks in this repo relate to it.
-      </p>
+      <section class="thesis-strip" aria-label="The central claim">
+        <p>THE PLANETS ARE THE OPENING PIXELS.</p>
+        <p>THE OORT CLOUD IS THE SOLAR SYSTEM AT FULL SCALE.</p>
+      </section>
+
+      <section class="journey-section" id="journey">
+        <header class="section-heading">
+          <p class="eyebrow">01 / ONE ROUTE, MANY MACHINES</p>
+          <h2>HOW LONG IS “OUT”?</h2>
+          <p>
+            Every option runs against the same logarithmic route: Earth to
+            Proxima Centauri, with the conservative outer edge of the Oort Cloud
+            marked at 100,000 AU.
+          </p>
+        </header>
+
+        <div class="plotter-shell">
+          <aside class="manifest" aria-label="Launch manifest">
+            <div class="manifest-heading">
+              <span>LAUNCH MANIFEST</span>
+              <span>SELECT 01</span>
+            </div>
+
+            <div data-testid="vehicle-picker">
+              <p class="manifest-group">RECORDED / COUNTERFACTUAL</p>
+              <button class="vehicle-option" type="button" data-vehicle="voyager" aria-pressed="true">
+                <span>01</span><strong>Voyager 1</strong><small>61,198 km/h</small>
+              </button>
+              <button class="vehicle-option" type="button" data-vehicle="f1" aria-pressed="false">
+                <span>02</span><strong>F1 record car</strong><small>397 km/h</small>
+              </button>
+              <button class="vehicle-option" type="button" data-vehicle="737" aria-pressed="false">
+                <span>03</span><strong>Boeing 737-8</strong><small>839 km/h</small>
+              </button>
+              <button class="vehicle-option" type="button" data-vehicle="concorde" aria-pressed="false">
+                <span>04</span><strong>Concorde</strong><small>2,179 km/h</small>
+              </button>
+              <button class="vehicle-option" type="button" data-vehicle="apollo10" aria-pressed="false">
+                <span>05</span><strong>Apollo 10</strong><small>fastest crew</small>
+              </button>
+              <button class="vehicle-option" type="button" data-vehicle="parker" aria-pressed="false">
+                <span>06</span><strong>Parker</strong><small>orbital peak</small>
+              </button>
+
+              <p class="manifest-group">ENGINEERING STUDIES</p>
+              <button class="vehicle-option" type="button" data-vehicle="daedalus" aria-pressed="false">
+                <span>07</span><strong>Daedalus</strong><small>&gt;0.12 c</small>
+              </button>
+              <button class="vehicle-option" type="button" data-vehicle="starshot" aria-pressed="false">
+                <span>08</span><strong>Starshot</strong><small>~0.20 c</small>
+              </button>
+              <button class="vehicle-option" type="button" data-vehicle="orion" aria-pressed="false">
+                <span>09</span><strong>Orion</strong><small>many designs</small>
+              </button>
+
+              <p class="manifest-group">FICTION / KEPT HONEST</p>
+              <button class="vehicle-option" type="button" data-vehicle="wandering-earth" aria-pressed="false">
+                <span>10</span><strong>Wandering Earth</strong><small>2,500 y story</small>
+              </button>
+              <button class="vehicle-option" type="button" data-vehicle="natural-selection" aria-pressed="false">
+                <span>11</span><strong>Natural Selection</strong><small>modelled</small>
+              </button>
+              <button class="vehicle-option" type="button" data-vehicle="discovery" aria-pressed="false">
+                <span>12</span><strong>Discovery One</strong><small>no canon speed</small>
+              </button>
+              <button class="vehicle-option" type="button" data-vehicle="enterprise" aria-pressed="false">
+                <span>13</span><strong>USS Enterprise</strong><small>warp</small>
+              </button>
+              <button class="vehicle-option" type="button" data-vehicle="millennium-falcon" aria-pressed="false">
+                <span>14</span><strong>Millennium Falcon</strong><small>hyperspace</small>
+              </button>
+              <button class="vehicle-option" type="button" data-vehicle="droplet" aria-pressed="false">
+                <span>15</span><strong>The Droplet</strong><small>incomplete profile</small>
+              </button>
+              <button class="vehicle-option" type="button" data-vehicle="warhammer" aria-pressed="false">
+                <span>16</span><strong>Imperial voidship</strong><small>the Warp</small>
+              </button>
+            </div>
+          </aside>
+
+          <div class="mission-console" data-state="ready">
+            <header class="selected-header">
+              <div>
+                <p id="selected-kicker">THE REAL OUTBOUND BASELINE</p>
+                <h3 id="selected-name">VOYAGER 1</h3>
+              </div>
+              <span class="evidence-tag" id="evidence-tag">MEASURED</span>
+            </header>
+
+            <div class="arrival-readout">
+              <p>EARTH → PROXIMA CENTAURI</p>
+              <strong data-testid="journey-time" id="journey-time">74,950 YEARS</strong>
+              <span id="arrival-subline">AT 61,198 KM/H · STRAIGHT-LINE MODEL</span>
+            </div>
+
+            <div class="distance-figure" data-testid="distance-track">
+              <div class="figure-title">
+                <span>DISTANCE AFTER EARTH · LOG<sub>10</sub> AU</span>
+                <span id="distance-readout">1.00 AU</span>
+              </div>
+              <div class="distance-track">
+                <div class="distance-zones" aria-hidden="true">
+                  <span class="zone zone-planetary"></span>
+                  <span class="zone zone-oort"></span>
+                  <span class="zone zone-interstellar"></span>
+                </div>
+                <div class="route-fill" id="route-fill" aria-hidden="true"></div>
+                <div class="journey-marker" id="journey-marker" aria-hidden="true"><span></span></div>
+
+                <div class="milestone milestone-earth" style="--position: 0%"><span class="milestone-tick"></span><span class="milestone-label"><strong>EARTH</strong><small>1 AU</small></span></div>
+                <div class="milestone milestone-jupiter" style="--position: 13.2%"><span class="milestone-tick"></span><span class="milestone-label"><strong>JUPITER</strong><small>5.2 AU</small></span></div>
+                <div class="milestone milestone-neptune" style="--position: 27.2%"><span class="milestone-tick"></span><span class="milestone-label"><strong>NEPTUNE</strong><small>30 AU</small></span></div>
+                <div class="milestone milestone-heliopause" style="--position: 38.4%"><span class="milestone-tick"></span><span class="milestone-label"><strong>HELIOPAUSE</strong><small>122 AU · NOT OUT</small></span></div>
+                <div class="milestone milestone-inner-oort" style="--position: 60.8%"><span class="milestone-tick"></span><span class="milestone-label"><strong>INNER OORT</strong><small>2,000 AU</small></span></div>
+                <div class="milestone milestone-outer-oort" style="--position: 92.1%"><span class="milestone-tick"></span><span class="milestone-label"><strong>OUTER OORT</strong><small>100,000 AU · OUT</small></span></div>
+                <div class="milestone milestone-proxima" style="--position: 100%"><span class="milestone-tick"></span><span class="milestone-label"><strong>PROXIMA</strong><small>4.25 LY</small></span></div>
+              </div>
+              <p class="boundary-caption">
+                LEFT THE SUN'S WIND <span aria-hidden="true">——————</span> STILL INSIDE THE SOLAR SYSTEM
+              </p>
+            </div>
+
+            <div class="mission-controls">
+              <button class="launch-button" type="button" data-testid="launch" id="launch-button">
+                <span class="launch-icon" aria-hidden="true">▶</span><span id="launch-label">LAUNCH MODEL</span>
+              </button>
+              <label class="progress-control" for="journey-progress">
+                <span>MISSION TIME</span>
+                <input data-testid="journey-progress" id="journey-progress" type="range" min="0" max="1000" value="0" step="1" />
+              </label>
+              <button class="reset-button" type="button" id="reset-button">RESET ↺</button>
+            </div>
+
+            <div class="live-grid" aria-live="polite" aria-atomic="true">
+              <div><span>ELAPSED</span><strong id="elapsed-readout">0 DAYS</strong></div>
+              <div><span>SPEED NOW</span><strong id="speed-readout">61,198 KM/H</strong></div>
+              <div><span>PHASE</span><strong id="phase-readout">COAST</strong></div>
+            </div>
+
+            <figure class="speed-figure" data-testid="speed-profile">
+              <figcaption><span>SPEED / MISSION PHASE</span><span id="profile-scale">MAX 61,198 KM/H</span></figcaption>
+              <svg id="speed-chart" viewBox="0 0 1000 220" role="img" aria-labelledby="speed-chart-title speed-chart-desc" preserveAspectRatio="none">
+                <title id="speed-chart-title">Voyager 1 speed profile</title>
+                <desc id="speed-chart-desc">A constant-speed coast from Earth to Proxima Centauri.</desc>
+                <g class="chart-grid" aria-hidden="true">
+                  <line x1="0" y1="42" x2="1000" y2="42"></line>
+                  <line x1="0" y1="113" x2="1000" y2="113"></line>
+                  <line x1="0" y1="184" x2="1000" y2="184"></line>
+                  <line x1="250" y1="24" x2="250" y2="196"></line>
+                  <line x1="500" y1="24" x2="500" y2="196"></line>
+                  <line x1="750" y1="24" x2="750" y2="196"></line>
+                </g>
+                <polyline id="speed-line" points="0,42 1000,42"></polyline>
+                <line class="chart-cursor" id="chart-cursor" x1="0" y1="24" x2="0" y2="196"></line>
+                <circle class="chart-point" id="chart-point" cx="0" cy="42" r="7"></circle>
+                <text x="8" y="214">LAUNCH</text><text x="992" y="214" text-anchor="end">PROXIMA</text>
+              </svg>
+              <div class="phase-key" id="phase-key" aria-label="Mission phases"></div>
+            </figure>
+
+            <div class="vehicle-explanation">
+              <p id="vehicle-description">Humanity's most distant spacecraft supplies the honest baseline: fast enough to cross the heliopause, nowhere near fast enough to clear the Oort Cloud in a lifetime.</p>
+              <p class="model-note" data-testid="model-note" id="model-note"><strong>MODEL NOTE / </strong>Straight-line comparison at Voyager 1's current Sun-relative speed.</p>
+            </div>
+
+            <div class="crossing-times" aria-label="Boundary crossing times">
+              <div><span>HELIOPAUSE</span><strong id="time-heliopause">34 YEARS</strong></div>
+              <div><span>OUTER OORT</span><strong id="time-oort">27,886 YEARS</strong></div>
+              <div><span>PROXIMA</span><strong id="time-proxima">74,950 YEARS</strong></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="method-section" id="method">
+        <div class="method-heading">
+          <p class="eyebrow">02 / READ THE MODEL BEFORE THE NUMBER</p>
+          <h2>THE HONESTY LAYER</h2>
+        </div>
+        <div class="method-copy">
+          <p>Distance uses a logarithmic scale because a linear one would compress every planet into a single pixel. The route begins at Earth's orbit; the Sun-to-Earth launch leg is deliberately outside the scale.</p>
+          <p><strong>Measured</strong> means a speed was recorded. <strong>Counterfactual</strong> means that speed is frozen forever to expose scale—not predict a mission. <strong>Design study</strong> preserves a published profile. Fiction stays labelled, and ships with no comparable linear speed receive no invented arrival time.</p>
+          <p>The Oort Cloud has not been directly observed. Its 100,000 AU outer edge is a conservative model boundary, not a wall a spacecraft can photograph while crossing.</p>
+        </div>
+      </section>
+
+      <section class="sources-section" id="sources">
+        <details>
+          <summary><span>03 / SOURCES &amp; CONTINUITIES</span><span>OPEN REGISTER +</span></summary>
+          <div class="sources-grid">
+            <a id="source-oort" href="https://science.nasa.gov/solar-system/oort-cloud/facts/">NASA · Oort Cloud facts ↗</a>
+            <a id="source-voyager" href="https://science.nasa.gov/mission/voyager/voyager-1/">NASA · Voyager 1 speed ↗</a>
+            <a href="https://science.nasa.gov/mission/voyager/questions-and-answers-with-dr-ed-stone/">NASA · heliopause crossing ↗</a>
+            <a href="https://science.nasa.gov/exoplanets/other-stars-other-worlds/our-nearest-celestial-neighbor-an-exotic-3-star-system/">NASA · Proxima Centauri ↗</a>
+            <a id="source-parker" href="https://science.nasa.gov/science-research/heliophysics/nasas-parker-solar-probe-makes-history-with-closest-pass-to-sun/">NASA · Parker speed record ↗</a>
+            <a id="source-parker-orbits" href="https://science.nasa.gov/blogs/the-sun-spot/2018/11/07/how-to-be-an-orbital-mechanic-reading-orbit-plots-with-parker-solar-probe/">NASA · Parker orbit mechanics ↗</a>
+            <a id="source-apollo" href="https://www.nasa.gov/history/apollo-10-was-moon-landing-rehearsal-eft-1-preps-for-trips-beyond/">NASA · Apollo 10 crew record ↗</a>
+            <a id="source-f1" href="https://www.formula1.com/en/latest/article/the-long-read-chasing-400km-h-in-the-worlds-fastest-f1-car.4KJFHbfjaU8GgqUEgsKQeU.4KJFHbfjaU8GgqUEgsKQeU">Formula 1 · 397.36 km/h record ↗</a>
+            <a id="source-boeing" href="https://businessjets.boeing.com/wp-content/uploads/2025/06/BBJ-Select-Brochure.pdf">Boeing · 737-8 cruise Mach ↗</a>
+            <a id="source-concorde" href="https://heritage.baesystems.com/page/bac-concorde">BAE Systems · Concorde ↗</a>
+            <a id="source-daedalus" href="https://www.bis-space.com/technical-projects/">BIS · Project Daedalus ↗</a>
+            <a id="source-starshot" href="https://breakthroughinitiatives.org/initiative/3">Breakthrough Initiatives · Starshot ↗</a>
+            <a id="source-orion" href="https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20000096503.pdf">NASA NTRS · Project Orion ↗</a>
+            <a id="source-wandering-earth" href="https://us.macmillan.com/books/9781250796844/thewanderingearth/">Macmillan · The Wandering Earth ↗</a>
+            <a id="source-three-body" href="https://us.macmillan.com/series/remembranceofearthspast">Macmillan · Remembrance of Earth's Past ↗</a>
+            <a id="source-discovery" href="https://www.arthurcclarke.org/works/novels/2001-a-space-odyssey/">Arthur C. Clarke · 2001 ↗</a>
+            <a id="source-enterprise" href="https://www.startrek.com/database_article/enterprise-ncc-1701">StarTrek.com · USS Enterprise ↗</a>
+            <a id="source-falcon" href="https://www.starwars.com/databank/millennium-falcon">StarWars.com · Millennium Falcon ↗</a>
+            <a id="source-warhammer" href="https://warhammer40000.com/">Warhammer 40,000 · setting ↗</a>
+          </div>
+        </details>
+      </section>
     </main>
+
+    <footer>
+      <p>THE EDGE IS NOT THE EXIT.</p>
+      <p>STATIC CLIENT-SIDE EXPLAINER · DATA ACCESSED AUG 2026</p>
+    </footer>
+
     <script type="module" src="./main.ts"></script>
   </body>
 </html>
