@@ -149,6 +149,14 @@ interface MissionFlowStage {
 let missionFlowStages: MissionFlowStage[] = [];
 let missionFlowItems: HTMLLIElement[] = [];
 
+function updateText(element: HTMLElement, value: string): void {
+  if (element.textContent !== value) element.textContent = value;
+}
+
+function updateAttribute(element: Element, name: string, value: string): void {
+  if (element.getAttribute(name) !== value) element.setAttribute(name, value);
+}
+
 function setPlaybackState(state: PlaybackState): void {
   consoleElement.dataset.state = state;
   spaceMap.setPlaybackActive(state === "running");
@@ -481,24 +489,24 @@ function effectiveTimeFlow(): {
 
 function updateTimeFlow(): void {
   if (!selectedTimeline) {
-    mapTimeFlow.textContent = "NOT COMPARABLE";
-    mapTimePace.textContent = "NO LINEAR TIME SCALE";
+    updateText(mapTimeFlow, "NOT COMPARABLE");
+    updateText(mapTimePace, "NO LINEAR TIME SCALE");
     playbackRateSelect.disabled = true;
     return;
   }
   playbackRateSelect.disabled = false;
   const effective = effectiveTimeFlow();
   if (timeFlowMode === "auto") {
-    mapTimeFlow.textContent = `${formatRateMultiplier(effective.multiplier)} REALTIME`;
-    mapTimePace.textContent = formatAutoPace(effective.multiplier);
+    updateText(mapTimeFlow, `${formatRateMultiplier(effective.multiplier)} REALTIME`);
+    updateText(mapTimePace, formatAutoPace(effective.multiplier));
     return;
   }
   const option = SIMULATION_RATE_OPTIONS.find(
     ({ multiplier }) => multiplier === simulationRate,
   );
   const pace = option?.paceLabel ?? `${simulationRate.toLocaleString("en-AU")} SECONDS / SECOND`;
-  mapTimeFlow.textContent = `${formatRateMultiplier(simulationRate)} REALTIME`;
-  mapTimePace.textContent = pace.replace(" / SECOND", " / REAL SECOND");
+  updateText(mapTimeFlow, `${formatRateMultiplier(simulationRate)} REALTIME`);
+  updateText(mapTimePace, pace.replace(" / SECOND", " / REAL SECOND"));
 }
 
 function currentTourFrame(): MissionTourSample | PhysicalMissionTourSample {
@@ -634,8 +642,10 @@ function renderProgress(): void {
   const frame = currentTourFrame();
   if ("physicalProgress" in frame) progress = frame.physicalProgress;
   const sample = journeySample(selectedVehicle, frame.routeProgress);
-  progressInput.value = String(Math.round(progress * 1_000));
-  progressInput.setAttribute(
+  const progressValue = String(Math.round(progress * 1_000));
+  if (progressInput.value !== progressValue) progressInput.value = progressValue;
+  updateAttribute(
+    progressInput,
     "aria-valuetext",
     selectedTimeline
       ? `T plus ${formatPhysicalElapsed(physicalElapsedSeconds)}`
@@ -647,44 +657,51 @@ function renderProgress(): void {
     const elapsedYears = physicalElapsedSeconds / JULIAN_YEAR_SECONDS;
     const analogy = timeAnalogyAt(elapsedYears);
     const elapsed = mapElapsedParts(physicalElapsedSeconds);
-    mapElapsedValue.textContent = elapsed.value;
-    mapElapsedUnit.textContent = elapsed.unit;
-    mapDurationAnalogy.textContent = [analogy.headline, analogy.detail]
-      .filter(Boolean)
-      .join(" · ");
-    mapDurationAnalogy.dataset.source = analogy.sourceId ?? "intro";
+    updateText(mapElapsedValue, elapsed.value);
+    updateText(mapElapsedUnit, elapsed.unit);
+    updateText(
+      mapDurationAnalogy,
+      [analogy.headline, analogy.detail].filter(Boolean).join(" · "),
+    );
+    const analogySource = analogy.sourceId ?? "intro";
+    if (mapDurationAnalogy.dataset.source !== analogySource) {
+      mapDurationAnalogy.dataset.source = analogySource;
+    }
   } else {
-    mapElapsedValue.textContent = "—";
-    mapElapsedUnit.textContent = "NO CLOCK";
-    mapDurationAnalogy.textContent = "NOT COMPARABLE TO A LINEAR CLOCK";
-    mapDurationAnalogy.dataset.source = "none";
+    updateText(mapElapsedValue, "—");
+    updateText(mapElapsedUnit, "NO CLOCK");
+    updateText(mapDurationAnalogy, "NOT COMPARABLE TO A LINEAR CLOCK");
+    if (mapDurationAnalogy.dataset.source !== "none") {
+      mapDurationAnalogy.dataset.source = "none";
+    }
   }
-  elapsedReadout.textContent = frame.routeMode === "off-map"
+  updateText(elapsedReadout, frame.routeMode === "off-map"
     ? "NOT COMPARABLE"
     : selectedTimeline
     ? `${formatPhysicalElapsed(physicalElapsedSeconds)}${mapTelemetry.date ? ` · ${mapTelemetry.date.slice(0, 10)}` : ""}`
     : mapTelemetry.mode === "ephemeris"
     ? `${formatDuration(mapTelemetry.elapsedYears)}${mapTelemetry.date ? ` · ${mapTelemetry.date.slice(0, 4)}` : ""}`
-    : formatDuration(frame.elapsedYears ?? mapTelemetry.elapsedYears);
-  speedReadout.textContent = frame.routeMode === "off-map"
+    : formatDuration(frame.elapsedYears ?? mapTelemetry.elapsedYears));
+  updateText(speedReadout, frame.routeMode === "off-map"
     ? "NOT COMPARABLE"
-    : formatSpeed(mapTelemetry.speedKmh ?? frame.speedKmh ?? sample.speedKmh);
+    : formatSpeed(mapTelemetry.speedKmh ?? frame.speedKmh ?? sample.speedKmh));
   renderTourStory(frame);
   const flowIndex = updateMissionFlow(frame);
   const flowStage = missionFlowStages[flowIndex];
   const nextStage = missionFlowStages[flowIndex + 1];
-  phaseReadout.textContent = flowStage?.label ?? frame.phase;
-  phaseDescription.textContent = flowStage?.description ?? frame.chapter.note;
-  nextStageReadout.textContent = nextStage?.label ?? "MISSION COMPLETE";
+  updateText(phaseReadout, flowStage?.label ?? frame.phase);
+  updateText(phaseDescription, flowStage?.description ?? frame.chapter.note);
+  updateText(nextStageReadout, nextStage?.label ?? "MISSION COMPLETE");
   if (
     flowStage?.physicalEndSeconds !== undefined
     && flowStage.physicalEndSeconds > physicalElapsedSeconds
   ) {
-    nextStageTime.textContent = `IN ${formatPhysicalElapsed(
-      flowStage.physicalEndSeconds - physicalElapsedSeconds,
-    )}`;
+    updateText(
+      nextStageTime,
+      `IN ${formatPhysicalElapsed(flowStage.physicalEndSeconds - physicalElapsedSeconds)}`,
+    );
   } else {
-    nextStageTime.textContent = nextStage ? "AT THE NEXT ROUTE BOUNDARY" : "FINAL STATE";
+    updateText(nextStageTime, nextStage ? "AT THE NEXT ROUTE BOUNDARY" : "FINAL STATE");
   }
   updateTimeFlow();
 

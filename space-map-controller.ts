@@ -487,8 +487,13 @@ export function createSpaceMapController(): SpaceMapController {
   let hits: CanvasHit[] = [];
   let labels: CanvasLabel[] = [];
   let occupiedLabels: Bounds[] = [];
+  let reservedOverlayBounds: Bounds[] = [];
   const pointers = new Map<number, Vec2>();
   const pointerStarts = new Map<number, Vec2>();
+
+  function updateText(element: HTMLElement, value: string): void {
+    if (element.textContent !== value) element.textContent = value;
+  }
 
   function catalogueBounds(): Bounds {
     return expandedBounds(CNS5_NEARBY_STARS.map(starWorld), AU_PER_LIGHT_YEAR * 0.4);
@@ -759,16 +764,18 @@ export function createSpaceMapController(): SpaceMapController {
     labels.push(label);
   }
 
-  function reserveOverlayArea(overlay: HTMLElement | undefined): void {
-    if (!overlay) return;
+  function measureReservedOverlayBounds(): void {
     const canvasRect = canvas.getBoundingClientRect();
-    const inspectorRect = overlay.getBoundingClientRect();
-    if (inspectorRect.width <= 0 || inspectorRect.height <= 0) return;
-    occupiedLabels.push({
-      minX: Math.max(0, inspectorRect.left - canvasRect.left - 8),
-      maxX: Math.min(viewport.width, inspectorRect.right - canvasRect.left + 8),
-      minY: Math.max(0, inspectorRect.top - canvasRect.top - 8),
-      maxY: Math.min(viewport.height, inspectorRect.bottom - canvasRect.top + 8),
+    reservedOverlayBounds = [elements.story, elements.clock].flatMap((overlay) => {
+      if (!overlay) return [];
+      const overlayRect = overlay.getBoundingClientRect();
+      if (overlayRect.width <= 0 || overlayRect.height <= 0) return [];
+      return [{
+        minX: Math.max(0, overlayRect.left - canvasRect.left - 8),
+        maxX: Math.min(viewport.width, overlayRect.right - canvasRect.left + 8),
+        minY: Math.max(0, overlayRect.top - canvasRect.top - 8),
+        maxY: Math.min(viewport.height, overlayRect.bottom - canvasRect.top + 8),
+      }];
     });
   }
 
@@ -1502,10 +1509,12 @@ export function createSpaceMapController(): SpaceMapController {
     let distance = niceStep(118 / camera.pxPerAu);
     while (distance * camera.pxPerAu > 180) distance /= 2;
     const pixels = distance * camera.pxPerAu;
+    const formattedDistance = formatScaleDistance(distance);
     if (elements.scaleRule && elements.scaleLabel) {
-      elements.scaleRule.style.width = `${pixels}px`;
-      elements.scaleLabel.textContent = formatScaleDistance(distance);
-      elements.scale.textContent = `SCALE BAR · ${formatScaleDistance(distance)}`;
+      const width = `${pixels}px`;
+      if (elements.scaleRule.style.width !== width) elements.scaleRule.style.width = width;
+      updateText(elements.scaleLabel, formattedDistance);
+      updateText(elements.scale, `SCALE BAR · ${formattedDistance}`);
       return;
     }
     const x = 24;
@@ -1524,9 +1533,9 @@ export function createSpaceMapController(): SpaceMapController {
     ctx.stroke();
     ctx.fillStyle = "#f1eee2";
     ctx.font = "700 10px 'Cascadia Mono', Consolas, monospace";
-    ctx.fillText(formatScaleDistance(distance), x, y - 10);
+    ctx.fillText(formattedDistance, x, y - 10);
     ctx.restore();
-    elements.scale.textContent = `SCALE BAR · ${formatScaleDistance(distance)}`;
+    updateText(elements.scale, `SCALE BAR · ${formattedDistance}`);
   }
 
   function drawHud(): void {
@@ -1535,13 +1544,16 @@ export function createSpaceMapController(): SpaceMapController {
     const width = visibleAu >= AU_PER_LIGHT_YEAR
       ? `${(visibleAu / AU_PER_LIGHT_YEAR).toFixed(2)} LY WIDE`
       : `${visibleAu.toLocaleString("en-AU", { maximumFractionDigits: visibleAu < 1 ? 3 : 0 })} AU WIDE`;
-    elements.scope.textContent = `AUTO CAMERA · ${band.label} · ${width}`;
+    updateText(elements.scope, `AUTO CAMERA · ${band.label} · ${width}`);
     const neptunePixels = 30.1104 * camera.pxPerAu;
-    elements.resolution.textContent = `NEPTUNE ORBIT = ${neptunePixels < 0.01 ? "<0.01" : neptunePixels.toFixed(neptunePixels < 10 ? 2 : 0)} PX`;
-    elements.coordinate.textContent = hovered ? `${hovered.name.toUpperCase()} · ${hovered.meta}` : craftReadout;
-    elements.thesis.hidden = visibleAu < 150_000;
+    updateText(elements.resolution, `NEPTUNE ORBIT = ${neptunePixels < 0.01 ? "<0.01" : neptunePixels.toFixed(neptunePixels < 10 ? 2 : 0)} PX`);
+    updateText(elements.coordinate, hovered ? `${hovered.name.toUpperCase()} · ${hovered.meta}` : craftReadout);
+    const hideThesis = visibleAu < 150_000;
+    if (elements.thesis.hidden !== hideThesis) elements.thesis.hidden = hideThesis;
     for (const control of elements.controls) {
-      if (control.dataset.mapAction === "follow") control.setAttribute("aria-pressed", String(followCraft));
+      if (control.dataset.mapAction !== "follow") continue;
+      const pressed = String(followCraft);
+      if (control.getAttribute("aria-pressed") !== pressed) control.setAttribute("aria-pressed", pressed);
     }
   }
 
@@ -1570,9 +1582,7 @@ export function createSpaceMapController(): SpaceMapController {
     ctx.clearRect(0, 0, viewport.width, viewport.height);
     hits = [];
     labels = [];
-    occupiedLabels = [];
-    reserveOverlayArea(elements.story);
-    reserveOverlayArea(elements.clock);
+    occupiedLabels = [...reservedOverlayBounds];
     drawBackground();
     drawBoundaries();
     drawRadialGrid();
@@ -1618,6 +1628,7 @@ export function createSpaceMapController(): SpaceMapController {
       camera = fitBounds(catalogueBounds(), viewport, viewport.width < 700 ? 44 : 84);
       initialized = true;
     }
+    measureReservedOverlayBounds();
     schedule();
   }
 
@@ -1720,6 +1731,12 @@ export function createSpaceMapController(): SpaceMapController {
   for (const control of elements.controls) control.addEventListener("click", onControl);
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(canvas);
+  const overlayResizeObserver = new ResizeObserver(() => {
+    measureReservedOverlayBounds();
+    schedule();
+  });
+  if (elements.story) overlayResizeObserver.observe(elements.story);
+  if (elements.clock) overlayResizeObserver.observe(elements.clock);
   setSelection({
     id: "origin-sun", kind: "origin", name: "Sun", meta: "MAP ORIGIN · 0 AU",
     description: "Zoom from physical Solar System scale to the measured nearby-star catalogue without changing the linear coordinate system.", world: { x: 0, y: 0 }, focusSpanAu: 0.08,
@@ -1763,6 +1780,7 @@ export function createSpaceMapController(): SpaceMapController {
     destroy(): void {
       destroyed = true;
       resizeObserver.disconnect();
+      overlayResizeObserver.disconnect();
       if (animationFrame) cancelAnimationFrame(animationFrame);
       canvas.removeEventListener("wheel", onWheel);
       canvas.removeEventListener("pointerdown", onPointerDown);
