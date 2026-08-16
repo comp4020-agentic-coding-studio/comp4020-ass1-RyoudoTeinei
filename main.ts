@@ -10,6 +10,13 @@ import {
   type Vehicle,
 } from "./mission-data";
 import { createSpaceMapController } from "./space-map-controller";
+import {
+  buildMissionTour,
+  sampleMissionTour,
+  type MissionTour,
+  type MissionTourSample,
+} from "./mission-tour";
+import { getVehicleDossier } from "./vehicle-dossiers";
 
 function required<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -46,9 +53,22 @@ const modelNote = required<HTMLElement>("#model-note");
 const timeHeliopause = required<HTMLElement>("#time-heliopause");
 const timeOort = required<HTMLElement>("#time-oort");
 const timeProxima = required<HTMLElement>("#time-proxima");
+const tourStory = required<HTMLElement>("#tour-story");
+const tourStep = required<HTMLElement>("#tour-step");
+const tourHeadline = required<HTMLElement>("#tour-headline");
+const tourNote = required<HTMLElement>("#tour-note");
+const tourEvidence = required<HTMLElement>("#tour-evidence");
+const vehiclePhoto = required<HTMLImageElement>("#vehicle-photo");
+const vehicleMediaFrame = required<HTMLElement>(".vehicle-media-frame");
+const vehicleMediaKind = required<HTMLElement>("#vehicle-media-kind");
+const vehicleCredit = required<HTMLAnchorElement>("#vehicle-credit");
+const missionSummary = required<HTMLElement>("#mission-summary");
+const dossierFacts = required<HTMLElement>("#dossier-facts");
+const canonicalNote = required<HTMLElement>("#canonical-note");
 const spaceMap = createSpaceMapController();
 
 let selectedVehicle = VEHICLES[0];
+let selectedTour: MissionTour;
 let progress = 0;
 let animationFrame: number | undefined;
 let animationStart: number | undefined;
@@ -56,29 +76,22 @@ let startProgress = 0;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 if (!selectedVehicle) throw new Error("The launch manifest is empty.");
+selectedTour = buildMissionTour(selectedVehicle);
 
 function isRunnable(vehicle: Vehicle): boolean {
-  return Boolean(
-    vehicle.phases?.length &&
-    (totalTravelYears(vehicle) !== undefined || hasEphemeris(vehicle)),
-  );
-}
-
-function hasEphemeris(vehicle: Vehicle): boolean {
-  return vehicle.id === "voyager" || vehicle.id === "parker";
+  return buildMissionTour(vehicle).playable;
 }
 
 function readyLaunchLabel(vehicle: Vehicle): string {
-  if (!isRunnable(vehicle)) return "PROFILE UNAVAILABLE";
-  return hasEphemeris(vehicle) ? "PLAY REAL TRACK" : "LAUNCH MODEL";
+  return buildMissionTour(vehicle).playable ? "TRY THE MISSION" : "EXPLAIN THE LIMIT";
 }
 
 function replayLabel(vehicle: Vehicle): string {
-  return hasEphemeris(vehicle) ? "REPLAY TRACK" : "REPLAY MODEL";
+  return buildMissionTour(vehicle).playable ? "REPLAY MISSION" : "REPLAY EXPLANATION";
 }
 
 function resumeLabel(vehicle: Vehicle): string {
-  return hasEphemeris(vehicle) ? "RESUME TRACK" : "RESUME MODEL";
+  return buildMissionTour(vehicle).playable ? "RESUME MISSION" : "RESUME EXPLANATION";
 }
 
 function cancelAnimation(): void {
@@ -132,6 +145,42 @@ function renderProfile(vehicle: Vehicle): void {
   renderPhaseKey(vehicle);
 }
 
+function renderTourStory(frame: MissionTourSample): void {
+  const chapterNumber = String(frame.chapterIndex + 1).padStart(2, "0");
+  const chapterCount = String(selectedTour.chapters.length).padStart(2, "0");
+  tourStep.textContent = `CHAPTER ${chapterNumber} / ${chapterCount}`;
+  tourHeadline.textContent = frame.chapter.title;
+  tourNote.textContent = frame.chapter.note;
+  tourEvidence.textContent = `EVIDENCE / ${frame.evidence}`;
+  tourStory.dataset.evidence = frame.evidence;
+}
+
+function renderDossier(vehicle: Vehicle): void {
+  const dossier = getVehicleDossier(vehicle.id);
+  vehiclePhoto.src = dossier.media.src;
+  vehiclePhoto.alt = dossier.media.alt;
+  vehicleMediaKind.textContent = dossier.media.kind.toUpperCase();
+  vehicleMediaFrame.dataset.fit = dossier.media.kind === "publisher cover" || vehicle.id === "daedalus"
+    ? "contain"
+    : "cover";
+  vehicleCredit.href = dossier.media.sourceUrl;
+  vehicleCredit.textContent = [dossier.media.credit, dossier.media.license]
+    .filter(Boolean)
+    .join(" · ");
+  missionSummary.textContent = dossier.missionSummary;
+  canonicalNote.textContent = `CANONICAL LIMIT / ${dossier.canonicalNote}`;
+  dossierFacts.replaceChildren();
+  for (const [index, fact] of dossier.facts.entries()) {
+    const row = document.createElement("div");
+    const term = document.createElement("dt");
+    const detail = document.createElement("dd");
+    term.textContent = `FACT ${String(index + 1).padStart(2, "0")}`;
+    detail.textContent = fact;
+    row.append(term, detail);
+    dossierFacts.append(row);
+  }
+}
+
 function arrivalContext(vehicle: Vehicle): string {
   if (vehicle.id === "parker") return "BOUND SOLAR ORBIT · NO OUTWARD ARRIVAL";
   if (!isRunnable(vehicle)) return vehicle.unavailableReason ?? "NO ARRIVAL MODEL";
@@ -141,6 +190,7 @@ function arrivalContext(vehicle: Vehicle): string {
 }
 
 function renderVehicle(vehicle: Vehicle, focusMap = false): void {
+  selectedTour = buildMissionTour(vehicle);
   selectedKicker.textContent = vehicle.kicker;
   selectedName.textContent = vehicle.name.toUpperCase();
   evidenceTag.textContent = vehicle.evidence;
@@ -150,11 +200,12 @@ function renderVehicle(vehicle: Vehicle, focusMap = false): void {
   arrivalSubline.textContent = arrivalContext(vehicle);
   vehicleDescription.textContent = vehicle.description;
   setTextWithPrefix(modelNote, "MODEL NOTE / ", vehicle.modelNote);
+  renderDossier(vehicle);
 
-  launchButton.disabled = !isRunnable(vehicle);
-  progressInput.disabled = !isRunnable(vehicle);
+  launchButton.disabled = false;
+  progressInput.disabled = false;
   launchLabel.textContent = readyLaunchLabel(vehicle);
-  progressLabel.textContent = hasEphemeris(vehicle) ? "JPL EPHEMERIS TIMELINE" : "MISSION TIME";
+  progressLabel.textContent = "GUIDED MISSION TOUR";
   timeHeliopause.textContent = formatDuration(crossingTime(vehicle, 122));
   timeOort.textContent = formatDuration(crossingTime(vehicle, 100_000));
   timeProxima.textContent = formatDuration(totalYears);
@@ -163,18 +214,24 @@ function renderVehicle(vehicle: Vehicle, focusMap = false): void {
 }
 
 function renderProgress(): void {
-  const sample = journeySample(selectedVehicle, progress);
+  const frame = sampleMissionTour(selectedTour, progress);
+  const sample = journeySample(selectedVehicle, frame.routeProgress);
   progressInput.value = String(Math.round(progress * 1_000));
 
-  const mapTelemetry = spaceMap.setProgress(progress);
-  elapsedReadout.textContent = mapTelemetry.mode === "ephemeris"
+  const mapTelemetry = spaceMap.setTourFrame(frame);
+  elapsedReadout.textContent = frame.routeMode === "off-map"
+    ? "NOT COMPARABLE"
+    : mapTelemetry.mode === "ephemeris"
     ? `${formatDuration(mapTelemetry.elapsedYears)}${mapTelemetry.date ? ` · ${mapTelemetry.date.slice(0, 4)}` : ""}`
-    : formatDuration(sample.elapsedYears);
-  speedReadout.textContent = formatSpeed(mapTelemetry.speedKmh ?? sample.speedKmh);
-  phaseReadout.textContent = sample.phase;
+    : formatDuration(frame.elapsedYears ?? mapTelemetry.elapsedYears);
+  speedReadout.textContent = frame.routeMode === "off-map"
+    ? "NOT COMPARABLE"
+    : formatSpeed(mapTelemetry.speedKmh ?? frame.speedKmh ?? sample.speedKmh);
+  phaseReadout.textContent = frame.phase;
+  renderTourStory(frame);
 
-  const chartX = progress * 1_000;
-  const chartY = 184 - speedFactorAt(selectedVehicle, progress) * 142;
+  const chartX = frame.routeProgress * 1_000;
+  const chartY = 184 - speedFactorAt(selectedVehicle, frame.routeProgress) * 142;
   chartCursor.setAttribute("x1", chartX.toFixed(1));
   chartCursor.setAttribute("x2", chartX.toFixed(1));
   chartPoint.setAttribute("cx", chartX.toFixed(1));
@@ -197,7 +254,7 @@ function selectVehicle(vehicle: Vehicle): void {
 
 function animate(timestamp: number): void {
   if (animationStart === undefined) animationStart = timestamp;
-  const duration = 12_000;
+  const duration = selectedTour.totalDurationMs;
   const elapsed = timestamp - animationStart;
   progress = Math.min(1, startProgress + (elapsed / duration) * (1 - startProgress));
   renderProgress();
@@ -213,7 +270,6 @@ function animate(timestamp: number): void {
 }
 
 function toggleLaunch(): void {
-  if (!isRunnable(selectedVehicle)) return;
   if (reducedMotion.matches) {
     progress = progress >= 1 ? 0 : 1;
     consoleElement.dataset.state = progress >= 1 ? "complete" : "ready";
@@ -237,7 +293,7 @@ function toggleLaunch(): void {
   startProgress = progress;
   animationStart = undefined;
   consoleElement.dataset.state = "running";
-  launchLabel.textContent = hasEphemeris(selectedVehicle) ? "PAUSE TRACK" : "PAUSE MODEL";
+  launchLabel.textContent = "PAUSE MISSION";
   animationFrame = requestAnimationFrame(animate);
 }
 

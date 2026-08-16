@@ -144,6 +144,27 @@
               <span class="evidence-tag" id="evidence-tag">MEASURED</span>
             </header>
 
+            <section class="vehicle-dossier" data-testid="vehicle-dossier" aria-label="Selected vehicle dossier">
+              <figure class="vehicle-media">
+                <div class="vehicle-media-frame">
+                  <img id="vehicle-photo" width="1200" height="800" alt="" />
+                  <span id="vehicle-media-kind">ARTIST RENDERING</span>
+                </div>
+                <figcaption>
+                  <a id="vehicle-credit" href="#sources" target="_blank" rel="noreferrer">IMAGE CREDIT</a>
+                </figcaption>
+              </figure>
+              <div class="dossier-copy">
+                <p class="dossier-label">MISSION DOSSIER / SOURCE-LABELLED</p>
+                <p id="mission-summary">Select a machine to inspect its documented route and the assumptions behind any onward comparison.</p>
+                <dl id="dossier-facts"></dl>
+                <p class="canonical-note" id="canonical-note"></p>
+                <button class="launch-button" type="button" data-testid="launch" id="launch-button">
+                  <span class="launch-icon" aria-hidden="true">▶</span><span id="launch-label">TRY THE MISSION</span>
+                </button>
+              </div>
+            </section>
+
             <div class="arrival-readout">
               <p>EARTH → PROXIMA CENTAURI</p>
               <strong data-testid="journey-time" id="journey-time">74,950 YEARS</strong>
@@ -210,6 +231,13 @@
                   </small>
                 </aside>
 
+                <aside class="tour-story" id="tour-story" data-testid="tour-story" aria-live="polite">
+                  <span id="tour-step">CHAPTER 01 / READY</span>
+                  <strong id="tour-headline">SELECT “TRY THE MISSION”</strong>
+                  <p id="tour-note">The camera will follow the documented mission first, then expose any model or counterfactual cut.</p>
+                  <small id="tour-evidence">EVIDENCE / MEASURED</small>
+                </aside>
+
                 <div class="map-hud map-hud-top">
                   <span id="map-scale">VIEW WIDTH · 12.00 LY</span>
                   <span id="map-resolution">NEPTUNE ORBIT = &lt;0.01 PX</span>
@@ -238,11 +266,8 @@
             </figure>
 
             <div class="mission-controls">
-              <button class="launch-button" type="button" data-testid="launch" id="launch-button">
-                <span class="launch-icon" aria-hidden="true">▶</span><span id="launch-label">LAUNCH MODEL</span>
-              </button>
               <label class="progress-control" for="journey-progress">
-                <span id="progress-label">MISSION TIME</span>
+                <span id="progress-label">GUIDED MISSION TOUR</span>
                 <input data-testid="journey-progress" id="journey-progress" type="range" min="0" max="1000" value="0" step="1" />
               </label>
               <button class="reset-button" type="button" id="reset-button">RESET ↺</button>

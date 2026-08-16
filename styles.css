@@ -510,6 +510,156 @@ h1 em {
   color: var(--violet);
 }
 
+.vehicle-dossier {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.92fr) minmax(300px, 1.08fr);
+  gap: clamp(1.25rem, 2.6vw, 2.5rem);
+  padding-block: clamp(1.5rem, 3vw, 2.75rem);
+  border-bottom: 1px solid var(--line);
+}
+
+.vehicle-media {
+  min-width: 0;
+  margin: 0;
+}
+
+.vehicle-media-frame {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(135deg, rgb(106 223 255 / 9%), transparent 55%),
+    #020906;
+  box-shadow: 7px 7px 0 #000;
+}
+
+.vehicle-media-frame::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background: repeating-linear-gradient(0deg, transparent 0 5px, rgb(184 255 61 / 4%) 5px 6px);
+}
+
+#vehicle-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.vehicle-media-frame[data-fit="contain"] #vehicle-photo {
+  object-fit: contain;
+  padding: 1rem;
+}
+
+#vehicle-media-kind {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  padding: 0.45rem 0.6rem;
+  color: var(--ink);
+  background: var(--cyan);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.vehicle-media figcaption {
+  margin-top: 0.75rem;
+  color: var(--muted);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.52rem;
+  line-height: 1.5;
+}
+
+#vehicle-credit {
+  color: var(--muted);
+}
+
+.dossier-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.dossier-label,
+.canonical-note {
+  font-family: "Cascadia Mono", Consolas, monospace;
+}
+
+.dossier-label {
+  margin-bottom: 0.7rem;
+  color: var(--orange);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+}
+
+#mission-summary {
+  max-width: 52rem;
+  margin-bottom: 1rem;
+  color: #d4ddd9;
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+  line-height: 1.5;
+}
+
+#dossier-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 0 1rem;
+  border-top: 1px solid var(--line);
+}
+
+#dossier-facts > div {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.65fr) minmax(0, 1fr);
+  gap: 0.6rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--line);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.56rem;
+}
+
+#dossier-facts > div:nth-child(odd) {
+  padding-right: 0.8rem;
+}
+
+#dossier-facts > div:nth-child(even) {
+  padding-left: 0.8rem;
+  border-left: 1px solid var(--line);
+}
+
+#dossier-facts dt {
+  color: var(--faint);
+}
+
+#dossier-facts dd {
+  margin: 0;
+  color: var(--paper);
+  font-family: "Arial Narrow", "Aptos Narrow", Arial, sans-serif;
+  font-size: 0.7rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.canonical-note {
+  margin: auto 0 1rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--orange);
+  color: var(--muted);
+  font-size: 0.54rem;
+  line-height: 1.55;
+}
+
+.dossier-copy .launch-button {
+  justify-content: center;
+  width: 100%;
+}
+
 .arrival-readout {
   padding-block: clamp(2rem, 4vw, 4rem);
 }
@@ -769,6 +919,65 @@ h1 em {
   margin: 0;
 }
 
+.tour-story {
+  position: absolute;
+  z-index: 5;
+  top: 4rem;
+  right: 1rem;
+  display: grid;
+  width: min(410px, calc(100% - 350px));
+  gap: 0.45rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--grid);
+  border-top: 3px solid var(--acid);
+  color: var(--paper);
+  background: rgb(2 9 6 / 88%);
+  box-shadow: 5px 5px 0 rgb(0 0 0 / 62%);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  pointer-events: none;
+}
+
+.tour-story span,
+.tour-story strong,
+.tour-story p,
+.tour-story small {
+  margin: 0;
+}
+
+.tour-story span {
+  color: var(--cyan);
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+}
+
+.tour-story strong {
+  color: var(--acid);
+  font-size: clamp(0.82rem, 1.2vw, 1.05rem);
+  line-height: 1.2;
+}
+
+.tour-story p {
+  color: var(--muted);
+  font-family: "Arial Narrow", "Aptos Narrow", Arial, sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.tour-story small {
+  color: var(--orange);
+  font-size: 0.48rem;
+  letter-spacing: 0.07em;
+}
+
+.tour-story[data-evidence="FICTION / CANON"],
+.tour-story[data-evidence="FICTION / INFERRED"] {
+  border-top-color: var(--violet);
+}
+
+.tour-story[data-evidence="COUNTERFACTUAL"] {
+  border-top-color: var(--orange);
+}
+
 .map-inspector p {
   color: var(--muted);
   font-size: 0.48rem;
@@ -902,7 +1111,7 @@ h1 em {
 
 .mission-controls {
   display: grid;
-  grid-template-columns: auto minmax(160px, 1fr) auto;
+  grid-template-columns: minmax(160px, 1fr) auto;
   gap: 1rem;
   align-items: end;
   padding-block: 1.5rem;
@@ -1387,6 +1596,20 @@ footer p:first-child {
     font-size: clamp(2.25rem, 13vw, 4rem);
   }
 
+  .vehicle-dossier {
+    grid-template-columns: 1fr;
+  }
+
+  #dossier-facts {
+    grid-template-columns: 1fr;
+  }
+
+  #dossier-facts > div:nth-child(odd),
+  #dossier-facts > div:nth-child(even) {
+    padding-inline: 0;
+    border-left: 0;
+  }
+
   .arrival-readout strong {
     font-size: clamp(2.2rem, 12vw, 4rem);
   }
@@ -1433,6 +1656,16 @@ footer p:first-child {
     display: none;
   }
 
+  .tour-story {
+    top: auto;
+    right: 0.7rem;
+    bottom: 3.8rem;
+    left: 0.7rem;
+    width: auto;
+    max-height: 150px;
+    overflow: hidden;
+  }
+
   .map-reticle {
     display: none;
   }
@@ -1443,13 +1676,11 @@ footer p:first-child {
   }
 
   .mission-controls {
-    position: sticky;
-    z-index: 10;
-    bottom: 0;
+    position: static;
     grid-template-columns: 1fr auto;
     padding: 0.75rem;
     background: #071511;
-    box-shadow: 0 -8px 20px rgb(0 0 0 / 55%);
+    box-shadow: none;
   }
 
   .progress-control {
