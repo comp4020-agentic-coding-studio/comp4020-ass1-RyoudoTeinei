@@ -5,6 +5,7 @@ import {
   constantTravelYears,
   journeySample,
   milestoneYears,
+  onwardComparisonYears,
   totalTravelYears,
 } from "../mission-data";
 
@@ -30,6 +31,8 @@ describe("journey model", () => {
     expect(parker).toBeTruthy();
     expect(parker?.phases?.length).toBeGreaterThan(2);
     expect(totalTravelYears(parker!)).toBeUndefined();
+    expect(onwardComparisonYears(parker!, 122)).toBeCloseTo(3, 0);
+    expect(onwardComparisonYears(parker!)).toBeCloseTo(6_623, 0);
   });
 
   it("moves a simulated craft from Earth to Proxima without overshooting", () => {

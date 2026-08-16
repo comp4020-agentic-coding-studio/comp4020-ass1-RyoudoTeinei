@@ -441,7 +441,7 @@ export const VEHICLES: Vehicle[] = [
       { label: "BOUND ORBIT CONTINUES", start: 0.82, end: 1, from: 1, to: 0.05 },
     ],
     description: "Parker owns the speed record because it repeatedly falls into the Sun's gravity well. Venus flybys remove orbital energy; the probe does not escape toward the stars.",
-    modelNote: "The chart sketches the real accelerate–decelerate orbit pattern, so there is no outward arrival model. Only as a separate, impossible thought experiment would freezing the 430,000 mph perihelion instant reduce the Proxima crossing to about 6,628 years.",
+    modelNote: "The chart sketches the real accelerate–decelerate orbit pattern, so there is no outward arrival model. As a separate, impossible thought experiment, freezing and redirecting the 692,018 km/h perihelion instant gives a Proxima-distance crossing of about 6,623 years.",
     sourceIds: ["parker", "parker-orbits"],
     route: {
       mission: {
@@ -636,6 +636,17 @@ export function totalTravelYears(vehicle: Vehicle): number | undefined {
   );
   if (averageFactor <= 0) return undefined;
   return constantTravelYears(vehicle.maxSpeedKmh * averageFactor);
+}
+
+export function onwardComparisonYears(
+  vehicle: Vehicle,
+  targetAu?: number,
+): number | undefined {
+  const onward = vehicle.route.onward;
+  if (onward.kind !== "constant" || onward.speedKmh <= 0) return undefined;
+  const distanceAu = (targetAu ?? onward.destination.au) - onward.startAu;
+  if (distanceAu <= 0) return undefined;
+  return (distanceAu * AU_KM) / onward.speedKmh / HOURS_PER_YEAR;
 }
 
 export function speedFactorAt(vehicle: Vehicle, progress: number): number {

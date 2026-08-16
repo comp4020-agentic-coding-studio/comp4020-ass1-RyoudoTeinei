@@ -4,6 +4,7 @@ import {
   formatSpeed,
   journeySample,
   milestoneYears,
+  onwardComparisonYears,
   profilePoints,
   speedFactorAt,
   totalTravelYears,
@@ -49,6 +50,7 @@ const selectedKicker = required<HTMLElement>("#selected-kicker");
 const selectedName = required<HTMLElement>("#selected-name");
 const evidenceTag = required<HTMLElement>("#evidence-tag");
 const journeyTime = required<HTMLElement>("#journey-time");
+const arrivalRoute = required<HTMLElement>("#arrival-route");
 const arrivalSubline = required<HTMLElement>("#arrival-subline");
 const launchButton = required<HTMLButtonElement>("#launch-button");
 const launchIcon = required<HTMLElement>("#launch-button .launch-icon");
@@ -519,7 +521,7 @@ function currentTourFrame(): MissionTourSample | PhysicalMissionTourSample {
 }
 
 function crossingTime(vehicle: Vehicle, au: number): number | undefined {
-  return milestoneYears(vehicle, au);
+  return milestoneYears(vehicle, au) ?? onwardComparisonYears(vehicle, au);
 }
 
 function setTextWithPrefix(
@@ -601,7 +603,7 @@ function renderDossier(vehicle: Vehicle): void {
 }
 
 function arrivalContext(vehicle: Vehicle): string {
-  if (vehicle.id === "parker") return "BOUND SOLAR ORBIT · NO OUTWARD ARRIVAL";
+  if (vehicle.id === "parker") return `IF ${formatSpeed(vehicle.maxSpeedKmh ?? 0)} WERE FROZEN OUTWARD · COUNTERFACTUAL`;
   if (!isRunnable(vehicle)) return vehicle.unavailableReason ?? "NO ARRIVAL MODEL";
   if (vehicle.evidence === "DESIGN STUDY") return "PUBLISHED PROFILE · MODELLED TO PROXIMA";
   if (vehicle.category === "fiction") return "FICTIONAL PROFILE · CONTINUITY LABELLED";
@@ -617,8 +619,14 @@ function renderVehicle(vehicle: Vehicle, focusMap = false): void {
   selectedName.textContent = vehicle.name.toUpperCase();
   evidenceTag.textContent = vehicle.evidence;
   evidenceTag.dataset.category = vehicle.category;
-  const totalYears = totalTravelYears(vehicle);
-  journeyTime.textContent = vehicle.id === "parker" ? "NO OUTWARD ARRIVAL" : formatDuration(totalYears);
+  const actualTravelYears = totalTravelYears(vehicle);
+  const displayedTravelYears = vehicle.id === "parker"
+    ? onwardComparisonYears(vehicle)
+    : actualTravelYears;
+  arrivalRoute.textContent = vehicle.id === "parker"
+    ? "PARKER PEAK → PROXIMA DISTANCE"
+    : "EARTH → PROXIMA CENTAURI";
+  journeyTime.textContent = formatDuration(displayedTravelYears);
   arrivalSubline.textContent = arrivalContext(vehicle);
   vehicleDescription.textContent = vehicle.description;
   setTextWithPrefix(modelNote, "MODEL NOTE / ", vehicle.modelNote);
@@ -633,7 +641,7 @@ function renderVehicle(vehicle: Vehicle, focusMap = false): void {
   updateTimeFlow();
   timeHeliopause.textContent = formatDuration(crossingTime(vehicle, 122));
   timeOort.textContent = formatDuration(crossingTime(vehicle, 100_000));
-  timeProxima.textContent = formatDuration(totalYears);
+  timeProxima.textContent = formatDuration(displayedTravelYears);
   renderProfile(vehicle);
   spaceMap.setVehicle(vehicle, focusMap);
 }
