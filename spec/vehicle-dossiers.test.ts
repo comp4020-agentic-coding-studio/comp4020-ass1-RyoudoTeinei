@@ -37,4 +37,16 @@ describe("vehicle dossiers", () => {
       expect(dossier.canonicalNote.trim().length).toBeGreaterThan(20);
     }
   });
+
+  it("labels modern Orion and Daedalus reconstructions honestly", () => {
+    const daedalus = getVehicleDossier("daedalus");
+    const orion = getVehicleDossier("orion");
+
+    expect(daedalus.media.kind).toBe("concept illustration");
+    expect(daedalus.media.credit).toContain("Joe Bergeron");
+    expect(daedalus.media.license).not.toMatch(/public domain/i);
+    expect(orion.media.kind).toBe("concept illustration");
+    expect(orion.media.credit).toContain("Real Engineering");
+    expect(orion.media.license).not.toMatch(/public domain/i);
+  });
 });

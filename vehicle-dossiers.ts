@@ -1,7 +1,7 @@
 import apollo10Src from "./assets/vehicles/apollo-10.jpg";
 import boeing737Src from "./assets/vehicles/boeing-737.jpg";
 import concordeSrc from "./assets/vehicles/concorde.jpg";
-import daedalusSrc from "./assets/vehicles/daedalus.png";
+import daedalusSrc from "./assets/vehicles/daedalus.jpg";
 import darkForestSrc from "./assets/vehicles/dark-forest.jpg";
 import discoverySrc from "./assets/vehicles/discovery-one.jpg";
 import enterpriseSrc from "./assets/vehicles/enterprise.jpg";
@@ -155,11 +155,11 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
     vehicleId: "daedalus",
     media: {
       src: daedalusSrc,
-      alt: "Schematic concept drawing of the two-stage Project Daedalus fusion starship",
+      alt: "Colour rendering of Project Daedalus under fusion-pulse thrust beside a distant planet",
       kind: "concept illustration",
-      credit: "Gerritse / Wikimedia Commons",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:Daedalus_ship.png",
-      license: "Public domain",
+      credit: "Joe Bergeron / Project Icarus gallery",
+      sourceUrl: "https://icarusinterstellar.wordpress.com/gallery/",
+      license: "© Joe Bergeron · gallery lists permission as pending",
     },
     facts: [
       "The British Interplanetary Society study ran from 1973 to 1978.",
@@ -193,11 +193,11 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
     vehicleId: "orion",
     media: {
       src: orionSrc,
-      alt: "NASA artist's concept of a Project Orion nuclear-pulse spacecraft above Earth",
+      alt: "Modern rendered reconstruction of a Project Orion nuclear-pulse spacecraft firing above Mars",
       kind: "concept illustration",
-      credit: "NASA / Wikimedia Commons",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:NASA-project-orion-artist.jpg",
-      license: "Public domain",
+      credit: "Real Engineering / YouTube",
+      sourceUrl: "https://www.youtube.com/watch?v=EVwlTsa9oMM",
+      license: "© Real Engineering · source-linked educational use",
     },
     facts: [
       "Project Orion proposed detonating nuclear pulse units behind a pusher plate.",
