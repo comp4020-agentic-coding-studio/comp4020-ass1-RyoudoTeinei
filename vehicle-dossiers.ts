@@ -4,6 +4,7 @@ import concordeSrc from "./assets/vehicles/concorde.jpg";
 import daedalusSrc from "./assets/vehicles/daedalus.jpg";
 import darkForestSrc from "./assets/vehicles/dark-forest.jpg";
 import discoverySrc from "./assets/vehicles/discovery-one.jpg";
+import dropletRenderSrc from "./assets/vehicles/droplet-render.png";
 import enterpriseSrc from "./assets/vehicles/enterprise.jpg";
 import f1Src from "./assets/vehicles/f1.jpg";
 import falconSrc from "./assets/vehicles/millennium-falcon.jpg";
@@ -12,7 +13,7 @@ import parkerSrc from "./assets/vehicles/parker.jpg";
 import starshotSrc from "./assets/vehicles/starshot.jpg";
 import voyagerSrc from "./assets/vehicles/voyager.png";
 import wanderingEarthSrc from "./assets/vehicles/wandering-earth.jpg";
-import warhammerSrc from "./assets/vehicles/warhammer.jpg";
+import macraggesHonourSrc from "./assets/vehicles/macragges-honour.jpg";
 
 export type VehicleMediaKind =
   | "mission photograph"
@@ -20,7 +21,8 @@ export type VehicleMediaKind =
   | "concept illustration"
   | "publisher cover"
   | "licensed replica"
-  | "official franchise artwork";
+  | "official franchise artwork"
+  | "visual reconstruction";
 
 export interface VehicleMedia {
   src: string;
@@ -301,38 +303,40 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
   droplet: {
     vehicleId: "droplet",
     media: {
-      src: darkForestSrc,
-      alt: "Tor Books cover of The Dark Forest, source novel for the Droplet",
-      kind: "publisher cover",
-      credit: "Tor Books / Macmillan",
+      src: dropletRenderSrc,
+      alt: "Original prose-based rendering of the Droplet as a seamless mirror-silver teardrop probe",
+      kind: "visual reconstruction",
+      credit: "Original visual reconstruction generated for this explainer",
       sourceUrl: "https://us.macmillan.com/books/9780765386694/thedarkforest/",
+      license: "Original course-project asset · not canonical franchise artwork",
     },
     facts: [
       "The Droplet is a Trisolaran probe in The Dark Forest.",
       "Its extraordinary manoeuvres matter more than a stable cruise figure.",
       "The novel does not define a complete Earth-to-Proxima transfer profile.",
-      "There is no official canonical exterior image in the publisher material.",
+      "The rendered exterior is an original reconstruction from the prose description.",
     ],
     missionSummary: "The Droplet is a compact Trisolaran probe sent ahead of the main invasion fleet in Liu Cixin's The Dark Forest. Its perfectly reflective strong-interaction shell, extraordinary acceleration and abrupt direction changes allow it to transform from an apparent diplomatic object into a weapon against the human fleet.",
-    canonicalNote: "No canonical exterior is available. The official English-edition cover identifies the source novel and is not an image of the probe.",
+    canonicalNote: "This is an original prose-based visual reconstruction, not official Three-Body artwork or a canonical exterior design.",
   },
   warhammer: {
     vehicleId: "warhammer",
     media: {
-      src: warhammerSrc,
-      alt: "A Word Bearers battlefleet above Calth in official Horus Heresy artwork",
+      src: macraggesHonourSrc,
+      alt: "Macragge's Honour, the blue-and-gold Gloriana-class flagship, rendered in Battlefleet Gothic: Armada II",
       kind: "official franchise artwork",
-      credit: "Rhys Pugh / Games Workshop",
-      sourceUrl: "https://www.warhammer-community.com/en-gb/articles/fmeastqX/horus-heresy-history-the-age-of-darkness-has-been-inspiring-artists-for-decades/",
+      credit: "Tindalos Interactive / Focus Entertainment / Games Workshop",
+      sourceUrl: "https://www.youtube.com/watch?v=3r3VJPwbxac",
+      license: "Battlefleet Gothic: Armada II promotional render · © respective rights holders",
     },
     facts: [
-      "The image represents an Imperial-era battlefleet rather than one named vessel.",
-      "Warhammer voidships enter the Warp for faster-than-light voyages.",
+      "Macragge's Honour is a 26-kilometre Gloriana-class battleship.",
+      "It serves as the Ultramarines' flagship and Roboute Guilliman's command ship.",
+      "Its realspace drives are distinct from its faster-than-light Warp transit.",
       "Warp duration and real-space arrival time are deliberately uncertain.",
-      "Normal-space route length cannot predict the story's travel time.",
     ],
-    missionSummary: "Imperial voidships are immense gothic spacecraft that carry the Imperium of Man between worlds in Warhammer 40,000. Conventional drives move them through realspace, while Warp engines, a Navigator and a protective Gellar field enable dangerous faster-than-light passages through the Immaterium.",
-    canonicalNote: "This is official franchise battlefleet art used representatively; it is not a technical portrait of a specific Imperial voidship.",
+    missionSummary: "Macragge's Honour is the immense Gloriana-class flagship of the Ultramarines and a mobile command centre for Roboute Guilliman. Conventional drives move the cathedral-like warship through realspace; a Warp engine, Navigator and protective Gellar field let it attempt dangerous faster-than-light passages through the Immaterium.",
+    canonicalNote: "The image is the named ship's official Battlefleet Gothic: Armada II adaptation; the hours-to-weeks travel range remains a lore comparison, not a dependable timetable.",
   },
 };
 

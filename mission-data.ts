@@ -641,21 +641,21 @@ export const VEHICLES: Vehicle[] = [
   },
   {
     id: "warhammer",
-    name: "Imperial voidship",
-    kicker: "WARHAMMER 40,000",
+    name: "Macragge's Honour",
+    kicker: "GLORIANA-CLASS FLAGSHIP",
     category: "fiction",
     evidence: "NOT COMPARABLE",
-    description: "A voyage through the Warp is deliberately uncertain in duration and does not trace this route through normal space.",
-    modelNote: "Warp transit has no dependable conversion to normal-space speed. The headline therefore gives a deliberately broad hours-to-weeks lore range for a short routine hop, while warning that the Immaterium can make even that estimate fail.",
+    description: "The Ultramarines' 26-kilometre Gloriana-class flagship crosses realspace under conventional power, then translates into the Warp for interstellar voyages.",
+    modelNote: "Macragge's Honour has no dependable Warp-to-normal-space speed conversion. The headline therefore gives a deliberately broad hours-to-weeks lore range for a short routine hop, while warning that the Immaterium can make even that estimate fail.",
     sourceIds: ["warhammer"],
     unavailableReason: "THE WARP · OFF THIS PHYSICS",
     arrivalEstimate: {
-      routeLabel: "ROUTINE WARP HOP → PROXIMA DISTANCE",
+      routeLabel: "MACRAGGE'S HONOUR WARP HOP → PROXIMA DISTANCE",
       display: "HOURS–WEEKS",
       context: "LORE-SCALE RANGE · WARP ARRIVAL TIME IS UNRELIABLE",
       evidence: "LORE RANGE",
     },
-    route: offMap("Warp transit is deliberately non-linear and temporally uncertain, so no finite crossing time is assigned."),
+    route: offMap("Macragge's Honour translates through the Warp rather than tracing a finite-speed line across this normal-space map."),
   },
 ];
 

@@ -69,4 +69,18 @@ describe("vehicle dossiers", () => {
     expect(orion.missionSummary).toMatch(/chemical rockets/i);
     expect(orion.missionSummary).toMatch(/pusher plate/i);
   });
+
+  it("uses a named Gloriana and an honestly labelled Droplet reconstruction", () => {
+    const droplet = getVehicleDossier("droplet");
+    const macraggesHonour = getVehicleDossier("warhammer");
+    const warhammerVehicle = VEHICLES.find((vehicle) => vehicle.id === "warhammer");
+
+    expect(droplet.media.kind).toBe("visual reconstruction");
+    expect(droplet.media.src).toContain("droplet-render");
+    expect(droplet.canonicalNote).toMatch(/not official|not .*canonical/i);
+    expect(warhammerVehicle?.name).toBe("Macragge's Honour");
+    expect(macraggesHonour.media.alt).toContain("Macragge's Honour");
+    expect(macraggesHonour.facts.join(" ")).toMatch(/Gloriana-class/i);
+    expect(macraggesHonour.missionSummary).toMatch(/Roboute Guilliman/i);
+  });
 });
