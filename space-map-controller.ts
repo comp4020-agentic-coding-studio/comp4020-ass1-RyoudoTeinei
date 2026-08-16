@@ -590,7 +590,7 @@ export function createSpaceMapController(): SpaceMapController {
       elements.scope.textContent = `OORT CONTEXT · ${Math.round(visibleAu).toLocaleString("en-AU")} AU WIDE`;
     } else if (visibleAu >= 800) {
       elements.scope.textContent = `OORT SCALE · ${Math.round(visibleAu).toLocaleString("en-AU")} AU WIDE`;
-    } else if (visibleAu >= 80) {
+    } else if (visibleAu >= 300) {
       elements.scope.textContent = `HELIOPAUSE SCALE · ${Math.round(visibleAu).toLocaleString("en-AU")} AU WIDE`;
     } else {
       elements.scope.textContent = `PLANETARY SCALE · ${visibleAu.toFixed(1)} AU WIDE`;
