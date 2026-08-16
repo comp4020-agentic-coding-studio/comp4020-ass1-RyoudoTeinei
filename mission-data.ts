@@ -1,7 +1,8 @@
 export const AU_KM = 149_597_870.7;
 export const HOURS_PER_YEAR = 8_766;
 export const C_KMH = 1_079_252_849;
-export const PROXIMA_AU = 268_775;
+// 4.2465 light-years from the corrected CNS5 catalogue used by the map.
+export const PROXIMA_AU = 268_553.234;
 
 export type VehicleCategory = "measured" | "study" | "fiction";
 export type EvidenceLevel =
@@ -304,11 +305,10 @@ export function totalTravelYears(vehicle: Vehicle): number | undefined {
   if (vehicle.maxSpeedKmh === undefined) return undefined;
   const phases = vehicle.phases;
   if (!phases?.length) return undefined;
-  const sampleCount = 500;
-  const averageFactor = Array.from(
-    { length: sampleCount },
-    (_, index) => speedFactorAt(vehicle, (index + 0.5) / sampleCount),
-  ).reduce((sum, factor) => sum + factor, 0) / sampleCount;
+  const averageFactor = phases.reduce(
+    (sum, phase) => sum + phaseAreaUntil(phase, phase.end),
+    0,
+  );
   if (averageFactor <= 0) return undefined;
   return constantTravelYears(vehicle.maxSpeedKmh * averageFactor);
 }
@@ -335,19 +335,28 @@ export function phaseAt(vehicle: Vehicle, progress: number): string {
   );
 }
 
+function phaseAreaUntil(phase: Phase, progress: number): number {
+  const end = Math.max(phase.start, Math.min(phase.end, progress));
+  const duration = end - phase.start;
+  if (duration <= 0) return 0;
+  const span = Math.max(phase.end - phase.start, Number.EPSILON);
+  const local = duration / span;
+  const endFactor = phase.from + (phase.to - phase.from) * local;
+  return duration * (phase.from + endFactor) / 2;
+}
+
 function integratedFraction(vehicle: Vehicle, progress: number): number {
   if (!vehicle.phases?.length) return 0;
   const p = Math.max(0, Math.min(1, progress));
-  const steps = 240;
-  let partial = 0;
-  let total = 0;
-  for (let index = 0; index < steps; index += 1) {
-    const midpoint = (index + 0.5) / steps;
-    const contribution = speedFactorAt(vehicle, midpoint);
-    total += contribution;
-    if (midpoint <= p) partial += contribution;
-  }
+  const total = vehicle.phases.reduce(
+    (sum, phase) => sum + phaseAreaUntil(phase, phase.end),
+    0,
+  );
   if (total <= 0) return p;
+  const partial = vehicle.phases.reduce(
+    (sum, phase) => sum + phaseAreaUntil(phase, p),
+    0,
+  );
   return Math.max(0, Math.min(1, partial / total));
 }
 
@@ -368,11 +377,16 @@ export function milestoneYears(vehicle: Vehicle, milestoneAu: number): number | 
   const total = totalTravelYears(vehicle);
   if (total === undefined || !vehicle.phases?.length) return undefined;
   const targetFraction = (milestoneAu - 1) / (PROXIMA_AU - 1);
-  for (let index = 0; index <= 1_000; index += 1) {
-    const p = index / 1_000;
-    if (integratedFraction(vehicle, p) >= targetFraction) return total * p;
+  if (targetFraction <= 0) return 0;
+  if (targetFraction >= 1) return total;
+  let lower = 0;
+  let upper = 1;
+  for (let iteration = 0; iteration < 48; iteration += 1) {
+    const midpoint = (lower + upper) / 2;
+    if (integratedFraction(vehicle, midpoint) < targetFraction) lower = midpoint;
+    else upper = midpoint;
   }
-  return total;
+  return total * upper;
 }
 
 export function profilePoints(vehicle: Vehicle, count = 120): string {

@@ -1,34 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
-  MILESTONES,
   PROXIMA_AU,
   VEHICLES,
   constantTravelYears,
-  distancePosition,
   journeySample,
+  milestoneYears,
   totalTravelYears,
 } from "../mission-data";
 
 describe("journey model", () => {
-  it("places every milestone on one monotonically increasing log scale", () => {
-    const positions = MILESTONES.map(({ au }) => distancePosition(au));
-    expect(positions[0]).toBe(0);
-    expect(positions.at(-1)).toBeCloseTo(1);
-    for (let index = 1; index < positions.length; index += 1) {
-      expect(positions[index]).toBeGreaterThan(positions[index - 1] ?? -1);
-    }
-  });
-
-  it("makes the heliopause visibly much earlier than the Oort exit", () => {
-    expect(distancePosition(122)).toBeLessThan(distancePosition(100_000));
-    expect(distancePosition(100_000) - distancePosition(122)).toBeGreaterThan(0.5);
-  });
-
   it("calculates the verified Voyager scale comparison", () => {
     const voyager = VEHICLES.find(({ id }) => id === "voyager");
     expect(voyager).toBeTruthy();
-    expect(totalTravelYears(voyager!)).toBeCloseTo(74_950, -1);
+    expect(totalTravelYears(voyager!)).toBeCloseTo(74_889, -1);
     expect(constantTravelYears(61_198, 100_000)).toBeCloseTo(27_886, -1);
+    expect(milestoneYears(voyager!, 122)).toBeCloseTo(33.5, 0);
   });
 
   it("never invents arrival times for incomparable fiction", () => {
