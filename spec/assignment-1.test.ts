@@ -26,11 +26,17 @@ describe("Assignment 1: interstellar journey explainer", () => {
   it("keeps the true-scale space map and speed profile in the explanation", () => {
     const map = doc.querySelector('[data-testid="space-map"]');
     expect(map).toBeTruthy();
-    expect(map?.tagName).toBe("svg");
-    expect(map?.querySelector("title")?.textContent).toMatch(/space|solar|route/i);
-    expect(map?.querySelector("desc")?.textContent).toMatch(/linear|scale|ecliptic/i);
+    expect(map?.tagName).toBe("CANVAS");
+    expect(map?.getAttribute("aria-label")).toMatch(/space|solar|route/i);
+    const descriptionId = map?.getAttribute("aria-describedby");
+    expect(descriptionId).toBeTruthy();
+    expect(doc.getElementById(descriptionId ?? "")?.textContent).toMatch(
+      /linear|scale|ecliptic/i,
+    );
     expect(doc.querySelector('[data-map-action="zoom-in"]')).toBeTruthy();
     expect(doc.querySelector('[data-map-action="zoom-out"]')).toBeTruthy();
+    expect(doc.querySelector('[data-testid="map-inspector"]')).toBeTruthy();
+    expect(doc.querySelector('[role="tooltip"]')).toBeTruthy();
     expect(doc.querySelector('[data-testid="speed-profile"]')).toBeTruthy();
     expect(doc.querySelector('[data-testid="journey-time"]')).toBeTruthy();
   });
