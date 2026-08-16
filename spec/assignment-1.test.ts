@@ -33,4 +33,22 @@ describe("Assignment 1: interstellar journey explainer", () => {
     expect(doc.querySelector('[data-testid="model-note"]')).toBeTruthy();
     expect(doc.querySelectorAll("#sources a[href]").length).toBeGreaterThan(5);
   });
+
+  it("uses native keyboard controls without positive tabindex values", () => {
+    expect(doc.querySelectorAll("[tabindex]").length).toBe(0);
+    for (const option of doc.querySelectorAll("[data-vehicle]")) {
+      expect(option.tagName).toBe("BUTTON");
+      expect(option.getAttribute("type")).toBe("button");
+    }
+    expect(doc.querySelector('[data-testid="journey-progress"]')?.getAttribute("type")).toBe("range");
+  });
+
+  it("keeps the runtime entirely client-side", () => {
+    for (const script of doc.querySelectorAll("script[src]")) {
+      expect(script.getAttribute("src")).toMatch(/^\.\//);
+    }
+    for (const stylesheet of doc.querySelectorAll('link[rel="stylesheet"]')) {
+      expect(stylesheet.getAttribute("href")).toMatch(/^\.\//);
+    }
+  });
 });
