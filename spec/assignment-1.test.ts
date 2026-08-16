@@ -78,6 +78,8 @@ describe("Assignment 1: interstellar journey explainer", () => {
     expect(doc.querySelector('[data-testid="map-clock-panel"]')).toBeTruthy();
     expect(doc.querySelector("#map-time-pace")).toBeTruthy();
     expect(doc.querySelector("#map-elapsed")).toBeTruthy();
+    expect(doc.querySelector("#map-elapsed-value")).toBeTruthy();
+    expect(doc.querySelector("#map-elapsed-unit")).toBeTruthy();
     expect(doc.querySelector("#map-duration-analogy")).toBeTruthy();
     expect(doc.querySelector('.rate-control span')?.textContent).toMatch(/physical time/i);
     expect(doc.querySelector("#phase-description")).toBeTruthy();

@@ -1033,10 +1033,25 @@ h1 em {
 }
 
 #map-elapsed {
+  display: grid;
+  grid-template-columns: 2ch 10ch 8ch;
+  align-items: baseline;
+  justify-content: center;
+  width: 100%;
+  column-gap: 0.6ch;
   color: var(--paper);
   font-size: clamp(1.45rem, 2.3vw, 2rem);
+  font-variant-numeric: tabular-nums lining-nums;
   line-height: 1;
   text-align: center;
+}
+
+#map-elapsed-value {
+  text-align: right;
+}
+
+#map-elapsed-unit {
+  text-align: left;
 }
 
 #map-duration-analogy {

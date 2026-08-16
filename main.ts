@@ -94,7 +94,8 @@ const dossierFacts = required<HTMLElement>("#dossier-facts");
 const canonicalNote = required<HTMLElement>("#canonical-note");
 const mapTimeFlow = required<HTMLElement>("#map-time-flow");
 const mapTimePace = required<HTMLElement>("#map-time-pace");
-const mapElapsed = required<HTMLElement>("#map-elapsed");
+const mapElapsedValue = required<HTMLElement>("#map-elapsed-value");
+const mapElapsedUnit = required<HTMLElement>("#map-elapsed-unit");
 const mapDurationAnalogy = required<HTMLElement>("#map-duration-analogy");
 const spaceMap = createSpaceMapController();
 
@@ -394,6 +395,42 @@ function formatPhysicalElapsed(seconds: number): string {
   return formatDuration(seconds / JULIAN_YEAR_SECONDS);
 }
 
+function mapElapsedParts(seconds: number): { value: string; unit: string } {
+  if (seconds < 60) {
+    return {
+      value: seconds.toLocaleString("en-AU", {
+        minimumFractionDigits: seconds < 10 ? 1 : 0,
+        maximumFractionDigits: 1,
+      }),
+      unit: "SECONDS",
+    };
+  }
+  if (seconds < 3_600) {
+    return {
+      value: `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60).toString().padStart(2, "0")}`,
+      unit: "MINUTES",
+    };
+  }
+  if (seconds < 86_400) {
+    return {
+      value: `${Math.floor(seconds / 3_600)}:${Math.floor((seconds % 3_600) / 60).toString().padStart(2, "0")}`,
+      unit: "HOURS",
+    };
+  }
+  if (seconds < JULIAN_YEAR_SECONDS) {
+    return {
+      value: (seconds / 86_400).toLocaleString("en-AU", { maximumFractionDigits: 1 }),
+      unit: "DAYS",
+    };
+  }
+  return {
+    value: (seconds / JULIAN_YEAR_SECONDS).toLocaleString("en-AU", {
+      maximumFractionDigits: 1,
+    }),
+    unit: "YEARS",
+  };
+}
+
 function timedMissionStage(): (MissionFlowStage & AutoTimeStage) | undefined {
   if (!selectedTimeline) return undefined;
   const stage = missionFlowStages.find((candidate) => {
@@ -609,13 +646,16 @@ function renderProgress(): void {
   if (selectedTimeline) {
     const elapsedYears = physicalElapsedSeconds / JULIAN_YEAR_SECONDS;
     const analogy = timeAnalogyAt(elapsedYears);
-    mapElapsed.textContent = `T+ ${formatPhysicalElapsed(physicalElapsedSeconds)}`;
+    const elapsed = mapElapsedParts(physicalElapsedSeconds);
+    mapElapsedValue.textContent = elapsed.value;
+    mapElapsedUnit.textContent = elapsed.unit;
     mapDurationAnalogy.textContent = [analogy.headline, analogy.detail]
       .filter(Boolean)
       .join(" · ");
     mapDurationAnalogy.dataset.source = analogy.sourceId ?? "intro";
   } else {
-    mapElapsed.textContent = "NO FINITE ELAPSED TIME";
+    mapElapsedValue.textContent = "—";
+    mapElapsedUnit.textContent = "NO CLOCK";
     mapDurationAnalogy.textContent = "NOT COMPARABLE TO A LINEAR CLOCK";
     mapDurationAnalogy.dataset.source = "none";
   }
