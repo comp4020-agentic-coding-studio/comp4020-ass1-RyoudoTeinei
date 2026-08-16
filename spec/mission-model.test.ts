@@ -3,6 +3,7 @@ import {
   PROXIMA_AU,
   VEHICLES,
   constantTravelYears,
+  formatDuration,
   journeySample,
   milestoneYears,
   onwardComparisonYears,
@@ -18,11 +19,38 @@ describe("journey model", () => {
     expect(milestoneYears(voyager!, 122)).toBeCloseTo(33.5, 0);
   });
 
+  it("keeps useful precision for human-scale interstellar estimates", () => {
+    expect(formatDuration(42.465)).toBe("42.5 YEARS");
+    expect(formatDuration(21.25)).toBe("21.3 YEARS");
+  });
+
   it("never invents arrival times for incomparable fiction", () => {
     for (const id of ["enterprise", "millennium-falcon", "droplet", "warhammer"]) {
       const vehicle = VEHICLES.find((item) => item.id === id);
       expect(vehicle).toBeTruthy();
       expect(totalTravelYears(vehicle!)).toBeUndefined();
+    }
+  });
+
+  it("gives every non-runnable selection an explicit comparison estimate", () => {
+    const estimates = Object.fromEntries(
+      VEHICLES.filter(({ arrivalEstimate }) => arrivalEstimate)
+        .map((vehicle) => [vehicle.id, vehicle.arrivalEstimate]),
+    );
+
+    expect(estimates.orion?.years).toBeCloseTo(42.5, 1);
+    expect(estimates.discovery?.years).toBeCloseTo(95_900, -2);
+    expect((estimates.enterprise?.years ?? 0) * 365.25).toBeCloseTo(7.2, 1);
+    expect((estimates["millennium-falcon"]?.years ?? 0) * 8_766).toBeCloseTo(4.25, 1);
+    expect(estimates.droplet?.years).toBeCloseTo(42.5, 1);
+    expect(estimates.warhammer?.display).toBe("HOURS–WEEKS");
+
+    for (const vehicle of VEHICLES) {
+      if (totalTravelYears(vehicle) !== undefined) continue;
+      expect(
+        vehicle.arrivalEstimate ?? onwardComparisonYears(vehicle),
+        `${vehicle.name} needs an explicit comparison or range`,
+      ).toBeTruthy();
     }
   });
 

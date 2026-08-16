@@ -1,6 +1,7 @@
 export const AU_KM = 149_597_870.7;
 export const HOURS_PER_YEAR = 8_766;
 export const C_KMH = 1_079_252_849;
+export const PROXIMA_LY = 4.2465;
 // 4.2465 light-years from the corrected CNS5 catalogue used by the map.
 export const PROXIMA_AU = 268_553.234;
 
@@ -149,6 +150,13 @@ export interface Vehicle {
   modelNote: string;
   sourceIds: string[];
   unavailableReason?: string;
+  arrivalEstimate?: {
+    routeLabel: string;
+    years?: number;
+    display?: string;
+    context: string;
+    evidence: "DERIVED" | "ILLUSTRATIVE" | "LORE RANGE";
+  };
   route: VehicleRoute;
 }
 
@@ -506,9 +514,15 @@ export const VEHICLES: Vehicle[] = [
     category: "study",
     evidence: "DESIGN STUDY",
     description: "Orion accelerates by detonating nuclear pulse units behind a pusher plate. It is a propulsion family, not one vehicle with one honest arrival time.",
-    modelNote: "No universal speed is plotted. A trustworthy calculation requires choosing a specific Orion point design, mass, pulse unit and mission.",
+    modelNote: "Orion has no universal speed, so the headline deliberately selects the 0.1c interstellar benchmark discussed in NASA's survey of Orion-era concepts. The 42.5-year result is a coast-only distance scale, not one finished Orion point design.",
     sourceIds: ["orion"],
     unavailableReason: "NO SINGLE ORION PROFILE",
+    arrivalEstimate: {
+      routeLabel: "SELECTED ORION 0.1C → PROXIMA DISTANCE",
+      years: PROXIMA_LY / 0.1,
+      context: "0.1C INTERSTELLAR ORION BENCHMARK · COAST-ONLY SCALE",
+      evidence: "DERIVED",
+    },
     route: offMap("Project Orion is a propulsion family; no single point design is selected for a finite route."),
   },
   {
@@ -560,9 +574,15 @@ export const VEHICLES: Vehicle[] = [
     category: "fiction",
     evidence: "NOT COMPARABLE",
     description: "Discovery makes Jupiter feel like a destination, not a waypoint. Neither film nor novel gives one canonical interstellar cruise speed suitable for this scale.",
-    modelNote: "The film travels to Jupiter; the novel continues toward Saturn after a Jupiter assist. No invented km/h value is used.",
+    modelNote: "The film's Jupiter voyage is treated as an 18-month narrative benchmark. Reapplying that average Earth-to-Jupiter pace to Proxima gives about 95,900 years; it is not a reconstructed burn plan or canonical interstellar mission.",
     sourceIds: ["discovery"],
     unavailableReason: "NO CANONICAL INTERSTELLAR SPEED",
+    arrivalEstimate: {
+      routeLabel: "DISCOVERY JUPITER PACE → PROXIMA DISTANCE",
+      years: ((PROXIMA_AU - 1) / (5.2 - 1)) * 1.5,
+      context: "18-MONTH FILM VOYAGE REAPPLIED AS AN AVERAGE PACE",
+      evidence: "DERIVED",
+    },
     route: offMap("Discovery's Jupiter or Saturn mission can be described, but it supplies no canonical interstellar transfer profile."),
   },
   {
@@ -572,9 +592,15 @@ export const VEHICLES: Vehicle[] = [
     category: "fiction",
     evidence: "NOT COMPARABLE",
     description: "Warp travel changes the geometry of the trip rather than offering a conventional engine speed that belongs on this chart.",
-    modelNote: "Warp factors vary by Star Trek continuity and are not converted into a fake km/h figure. The affectionate 'Silver Lady' name refers here to NCC-1701, especially the refit-era ship.",
+    modelNote: "Warp factors vary by Star Trek continuity. The headline explicitly chooses the TOS-era cubic convention at warp 6 (216c), producing about 7.2 days to the present Proxima distance; it is an illustrative rule selection, not a universal Star Trek timetable.",
     sourceIds: ["enterprise"],
     unavailableReason: "WARP SCALE · OFF THIS PHYSICS",
+    arrivalEstimate: {
+      routeLabel: "ENTERPRISE WARP 6 → PROXIMA DISTANCE",
+      years: PROXIMA_LY / 216,
+      context: "TOS-ERA CUBIC CONVENTION · WARP 6 = 216C",
+      evidence: "ILLUSTRATIVE",
+    },
     route: offMap("Warp changes the fictional geometry of travel and has no finite velocity on this linear map."),
   },
   {
@@ -584,9 +610,15 @@ export const VEHICLES: Vehicle[] = [
     category: "fiction",
     evidence: "NOT COMPARABLE",
     description: "A hyperdrive rating describes a fictional travel system, not a sustained velocity through ordinary space.",
-    modelNote: "No canon-consistent linear speed is plotted; screen travel times vary with route and story.",
+    modelNote: "Class 0.5 is a hyperdrive rating, not a velocity. Because screen travel times vary by route and story, the headline uses a deliberately round 1 light-year-per-hour yardstick—about 4.2 hours to Proxima—and labels it illustrative rather than canonical.",
     sourceIds: ["falcon"],
     unavailableReason: "HYPERSPACE · OFF THIS PHYSICS",
+    arrivalEstimate: {
+      routeLabel: "FALCON HYPERSPACE → PROXIMA DISTANCE",
+      years: PROXIMA_LY / HOURS_PER_YEAR,
+      context: "ILLUSTRATIVE 1 LIGHT-YEAR / HOUR · NOT A CLASS 0.5 CONVERSION",
+      evidence: "ILLUSTRATIVE",
+    },
     route: offMap("Hyperspace does not trace a finite-speed route through this normal-space coordinate system."),
   },
   {
@@ -596,9 +628,15 @@ export const VEHICLES: Vehicle[] = [
     category: "fiction",
     evidence: "NOT COMPARABLE",
     description: "The Droplet's terrifying manoeuvres matter more than a single cruise figure, and the story does not provide a clean Proxima mission profile.",
-    modelNote: "No unsupported decimal fraction of light speed is invented for this comparison.",
+    modelNote: "The headline borrows a 0.1c interstellar cruise scale from the Trisolaran journey context, giving about 42.5 years across the present Proxima distance. It is not the Droplet's fleet-attack speed or a complete canonical transfer profile.",
     sourceIds: ["three-body"],
     unavailableReason: "NO COMPLETE TRANSFER PROFILE",
+    arrivalEstimate: {
+      routeLabel: "DROPLET 0.1C → PROXIMA DISTANCE",
+      years: PROXIMA_LY / 0.1,
+      context: "NOVEL-DERIVED INTERSTELLAR CRUISE SCALE · NOT ITS ATTACK SPEED",
+      evidence: "DERIVED",
+    },
     route: offMap("The source does not define a complete departure-to-destination transfer profile."),
   },
   {
@@ -608,9 +646,15 @@ export const VEHICLES: Vehicle[] = [
     category: "fiction",
     evidence: "NOT COMPARABLE",
     description: "A voyage through the Warp is deliberately uncertain in duration and does not trace this route through normal space.",
-    modelNote: "FTL setting logic is shown as incomparable rather than reduced to a misleading speed.",
+    modelNote: "Warp transit has no dependable conversion to normal-space speed. The headline therefore gives a deliberately broad hours-to-weeks lore range for a short routine hop, while warning that the Immaterium can make even that estimate fail.",
     sourceIds: ["warhammer"],
     unavailableReason: "THE WARP · OFF THIS PHYSICS",
+    arrivalEstimate: {
+      routeLabel: "ROUTINE WARP HOP → PROXIMA DISTANCE",
+      display: "HOURS–WEEKS",
+      context: "LORE-SCALE RANGE · WARP ARRIVAL TIME IS UNRELIABLE",
+      evidence: "LORE RANGE",
+    },
     route: offMap("Warp transit is deliberately non-linear and temporally uncertain, so no finite crossing time is assigned."),
   },
 ];
@@ -750,7 +794,7 @@ export function formatDuration(years: number | undefined): string {
   if (years === undefined) return "NOT COMPARABLE";
   if (years < 1 / 365.25) return `${Math.round(years * 365.25 * 24)} HOURS`;
   if (years < 1) return `${Math.round(years * 365.25)} DAYS`;
-  if (years < 100) return `${years.toFixed(years < 10 ? 1 : 0)} YEARS`;
+  if (years < 100) return `${years.toFixed(1)} YEARS`;
   return `${Math.round(years).toLocaleString("en-AU")} YEARS`;
 }
 

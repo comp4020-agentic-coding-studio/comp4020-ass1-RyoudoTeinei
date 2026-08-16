@@ -603,6 +603,9 @@ function renderDossier(vehicle: Vehicle): void {
 }
 
 function arrivalContext(vehicle: Vehicle): string {
+  if (vehicle.arrivalEstimate) {
+    return `${vehicle.arrivalEstimate.context} · ${vehicle.arrivalEstimate.evidence}`;
+  }
   if (vehicle.id === "parker") return `IF ${formatSpeed(vehicle.maxSpeedKmh ?? 0)} WERE FROZEN OUTWARD · COUNTERFACTUAL`;
   if (!isRunnable(vehicle)) return vehicle.unavailableReason ?? "NO ARRIVAL MODEL";
   if (vehicle.evidence === "DESIGN STUDY") return "PUBLISHED PROFILE · MODELLED TO PROXIMA";
@@ -623,10 +626,12 @@ function renderVehicle(vehicle: Vehicle, focusMap = false): void {
   const displayedTravelYears = vehicle.id === "parker"
     ? onwardComparisonYears(vehicle)
     : actualTravelYears;
-  arrivalRoute.textContent = vehicle.id === "parker"
-    ? "PARKER PEAK → PROXIMA DISTANCE"
-    : "EARTH → PROXIMA CENTAURI";
-  journeyTime.textContent = formatDuration(displayedTravelYears);
+  arrivalRoute.textContent = vehicle.arrivalEstimate?.routeLabel
+    ?? (vehicle.id === "parker"
+      ? "PARKER PEAK → PROXIMA DISTANCE"
+      : "EARTH → PROXIMA CENTAURI");
+  journeyTime.textContent = vehicle.arrivalEstimate?.display
+    ?? formatDuration(vehicle.arrivalEstimate?.years ?? displayedTravelYears);
   arrivalSubline.textContent = arrivalContext(vehicle);
   vehicleDescription.textContent = vehicle.description;
   setTextWithPrefix(modelNote, "MODEL NOTE / ", vehicle.modelNote);
@@ -641,7 +646,8 @@ function renderVehicle(vehicle: Vehicle, focusMap = false): void {
   updateTimeFlow();
   timeHeliopause.textContent = formatDuration(crossingTime(vehicle, 122));
   timeOort.textContent = formatDuration(crossingTime(vehicle, 100_000));
-  timeProxima.textContent = formatDuration(displayedTravelYears);
+  timeProxima.textContent = vehicle.arrivalEstimate?.display
+    ?? formatDuration(vehicle.arrivalEstimate?.years ?? displayedTravelYears);
   renderProfile(vehicle);
   spaceMap.setVehicle(vehicle, focusMap);
 }
