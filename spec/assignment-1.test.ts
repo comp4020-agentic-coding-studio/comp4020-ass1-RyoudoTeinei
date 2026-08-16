@@ -75,6 +75,10 @@ describe("Assignment 1: interstellar journey explainer", () => {
     expect(Math.max(...rates)).toBeGreaterThanOrEqual(31_557_600_000_000);
     expect(options[1]?.textContent).toMatch(/real time/i);
     expect(doc.querySelector('[data-testid="map-time-flow"]')).toBeTruthy();
+    expect(doc.querySelector('[data-testid="map-clock-panel"]')).toBeTruthy();
+    expect(doc.querySelector("#map-time-pace")).toBeTruthy();
+    expect(doc.querySelector("#map-elapsed")).toBeTruthy();
+    expect(doc.querySelector("#map-duration-analogy")).toBeTruthy();
     expect(doc.querySelector('.rate-control span')?.textContent).toMatch(/physical time/i);
     expect(doc.querySelector("#phase-description")).toBeTruthy();
     expect(doc.querySelector("#next-stage-time")).toBeTruthy();

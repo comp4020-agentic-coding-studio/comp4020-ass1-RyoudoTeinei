@@ -33,6 +33,7 @@ import {
   type AutoTimeStage,
 } from "./auto-time-flow";
 import { getVehicleDossier } from "./vehicle-dossiers";
+import { timeAnalogyAt } from "./time-analogies";
 
 function required<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -92,6 +93,9 @@ const missionSummary = required<HTMLElement>("#mission-summary");
 const dossierFacts = required<HTMLElement>("#dossier-facts");
 const canonicalNote = required<HTMLElement>("#canonical-note");
 const mapTimeFlow = required<HTMLElement>("#map-time-flow");
+const mapTimePace = required<HTMLElement>("#map-time-pace");
+const mapElapsed = required<HTMLElement>("#map-elapsed");
+const mapDurationAnalogy = required<HTMLElement>("#map-duration-analogy");
 const spaceMap = createSpaceMapController();
 
 let selectedVehicle = VEHICLES[0];
@@ -439,7 +443,8 @@ function effectiveTimeFlow(): {
 
 function updateTimeFlow(): void {
   if (!selectedTimeline) {
-    mapTimeFlow.textContent = "TIME FLOW · NO FINITE PHYSICAL CLOCK";
+    mapTimeFlow.textContent = "NO FINITE PHYSICAL CLOCK";
+    mapTimePace.textContent = "THIS ROUTE CANNOT BE EXPRESSED AS LINEAR TIME";
     playbackRateSelect.disabled = true;
     return;
   }
@@ -447,7 +452,8 @@ function updateTimeFlow(): void {
   const effective = effectiveTimeFlow();
   if (timeFlowMode === "auto") {
     const stageLabel = effective.stage?.label ?? "MISSION END";
-    mapTimeFlow.textContent = `AUTO TIME FLOW · ${formatRateMultiplier(effective.multiplier)} · ${formatAutoPace(effective.multiplier)} · ${stageLabel}`;
+    mapTimeFlow.textContent = `AUTO FAST-FORWARD · ${formatRateMultiplier(effective.multiplier)} REALTIME`;
+    mapTimePace.textContent = `${formatAutoPace(effective.multiplier)} · ${stageLabel}`;
     return;
   }
   const option = SIMULATION_RATE_OPTIONS.find(
@@ -455,7 +461,8 @@ function updateTimeFlow(): void {
   );
   const label = option?.label ?? `${simulationRate.toLocaleString("en-AU")}×`;
   const pace = option?.paceLabel ?? `${simulationRate.toLocaleString("en-AU")} SECONDS / SECOND`;
-  mapTimeFlow.textContent = `TIME FLOW · ${label} · ${pace.replace(" / SECOND", " / REAL SECOND")}`;
+  mapTimeFlow.textContent = `MANUAL TIME FLOW · ${label}`;
+  mapTimePace.textContent = pace.replace(" / SECOND", " / REAL SECOND");
 }
 
 function currentTourFrame(): MissionTourSample | PhysicalMissionTourSample {
@@ -600,6 +607,17 @@ function renderProgress(): void {
   );
 
   const mapTelemetry = spaceMap.setTourFrame(frame);
+  if (selectedTimeline) {
+    const elapsedYears = physicalElapsedSeconds / JULIAN_YEAR_SECONDS;
+    const analogy = timeAnalogyAt(elapsedYears);
+    mapElapsed.textContent = `T+ ${formatPhysicalElapsed(physicalElapsedSeconds)}`;
+    mapDurationAnalogy.textContent = `HUMAN SCALE · ${analogy.headline} · ${analogy.detail}`;
+    mapDurationAnalogy.dataset.source = analogy.sourceId ?? "intro";
+  } else {
+    mapElapsed.textContent = "NO FINITE ELAPSED TIME";
+    mapDurationAnalogy.textContent = "HUMAN SCALE · NOT COMPARABLE TO A LINEAR CLOCK";
+    mapDurationAnalogy.dataset.source = "none";
+  }
   elapsedReadout.textContent = frame.routeMode === "off-map"
     ? "NOT COMPARABLE"
     : selectedTimeline

@@ -240,9 +240,18 @@
 
                 <div class="map-hud map-hud-top">
                   <span id="map-scale">VIEW WIDTH · 12.00 LY</span>
-                  <strong data-testid="map-time-flow" id="map-time-flow">TIME FLOW · 1× REAL TIME · 1 SECOND / REAL SECOND</strong>
                   <span id="map-resolution">NEPTUNE ORBIT = &lt;0.01 PX</span>
                 </div>
+                <aside class="map-clock-panel" data-testid="map-clock-panel" aria-live="polite">
+                  <span>SIMULATION CLOCK</span>
+                  <strong data-testid="map-time-flow" id="map-time-flow">AUTO FAST-FORWARD · 1× REALTIME</strong>
+                  <small id="map-time-pace">1 SECOND / REAL SECOND</small>
+                  <div>
+                    <span>MISSION ELAPSED</span>
+                    <b id="map-elapsed">T+ 0.0 SECONDS</b>
+                  </div>
+                  <p id="map-duration-analogy">HUMAN SCALE · LESS THAN A HUMAN YEAR</p>
+                </aside>
                 <div class="map-hud map-hud-bottom">
                   <span id="map-coordinate">SUN · 0 AU</span>
                   <span>AUTO CAMERA · CRAFT-CENTRED · SCALE CHANGES AT MISSION BOUNDARIES</span>
@@ -393,6 +402,9 @@
             <a id="source-warhammer" href="https://warhammer40000.com/">Warhammer 40,000 · setting ↗</a>
             <a id="source-horizons" href="https://ssd-api.jpl.nasa.gov/doc/horizons.html">NASA/JPL · Horizons vectors ↗</a>
             <a id="source-cns5" href="https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=J%2FA%2BA%2F670%2FA19">CNS5 · nearby-star catalogue ↗</a>
+            <a id="source-time-wwii" href="https://www.iwm.org.uk/history/the-battle-of-the-atlantic-explained">Imperial War Museums · Second World War duration context ↗</a>
+            <a id="source-time-life" href="https://www.who.int/data/gho/data/themes/mortality-and-global-health-estimates/ghe-life-expectancy-and-healthy-life-expectancy">WHO · global life expectancy in 2019 ↗</a>
+            <a id="source-time-rome" href="https://www.britishmuseum.org/exhibitions/nero-man-behind-myth/introduction-to-ancient-rome">British Museum · traditional Roman chronology ↗</a>
           </div>
         </details>
       </section>

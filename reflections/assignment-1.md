@@ -24,7 +24,9 @@ recognisable physical or cultural context before the scale animation begins.
 Playback itself now carries evidence: 1× is literal wall-clock time, and the map
 states every chosen acceleration rate. An automatic stage-paced mode now makes
 long crossings watchable without hiding that acceleration: the current
-multiplier, stage explanation and time to the next boundary remain visible.
+multiplier, elapsed time, stage explanation and time to the next boundary remain
+visible. Camera changes now occur only after a craft crosses the relevant AU
+boundary, while human-history comparisons make otherwise abstract years legible.
 Fictional routes receive the same care;
 *The Wandering Earth* begins with Earth at 1 AU and follows its novel-described
 solar passes and Jupiter assist while inferred geometry stays visibly labelled.

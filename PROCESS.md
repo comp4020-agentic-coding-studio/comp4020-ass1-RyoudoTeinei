@@ -101,3 +101,7 @@ true-linear scale bands. The live panel now explains the stage and counts down
 to the next one; redundant pass rendering was removed to keep the inner-system
 sequence smooth
 ([`196c8c0`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/196c8c0)).
+Final browser testing caught the camera anticipating a chapter boundary before
+the craft reached it. I made range changes depend only on crossed AU radii and
+put the auto multiplier, elapsed mission time and sourced human-history
+comparisons directly on the map.
