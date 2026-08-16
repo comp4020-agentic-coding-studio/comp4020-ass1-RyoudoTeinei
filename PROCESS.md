@@ -36,8 +36,9 @@ factor on the same epistemic footing. I instead encoded `MEASURED`,
 `COUNTERFACTUAL`, `DESIGN STUDY`, `FICTION / INFERRED` and `NOT COMPARABLE` as
 data, and made missing arrival times a supported result rather than an error
 ([`2a36163`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/2a36163)).
-Later I vendored 2,358 NASA/JPL Horizons samples for Voyager and Parker plus 12
-CNS5 catalogue anchors, with a reproducible fetch script and source metadata
+Later I vendored 2,358 NASA/JPL Horizons samples for Voyager and Parker, then
+expanded the local map to 28 published CNS5 catalogue rows across 22 systems,
+with a reproducible fetch script and source metadata
 ([`9abba54`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/9abba54)).
 Runtime stays offline, while tests protect the coordinate frame, endpoint radii
 and the absence of invented arrival times for FTL craft.
@@ -49,12 +50,19 @@ milestone neatly, but that neatness contradicted the subject: it made 122 AU and
 100,000 AU look like neighbouring ticks. I replaced its tests with linear
 world/screen round trips, pointer-anchored zoom and exact ratio invariants
 ([`32d551a`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/32d551a)),
-then replaced the ruler with one pannable SVG coordinate space
-([`772d409`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/772d409)).
-At 1920×1080 I verified the 10-light-year context ring and Oort shell; at
-390×844 I switched into Parker's real shrinking ellipses and checked the
-touch-sized map controls without horizontal overflow. Resizing preserves camera,
-vehicle and progress.
+then replaced the ruler with one pannable coordinate space. The first SVG pass
+was mathematically linear but still read like an infographic. After comparing
+it with a working astronomical map, I wrote a new Canvas contract
+([`d57a9e9`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/d57a9e9)),
+expanded the sourced catalogue
+([`2484135`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/2484135)),
+and rebuilt the interaction around radial range rings, scale-dependent detail,
+label collision, object selection and a physical scale bar
+([`6b22ae1`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/6b22ae1)).
+Voyager and Parker now use their actual JPL ecliptic x/y samples, interpolated
+by elapsed date rather than unequal sample indices. At 1920×1080 and 390×844 I
+verified the catalogue, Oort, heliopause and planetary presets; resizing
+preserves camera, vehicle and progress.
 
 ### 4. Throwing away a persuasive but false Parker result
 
