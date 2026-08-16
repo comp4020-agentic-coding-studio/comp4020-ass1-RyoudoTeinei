@@ -44,21 +44,20 @@ export interface AutomaticCameraBand {
  * craft remains the centre and no logarithmic coordinate distortion is used. */
 export function automaticCameraBand(
   radialAu: number,
-  cue: TourCameraCue,
 ): AutomaticCameraBand {
-  if (cue === "destination" || radialAu >= OUTER_OORT_AU) {
+  if (radialAu >= OUTER_OORT_AU) {
     return { id: "interstellar", label: "INTERSTELLAR RANGE", spanAu: AU_PER_LIGHT_YEAR * 6 };
   }
-  if (cue === "outer-oort" || radialAu >= 20_000) {
+  if (radialAu >= 20_000) {
     return { id: "outer-oort", label: "OUTER OORT RANGE", spanAu: 220_000 };
   }
-  if (cue === "inner-oort" || radialAu >= INNER_OORT_AU) {
+  if (radialAu >= INNER_OORT_AU) {
     return { id: "inner-oort", label: "INNER OORT RANGE · 2,000–20,000 AU", spanAu: 44_000 };
   }
-  if (cue === "heliopause" || radialAu >= HELIOPAUSE_AU) {
+  if (radialAu >= HELIOPAUSE_AU) {
     return { id: "heliopause", label: "HELIOPAUSE RANGE", spanAu: 380 };
   }
-  if (cue === "pluto" || radialAu >= 8) {
+  if (radialAu >= 8) {
     return { id: "planetary", label: "OUTER PLANETARY RANGE", spanAu: 112 };
   }
   return { id: "inner-system", label: "INNER SOLAR SYSTEM RANGE", spanAu: 14 };
@@ -357,6 +356,7 @@ interface CanvasMapElements {
   tooltip?: HTMLElement;
   inspector?: HTMLElement;
   story?: HTMLElement;
+  clock?: HTMLElement;
   scaleRule?: HTMLElement;
   scaleLabel?: HTMLElement;
   selectionName?: HTMLElement;
@@ -455,6 +455,7 @@ export function createSpaceMapController(): SpaceMapController {
     tooltip: optionalElement("#map-tooltip"),
     inspector: optionalElement(".map-inspector"),
     story: optionalElement("#tour-story"),
+    clock: optionalElement(".map-clock-panel"),
     scaleRule: optionalElement("#map-scale-rule"),
     scaleLabel: optionalElement("#map-scale-label"),
     selectionName: optionalElement("#map-selection-name"),
@@ -636,7 +637,7 @@ export function createSpaceMapController(): SpaceMapController {
     const craft = craftPosition();
     const band = selectedVehicle?.id === "parker" && cue === "mission"
       ? { spanAu: 2.4 }
-      : automaticCameraBand(craft.radialAu, cue);
+      : automaticCameraBand(craft.radialAu);
     const halfSpan = band.spanAu / 2;
     return fitBounds({
       minX: craft.point.x - halfSpan,
@@ -1515,7 +1516,7 @@ export function createSpaceMapController(): SpaceMapController {
 
   function drawHud(): void {
     const visibleAu = viewport.width / camera.pxPerAu;
-    const band = automaticCameraBand(craftPosition().radialAu, tourFrame?.chapter.cameraCue ?? "mission");
+    const band = automaticCameraBand(craftPosition().radialAu);
     const width = visibleAu >= AU_PER_LIGHT_YEAR
       ? `${(visibleAu / AU_PER_LIGHT_YEAR).toFixed(2)} LY WIDE`
       : `${visibleAu.toLocaleString("en-AU", { maximumFractionDigits: visibleAu < 1 ? 3 : 0 })} AU WIDE`;
@@ -1557,6 +1558,7 @@ export function createSpaceMapController(): SpaceMapController {
     occupiedLabels = [];
     reserveOverlayArea(elements.inspector);
     reserveOverlayArea(elements.story);
+    reserveOverlayArea(elements.clock);
     drawBackground();
     drawBoundaries();
     drawRadialGrid();

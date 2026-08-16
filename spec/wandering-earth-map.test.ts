@@ -11,14 +11,17 @@ const wanderingEarth = VEHICLES.find(({ id }) => id === "wandering-earth");
 
 describe("Wandering Earth canonical map route", () => {
   it("expands a craft-centred true-linear camera at physical boundaries", () => {
-    expect(automaticCameraBand(1, "mission").spanAu).toBe(14);
-    expect(automaticCameraBand(40, "pluto").spanAu).toBe(112);
-    expect(automaticCameraBand(122, "heliopause").spanAu).toBe(380);
-    expect(automaticCameraBand(2_000, "inner-oort")).toMatchObject({
+    expect(automaticCameraBand(1).spanAu).toBe(14);
+    expect(automaticCameraBand(40).spanAu).toBe(112);
+    expect(automaticCameraBand(122).spanAu).toBe(380);
+    expect(automaticCameraBand(2_000)).toMatchObject({
       id: "inner-oort",
       spanAu: 44_000,
     });
-    expect(automaticCameraBand(100_000, "destination").spanAu)
+    expect(automaticCameraBand(7_516).id).toBe("inner-oort");
+    expect(automaticCameraBand(19_999).id).toBe("inner-oort");
+    expect(automaticCameraBand(20_000).id).toBe("outer-oort");
+    expect(automaticCameraBand(100_000).spanAu)
       .toBeGreaterThan(220_000);
   });
 
