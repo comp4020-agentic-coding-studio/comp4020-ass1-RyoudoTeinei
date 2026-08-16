@@ -1,83 +1,62 @@
 # Process overview
 
-<!-- TEMPLATE: this file is a shape to fill in, not a form. Replace everything
-     in it with your own overview, and delete this comment — `pnpm
-     check:evidence` will remind you if it's still here. -->
-
-A reading-guide to how the work came together --- a map to your process, not an
-essay about it. Markers read this file and follow its citations; they don't
-trawl the repo for evidence you didn't point at, so if a moment mattered, cite
-it.
-
-This file is the shape; the course site's
-[assessment page](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#what-you-submit)
-is the requirement, and each brief adds its own word count and moment count.
-
 ## What I built
 
-One paragraph: the thing, and the idea behind it.
+I built **The Edge Is Not the Exit**, an interactive journey plotter about the
+misleading phrase “leaving the Solar System”. Its single route runs from Earth
+past Jupiter, Neptune, the heliopause and a conservative 100,000 AU outer edge
+of the Oort Cloud, then to Proxima Centauri. Selecting a familiar vehicle, real
+spacecraft, engineering study or fictional machine changes the same distance
+track, arrival time and speed/phase profile. The point is not that every option
+is a plausible mission. It is that even spectacular human speeds barely alter
+the scale—and that uncertainty should be visible instead of converted into a
+confident-looking number.
 
 ## The moments that mattered
 
-Three or four for an assignment; fewer is fine for a weekly prototype. Keep the
-list short so each moment has room to do all four jobs:
+### 1. Fixing the harness before building the artefact
 
-1. **what happened** --- the problem, or the thing the agent got wrong
-2. **what you did instead of the obvious thing** --- the call you made, and why
-   it beat the obvious one
-3. **how you knew it was right** --- the check you ran, the viewport you looked
-   at, what you read before accepting the diff
-4. **the citation** --- a commit or commit range, a `CLAUDE.md` change, a check
-   that went from red to green, a prompt paired with the commit it produced
+The first `pnpm install` downloaded every dependency, then failed because the
+starter's `prepare` command used `/dev/null` and `true`, which PowerShell could
+not execute. Ignoring scripts would have made my machine green while silently
+discarding the repository's secret-scanning hook. Instead, I replaced the shell
+expression with a small cross-platform Node script and added modelling,
+keyboard and viewport rules to `CLAUDE.md`
+([`ba542b1`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/ba542b1)).
+I accepted it only after `pnpm install` ran the hook setup successfully and the
+new spec tests produced a genuine red state against the starter.
 
-Jobs 2 and 3 are the ones the repo can't tell a reader on its own, so they're
-where the marks are. The strongest moments are the ones where a correction
-landed in the **harness** rather than in another prompt --- a rule added to
-`CLAUDE.md`, a check wired up, an attempt thrown away: re-prompting until it
-passes is the routine case, and changing what the agent works against is the
-skilled one.
+### 2. Making evidence level part of the model
 
-Cite each moment as a link whose text is the commit hash or range and whose
-target is this repo's commit or compare URL, so a reader clicks straight to the
-evidence:
+The obvious implementation was one table of impressive speeds. That would have
+put a recorded Voyager velocity, a Daedalus design target and a Star Trek warp
+factor on the same epistemic footing. I instead encoded `MEASURED`,
+`COUNTERFACTUAL`, `DESIGN STUDY`, `FICTION / INFERRED` and `NOT COMPARABLE` as
+data, and made missing arrival times a supported result rather than an error
+([`2a36163`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/2a36163)).
+Unit tests verify the logarithmic milestone order, Voyager's sourced scale
+comparison and the absence of invented arrival times for FTL craft. This kept
+adding more vehicles from turning the project into an uncritical catalogue.
 
-- one commit: [`a1b2c3d`](https://github.com/YOUR-ORG/YOUR-REPO/commit/a1b2c3d)
-- a range:
-  [`a1b2c3d...e4f5a6b`](https://github.com/YOUR-ORG/YOUR-REPO/compare/a1b2c3d...e4f5a6b)
+### 3. One interaction survived both marking viewports
 
-To pair a prompt with the commit it produced, quote the prompt (curated, not a
-full transcript) next to the citation:
+The visual system and interaction landed together in
+[`9b3d47b`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/9b3d47b):
+a launch manifest drives one log-distance route, live boundary times and one
+phase chart. I tested the built page at 1920×1080, launched Daedalus, then
+resized it mid-flight to 390×844. The selected vehicle, phase and non-zero
+progress survived; `scrollWidth` remained below the viewport width. I also used
+arrow keys to change the manifest selection and confirmed that an incomparable
+Enterprise disables launch while still explaining why.
 
-> the prompt, verbatim
+### 4. Throwing away a persuasive but false Parker result
 
-Screenshots are welcome where one carries the verification better than a
-sentence does. Commit the file to this repo and link it with a **relative**
-path, which is what makes it render on GitHub: `![alt text](docs/before.png)`.
-Images don't count towards the word count and don't replace the citation.
-
-### A worked moment, for shape
-
-Delete this section along with the rest of the boilerplate --- it's here to show
-the four jobs in one paragraph, not to be imitated in content.
-
-> The date formatter kept coming back with `toLocaleDateString()` and no locale
-> argument, so the same build rendered differently on my machine and in CI. I'd
-> already re-prompted it twice, which fixed the line but not the habit, so the
-> third time I put the rule in `CLAUDE.md` instead
-> ([`3f9ac21`](https://github.com/YOUR-ORG/YOUR-REPO/commit/3f9ac21)) and added
-> a spec test that fails on a bare `toLocaleDateString`. That's what told me it
-> had actually taken: the test went red against the old code and green against
-> the new, and the next two features it wrote passed it without prompting
-> ([`3f9ac21...b7e0d14`](https://github.com/YOUR-ORG/YOUR-REPO/compare/3f9ac21...b7e0d14)).
-
-## Before you ship
-
-`pnpm check:evidence` verifies your citations resolve to real commits, that the
-current reflection entry is in `reflections/`, and that your `CLAUDE.md` is
-there --- before a marker ever opens the file. It checks that your map is
-traceable, not that it is good: the marker judges whether your small,
-deliberately chosen set of moments shows real judgement and reflection. A green
-check is not a substitute for that curation.
-
-Images are deliberately not checked, because whether one renders is visible the
-moment you look. Open this file on GitHub and look at it before you ship.
+Browser verification exposed a contradiction: Parker's chart showed its real
+repeated acceleration and deceleration around the Sun, while its arrival number
+quietly assumed the 430,000 mph perihelion peak lasted forever. I removed the
+outbound result, kept the real orbital profile visible, and made “no outward
+arrival” an explicit model state
+([`595f3c3`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/595f3c3)).
+A regression test now prevents Parker's speed record becoming an interstellar
+mission again. The impossible 6,628-year comparison survives only as labelled
+context, not as the answer the interface asks a visitor to trust.
