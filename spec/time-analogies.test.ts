@@ -17,6 +17,10 @@ describe("human-scale time analogies", () => {
     expect(timeAnalogyAt(1_000).headline).toBe("≈ ONE MILLENNIUM");
     expect(timeAnalogyAt(1_228).sourceId).toBe("rome");
     expect(timeAnalogyAt(2_500).headline).toBe("≈ TWENTY-FIVE CENTURIES");
+    expect(timeAnalogyAt(7_365).sourceId).toBe("uruk");
+    expect(timeAnalogyAt(11_700).sourceId).toBe("holocene");
+    expect(timeAnalogyAt(74_479.7).sourceId).toBe("human-dispersal");
+    expect(timeAnalogyAt(300_000).sourceId).toBe("homo-sapiens");
   });
 
   it("rejects invalid mission time", () => {

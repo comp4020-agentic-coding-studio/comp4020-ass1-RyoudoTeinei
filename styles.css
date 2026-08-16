@@ -906,7 +906,7 @@ h1 em {
 .tour-story {
   position: absolute;
   z-index: 5;
-  top: 4rem;
+  top: 2.75rem;
   right: 1rem;
   display: grid;
   width: min(410px, calc(100% - 350px));
@@ -936,15 +936,15 @@ h1 em {
 
 .tour-story strong {
   color: var(--acid);
-  font-size: clamp(0.82rem, 1.2vw, 1.05rem);
+  font-size: clamp(0.95rem, 1.3vw, 1.18rem);
   line-height: 1.2;
 }
 
 .tour-story p {
   color: var(--muted);
   font-family: "Arial Narrow", "Aptos Narrow", Arial, sans-serif;
-  font-size: 0.78rem;
-  line-height: 1.4;
+  font-size: clamp(0.86rem, 1vw, 0.96rem);
+  line-height: 1.5;
 }
 
 .tour-story small {
@@ -990,7 +990,7 @@ h1 em {
 .map-clock-panel {
   position: absolute;
   z-index: 6;
-  top: 4rem;
+  top: 2.75rem;
   left: 1rem;
   display: grid;
   width: min(480px, calc(100% - 470px));
@@ -1059,6 +1059,7 @@ h1 em {
   padding-left: 0.55rem;
   border-left: 2px solid var(--orange);
   color: var(--paper);
+  font-size: clamp(0.72rem, 0.85vw, 0.84rem);
   line-height: 1.4;
 }
 
@@ -1678,7 +1679,7 @@ footer p:first-child {
   }
 
   .map-clock-panel {
-    top: 4rem;
+    top: 2.75rem;
     width: min(280px, calc(100% - 430px));
     min-width: 0;
   }
@@ -1853,7 +1854,7 @@ footer p:first-child {
   }
 
   #map-duration-analogy {
-    font-size: 0.44rem;
+    font-size: 0.62rem;
   }
 
   .map-thesis {

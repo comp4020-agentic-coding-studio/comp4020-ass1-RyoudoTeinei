@@ -12,6 +12,17 @@ export interface AutoTimeFlow {
 }
 
 const DEFAULT_STAGE_WALL_SECONDS = 7;
+const JULIAN_YEAR_SECONDS = 365.25 * 86_400;
+
+function automaticStageWallSeconds(durationSeconds: number): number {
+  const durationYears = durationSeconds / JULIAN_YEAR_SECONDS;
+  if (durationYears < 1_000) return DEFAULT_STAGE_WALL_SECONDS;
+
+  // Once the story reaches millennia, keep the visual pace near 1,200 years
+  // per real second. The bounds stop a short threshold chapter lingering and
+  // prevent multi-million-year comparisons from becoming unusably long.
+  return Math.min(40, Math.max(14, durationYears / 1_200));
+}
 
 /**
  * Chooses a literal physical-time rate that gives each mission stage enough
@@ -21,7 +32,7 @@ const DEFAULT_STAGE_WALL_SECONDS = 7;
 export function autoTimeFlowForStage(
   stage: AutoTimeStage,
   elapsedSeconds: number,
-  targetWallSeconds = DEFAULT_STAGE_WALL_SECONDS,
+  targetWallSeconds?: number,
 ): AutoTimeFlow {
   if (!Number.isFinite(stage.startSeconds) || !Number.isFinite(stage.endSeconds)) {
     throw new RangeError("Stage boundaries must be finite.");
@@ -29,12 +40,15 @@ export function autoTimeFlowForStage(
   if (stage.endSeconds < stage.startSeconds) {
     throw new RangeError("A stage cannot end before it starts.");
   }
-  if (!Number.isFinite(targetWallSeconds) || targetWallSeconds <= 0) {
+  if (targetWallSeconds !== undefined
+    && (!Number.isFinite(targetWallSeconds) || targetWallSeconds <= 0)) {
     throw new RangeError("targetWallSeconds must be positive and finite.");
   }
 
   const durationSeconds = stage.endSeconds - stage.startSeconds;
-  const multiplier = Math.max(1, durationSeconds / targetWallSeconds);
+  const resolvedWallSeconds = targetWallSeconds
+    ?? automaticStageWallSeconds(durationSeconds);
+  const multiplier = Math.max(1, durationSeconds / resolvedWallSeconds);
   const remainingSeconds = Math.max(
     0,
     stage.endSeconds - Math.max(stage.startSeconds, elapsedSeconds),

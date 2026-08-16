@@ -11,7 +11,11 @@ export interface TimeAnalogy {
     | "cold-war"
     | "life-expectancy"
     | "pluto-year"
-    | "rome";
+    | "rome"
+    | "uruk"
+    | "holocene"
+    | "human-dispersal"
+    | "homo-sapiens";
 }
 
 const TIME_ANALOGIES: readonly TimeAnalogy[] = [
@@ -93,6 +97,30 @@ const TIME_ANALOGIES: readonly TimeAnalogy[] = [
     durationYears: 2_500,
     headline: "≈ TWENTY-FIVE CENTURIES",
     detail: "TWO AND A HALF MILLENNIA",
+  },
+  {
+    durationYears: 6_000,
+    headline: "≈ FROM URUK CULTURE TO TODAY",
+    detail: "c. 4000 BCE–PRESENT · SIX MILLENNIA",
+    sourceId: "uruk",
+  },
+  {
+    durationYears: 11_700,
+    headline: "≈ THE ENTIRE HOLOCENE",
+    detail: "ABOUT 11,700 YEARS",
+    sourceId: "holocene",
+  },
+  {
+    durationYears: 60_000,
+    headline: "≈ THE SUCCESSFUL HUMAN DISPERSAL FROM AFRICA",
+    detail: "ABOUT 60,000 YEARS",
+    sourceId: "human-dispersal",
+  },
+  {
+    durationYears: 300_000,
+    headline: "≈ THE AGE OF HOMO SAPIENS",
+    detail: "ABOUT 300,000 YEARS",
+    sourceId: "homo-sapiens",
   },
 ] as const;
 

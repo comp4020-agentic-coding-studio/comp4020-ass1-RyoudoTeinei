@@ -28,6 +28,26 @@ describe("automatic physical time flow", () => {
     expect(middle.estimatedWallSeconds).toBe(3.5);
   });
 
+  it("slows automatic playback once a stage spans millennia", () => {
+    const secondsPerYear = 365.25 * 86_400;
+    const tenThousandYears = autoTimeFlowForStage({
+      label: "inner Oort",
+      description: "Cross the inner Oort region",
+      startSeconds: 0,
+      endSeconds: 10_000 * secondsPerYear,
+    }, 0);
+    const thirtyThousandYears = autoTimeFlowForStage({
+      label: "outer Oort",
+      description: "Cross the outer Oort region",
+      startSeconds: 0,
+      endSeconds: 30_000 * secondsPerYear,
+    }, 0);
+
+    expect(tenThousandYears.estimatedWallSeconds).toBe(14);
+    expect(thirtyThousandYears.estimatedWallSeconds).toBe(25);
+    expect(thirtyThousandYears.multiplier / secondsPerYear).toBeCloseTo(1_200);
+  });
+
   it("reports readable physical pace labels", () => {
     expect(formatAutoPace(1)).toBe("1 SECOND / REAL SECOND");
     expect(formatAutoPace(86_400)).toBe("1 DAY / REAL SECOND");
