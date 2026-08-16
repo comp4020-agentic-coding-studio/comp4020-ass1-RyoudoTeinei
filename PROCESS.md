@@ -84,3 +84,12 @@ the two paths cannot be mistaken for one continuous mission
 Selecting a vehicle also reveals a locally stored, credited image and a compact
 source-labelled dossier before the same button begins the guided route
 ([`9322aac`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/9322aac)).
+The original “1×” control still compressed decades into seconds, so I replaced
+the narrative timer with a physical mission clock: one real second now advances
+exactly one simulated second, while explicit higher rates keep long routes usable
+([`5c051dc`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/5c051dc)).
+I also replaced the generic straight line for *The Wandering Earth* with the
+novel's Earth-at-1-AU sequence, fifteen widening solar passes and planned Jupiter
+assist, marking all unsupplied geometry as schematic
+([`2ae87f2`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/2ae87f2),
+[`2aa7c7b`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/2aa7c7b)).

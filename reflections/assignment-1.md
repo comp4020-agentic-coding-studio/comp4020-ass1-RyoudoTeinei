@@ -21,6 +21,10 @@ therefore cannot masquerade as an outbound cruise. A guided playback shows the
 measured mission first and makes any frozen-speed thought experiment cross a
 visible counterfactual cut. The credited image dossier gives the vehicle a
 recognisable physical or cultural context before the scale animation begins.
+Playback itself now carries evidence: 1× is literal wall-clock time, and the map
+states every chosen acceleration rate. Fictional routes receive the same care;
+*The Wandering Earth* begins with Earth at 1 AU and follows its novel-described
+solar passes and Jupiter assist while inferred geometry stays visibly labelled.
 
 ## What did this change about the developer I want to be?
 
