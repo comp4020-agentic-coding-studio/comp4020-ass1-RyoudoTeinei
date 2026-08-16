@@ -265,10 +265,33 @@
               </p>
             </figure>
 
-            <div class="mission-controls">
+            <section class="mission-flow" data-testid="mission-flow" aria-labelledby="mission-flow-title">
+              <header class="mission-flow-heading">
+                <span id="mission-flow-title">MISSION FLOW</span>
+                <strong id="mission-flow-context">SUN = MAP ORIGIN · EARTH = ROUTE START</strong>
+              </header>
+              <ol id="mission-flow-list" aria-label="Selected vehicle mission stages"></ol>
+            </section>
+
+            <div class="mission-controls" data-testid="tour-controls">
+              <button class="transport-button" data-testid="transport-button" type="button" id="transport-button" aria-label="Play guided mission tour">
+                <span id="transport-icon" aria-hidden="true">▶</span>
+                <span id="transport-label">PLAY TOUR</span>
+              </button>
               <label class="progress-control" for="journey-progress">
                 <span id="progress-label">GUIDED MISSION TOUR</span>
                 <input data-testid="journey-progress" id="journey-progress" type="range" min="0" max="1000" value="0" step="1" />
+              </label>
+              <label class="rate-control" for="playback-rate">
+                <span>TOUR PLAYBACK RATE</span>
+                <select data-testid="playback-rate" id="playback-rate">
+                  <option value="0.25">0.25×</option>
+                  <option value="0.5">0.5×</option>
+                  <option value="1" selected>1×</option>
+                  <option value="2">2×</option>
+                  <option value="4">4×</option>
+                  <option value="8">8×</option>
+                </select>
               </label>
               <button class="reset-button" type="button" id="reset-button">RESET ↺</button>
             </div>

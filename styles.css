@@ -1109,9 +1109,107 @@ h1 em {
   line-height: 1.5;
 }
 
+.mission-flow {
+  border-bottom: 1px solid var(--line);
+  background: #081510;
+}
+
+.mission-flow-heading {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.85rem 1rem 0.45rem;
+  font-family: "Cascadia Mono", Consolas, monospace;
+}
+
+.mission-flow-heading span {
+  color: var(--paper);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+}
+
+.mission-flow-heading strong {
+  color: var(--cyan);
+  font-size: 0.48rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-align: right;
+}
+
+#mission-flow-list {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  margin: 0;
+  padding: 0.35rem 1rem 1rem;
+  list-style: none;
+  scrollbar-color: var(--faint) transparent;
+  scrollbar-width: thin;
+}
+
+#mission-flow-list li {
+  position: relative;
+  flex: 0 0 min(165px, 27vw);
+  min-width: 120px;
+  padding: 1.3rem 0.7rem 0 0;
+  color: var(--faint);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.52rem;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+#mission-flow-list li::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--faint);
+  background: #081510;
+  content: "";
+  transform: rotate(45deg);
+}
+
+#mission-flow-list li::after {
+  position: absolute;
+  top: 5px;
+  right: 0;
+  left: 10px;
+  height: 1px;
+  background: var(--line);
+  content: "";
+}
+
+#mission-flow-list li:last-child::after {
+  display: none;
+}
+
+#mission-flow-list li[data-state="past"] {
+  color: var(--muted);
+}
+
+#mission-flow-list li[data-state="past"]::before {
+  border-color: var(--cyan);
+  background: var(--cyan);
+}
+
+#mission-flow-list li[data-state="current"] {
+  color: var(--acid);
+  font-weight: 700;
+}
+
+#mission-flow-list li[data-state="current"]::before {
+  border-color: var(--acid);
+  background: var(--acid);
+  box-shadow: 0 0 0 3px rgb(184 255 61 / 14%);
+}
+
 .mission-controls {
   display: grid;
-  grid-template-columns: minmax(160px, 1fr) auto;
+  grid-template-columns: auto minmax(160px, 1fr) auto auto;
   gap: 1rem;
   align-items: end;
   padding-block: 1.5rem;
@@ -1119,6 +1217,7 @@ h1 em {
 }
 
 .launch-button,
+.transport-button,
 .reset-button {
   min-height: 48px;
   border: 1px solid var(--line);
@@ -1139,6 +1238,23 @@ h1 em {
   border-color: var(--acid);
   color: var(--ink);
   background: var(--acid);
+}
+
+.transport-button {
+  display: inline-flex;
+  gap: 0.65rem;
+  align-items: center;
+  justify-content: center;
+  min-width: 148px;
+  padding-inline: 1rem;
+  border-color: var(--cyan);
+  color: var(--ink);
+  background: var(--cyan);
+}
+
+.transport-button:hover,
+.transport-button:focus-visible {
+  background: var(--paper);
 }
 
 .launch-button:disabled {
@@ -1164,6 +1280,27 @@ h1 em {
   color: var(--muted);
   font-family: "Cascadia Mono", Consolas, monospace;
   font-size: 0.58rem;
+}
+
+.rate-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  color: var(--muted);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.5rem;
+}
+
+.rate-control select {
+  min-width: 92px;
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  padding-inline: 0.7rem;
+  color: var(--acid);
+  background: var(--panel);
+  font: 700 0.68rem "Cascadia Mono", Consolas, monospace;
+  cursor: pointer;
 }
 
 .progress-control input {
@@ -1657,10 +1794,7 @@ footer p:first-child {
   }
 
   .tour-story {
-    top: auto;
-    right: 0.7rem;
-    bottom: 3.8rem;
-    left: 0.7rem;
+    inset: auto 0.7rem 3.8rem;
     width: auto;
     max-height: 150px;
     overflow: hidden;
@@ -1675,9 +1809,28 @@ footer p:first-child {
     left: 0.7rem;
   }
 
+  .mission-flow-heading {
+    display: grid;
+    gap: 0.3rem;
+    padding-inline: 0.75rem;
+  }
+
+  .mission-flow-heading strong {
+    text-align: left;
+  }
+
+  #mission-flow-list {
+    padding-inline: 0.75rem;
+  }
+
+  #mission-flow-list li {
+    flex-basis: 138px;
+  }
+
   .mission-controls {
     position: static;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 0.6rem;
     padding: 0.75rem;
     background: #071511;
     box-shadow: none;
@@ -1686,6 +1839,19 @@ footer p:first-child {
   .progress-control {
     grid-column: 1 / -1;
     grid-row: 1;
+  }
+
+  .transport-button {
+    min-width: 0;
+    padding-inline: 0.65rem;
+  }
+
+  .rate-control select {
+    min-width: 76px;
+  }
+
+  .rate-control span {
+    max-width: 82px;
   }
 
   .launch-button {

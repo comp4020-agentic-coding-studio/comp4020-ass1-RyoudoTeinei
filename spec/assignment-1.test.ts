@@ -19,6 +19,9 @@ describe("Assignment 1: interstellar journey explainer", () => {
     expect(doc.querySelector('[data-testid="vehicle-picker"]')).toBeTruthy();
     expect(doc.querySelectorAll("[data-vehicle]").length).toBeGreaterThan(5);
     expect(doc.querySelector('[data-testid="launch"]')).toBeTruthy();
+    expect(doc.querySelector('[data-testid="transport-button"]')).toBeTruthy();
+    expect(doc.querySelector('[data-testid="playback-rate"]')).toBeTruthy();
+    expect(doc.querySelector('[data-testid="mission-flow"]')).toBeTruthy();
     expect(doc.querySelector('[data-testid="journey-progress"]')).toBeTruthy();
     expect(doc.querySelector('[aria-live="polite"]')).toBeTruthy();
   });
@@ -55,6 +58,8 @@ describe("Assignment 1: interstellar journey explainer", () => {
       expect(option.getAttribute("type")).toBe("button");
     }
     expect(doc.querySelector('[data-testid="journey-progress"]')?.getAttribute("type")).toBe("range");
+    expect(doc.querySelector('[data-testid="playback-rate"]')?.tagName).toBe("SELECT");
+    expect(doc.querySelectorAll('[data-testid="playback-rate"] option').length).toBeGreaterThanOrEqual(6);
   });
 
   it("keeps the runtime entirely client-side", () => {

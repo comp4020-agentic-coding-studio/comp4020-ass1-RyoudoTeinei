@@ -16,6 +16,7 @@ import {
   type MissionTour,
   type MissionTourSample,
 } from "./mission-tour";
+import { advanceTourProgress } from "./playback-clock";
 import { getVehicleDossier } from "./vehicle-dossiers";
 
 function required<T extends Element>(selector: string): T {
@@ -34,10 +35,17 @@ const evidenceTag = required<HTMLElement>("#evidence-tag");
 const journeyTime = required<HTMLElement>("#journey-time");
 const arrivalSubline = required<HTMLElement>("#arrival-subline");
 const launchButton = required<HTMLButtonElement>("#launch-button");
+const launchIcon = required<HTMLElement>("#launch-button .launch-icon");
 const launchLabel = required<HTMLElement>("#launch-label");
+const transportButton = required<HTMLButtonElement>("#transport-button");
+const transportIcon = required<HTMLElement>("#transport-icon");
+const transportLabel = required<HTMLElement>("#transport-label");
+const playbackRateSelect = required<HTMLSelectElement>("#playback-rate");
 const resetButton = required<HTMLButtonElement>("#reset-button");
 const progressInput = required<HTMLInputElement>("#journey-progress");
 const progressLabel = required<HTMLElement>("#progress-label");
+const missionFlowContext = required<HTMLElement>("#mission-flow-context");
+const missionFlowList = required<HTMLOListElement>("#mission-flow-list");
 const elapsedReadout = required<HTMLElement>("#elapsed-readout");
 const speedReadout = required<HTMLElement>("#speed-readout");
 const phaseReadout = required<HTMLElement>("#phase-readout");
@@ -73,6 +81,8 @@ let progress = 0;
 let animationFrame: number | undefined;
 let animationStart: number | undefined;
 let startProgress = 0;
+let playbackRate = 1;
+let activeFlowIndex = -1;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 if (!selectedVehicle) throw new Error("The launch manifest is empty.");
@@ -94,11 +104,144 @@ function resumeLabel(vehicle: Vehicle): string {
   return buildMissionTour(vehicle).playable ? "RESUME MISSION" : "RESUME EXPLANATION";
 }
 
-function cancelAnimation(): void {
+type PlaybackState = "ready" | "running" | "paused" | "complete";
+
+interface MissionFlowStage {
+  label: string;
+  chapterIndex: number;
+  chapterStart?: number;
+  chapterEnd?: number;
+}
+
+let missionFlowStages: MissionFlowStage[] = [];
+let missionFlowItems: HTMLLIElement[] = [];
+
+function setPlaybackState(state: PlaybackState): void {
+  consoleElement.dataset.state = state;
+  const isExplanation = !selectedTour.playable;
+
+  if (state === "running") {
+    launchIcon.textContent = "Ⅱ";
+    launchLabel.textContent = isExplanation ? "PAUSE EXPLANATION" : "PAUSE MISSION";
+    transportIcon.textContent = "Ⅱ";
+    transportLabel.textContent = "PAUSE TOUR";
+    transportButton.setAttribute("aria-label", "Pause guided mission tour");
+    return;
+  }
+
+  launchIcon.textContent = state === "complete" ? "↺" : "▶";
+  transportIcon.textContent = state === "complete" ? "↺" : "▶";
+  if (state === "complete") {
+    launchLabel.textContent = replayLabel(selectedVehicle);
+    transportLabel.textContent = "REPLAY TOUR";
+    transportButton.setAttribute("aria-label", "Replay guided mission tour");
+  } else if (state === "paused") {
+    launchLabel.textContent = resumeLabel(selectedVehicle);
+    transportLabel.textContent = "RESUME TOUR";
+    transportButton.setAttribute("aria-label", "Resume guided mission tour");
+  } else {
+    launchLabel.textContent = readyLaunchLabel(selectedVehicle);
+    transportLabel.textContent = isExplanation ? "PLAY EXPLANATION" : "PLAY TOUR";
+    transportButton.setAttribute("aria-label", "Play guided mission tour");
+  }
+}
+
+function openingFlowStages(vehicle: Vehicle): MissionFlowStage[] | undefined {
+  if (vehicle.id === "voyager") {
+    return [
+      { label: "EARTH LAUNCH · 1977", chapterIndex: 0, chapterStart: 0, chapterEnd: 0.035 },
+      { label: "JUPITER ASSIST · 1979", chapterIndex: 0, chapterStart: 0.035, chapterEnd: 0.055 },
+      { label: "SATURN / TITAN · 1980", chapterIndex: 0, chapterStart: 0.055, chapterEnd: 0.68 },
+      { label: "HELIOPAUSE CROSSING · 2012", chapterIndex: 0, chapterStart: 0.68, chapterEnd: 0.98 },
+      { label: "EPHEMERIS END · 2026", chapterIndex: 0, chapterStart: 0.98, chapterEnd: 1.01 },
+    ];
+  }
+
+  if (vehicle.id === "parker") {
+    return [
+      { label: "EARTH LAUNCH · 2018", chapterIndex: 0, chapterStart: 0, chapterEnd: 0.06 },
+      { label: "VENUS ASSISTS + SOLAR LOOPS", chapterIndex: 0, chapterStart: 0.06, chapterEnd: 0.72 },
+      { label: "RECORD PERIHELION SERIES", chapterIndex: 0, chapterStart: 0.72, chapterEnd: 0.96 },
+      { label: "BOUND EPHEMERIS END", chapterIndex: 0, chapterStart: 0.96, chapterEnd: 1.01 },
+    ];
+  }
+
+  return undefined;
+}
+
+function buildMissionFlow(vehicle: Vehicle): void {
+  const opening = openingFlowStages(vehicle);
+  missionFlowStages = opening ?? selectedTour.chapters.map((chapter, chapterIndex) => ({
+    label: chapter.title,
+    chapterIndex,
+  }));
+
+  if (opening) {
+    missionFlowStages.push(...selectedTour.chapters.slice(1).map((chapter, offset) => ({
+      label: chapter.title,
+      chapterIndex: offset + 1,
+    })));
+  }
+
+  const mission = vehicle.route.mission;
+  missionFlowContext.textContent = mission.kind === "ephemeris"
+    ? "SUN = MAP ORIGIN · EARTH = HISTORICAL LAUNCH · LOCATOR NOT TO SCALE"
+    : mission.kind === "off-map"
+    ? "CANON ROUTE IS NOT A LINEAR EARTH-TO-TARGET FLIGHT"
+    : "SUN = MAP ORIGIN · EARTH = COMPARISON START · LOCATOR NOT TO SCALE";
+
+  missionFlowList.replaceChildren();
+  missionFlowItems = missionFlowStages.map((stage, index) => {
+    const item = document.createElement("li");
+    item.textContent = `${String(index + 1).padStart(2, "0")} / ${stage.label}`;
+    item.dataset.state = "future";
+    missionFlowList.append(item);
+    return item;
+  });
+  activeFlowIndex = -1;
+}
+
+function updateMissionFlow(frame: MissionTourSample): void {
+  let currentIndex = missionFlowStages.findIndex((stage) => {
+    if (stage.chapterIndex !== frame.chapterIndex) return false;
+    const start = stage.chapterStart ?? 0;
+    const end = stage.chapterEnd ?? 1.01;
+    return frame.chapterProgress >= start && frame.chapterProgress < end;
+  });
+  if (currentIndex < 0) {
+    for (let index = missionFlowStages.length - 1; index >= 0; index -= 1) {
+      if ((missionFlowStages[index]?.chapterIndex ?? Number.POSITIVE_INFINITY) <= frame.chapterIndex) {
+        currentIndex = index;
+        break;
+      }
+    }
+  }
+
+  for (const [index, item] of missionFlowItems.entries()) {
+    item.dataset.state = index < currentIndex
+      ? "past"
+      : index === currentIndex
+      ? "current"
+      : "future";
+    if (index === currentIndex) item.setAttribute("aria-current", "step");
+    else item.removeAttribute("aria-current");
+  }
+
+  if (currentIndex !== activeFlowIndex && consoleElement.dataset.state === "running") {
+    missionFlowItems[currentIndex]?.scrollIntoView({
+      behavior: reducedMotion.matches ? "auto" : "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }
+  activeFlowIndex = currentIndex;
+}
+
+function cancelAnimation(nextState: PlaybackState = progress >= 1 ? "complete" : "ready"): void {
   if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
   animationFrame = undefined;
   animationStart = undefined;
-  consoleElement.dataset.state = progress >= 1 ? "complete" : "ready";
+  setPlaybackState(nextState);
 }
 
 function crossingTime(vehicle: Vehicle, au: number): number | undefined {
@@ -191,6 +334,7 @@ function arrivalContext(vehicle: Vehicle): string {
 
 function renderVehicle(vehicle: Vehicle, focusMap = false): void {
   selectedTour = buildMissionTour(vehicle);
+  buildMissionFlow(vehicle);
   selectedKicker.textContent = vehicle.kicker;
   selectedName.textContent = vehicle.name.toUpperCase();
   evidenceTag.textContent = vehicle.evidence;
@@ -204,7 +348,7 @@ function renderVehicle(vehicle: Vehicle, focusMap = false): void {
 
   launchButton.disabled = false;
   progressInput.disabled = false;
-  launchLabel.textContent = readyLaunchLabel(vehicle);
+  setPlaybackState("ready");
   progressLabel.textContent = "GUIDED MISSION TOUR";
   timeHeliopause.textContent = formatDuration(crossingTime(vehicle, 122));
   timeOort.textContent = formatDuration(crossingTime(vehicle, 100_000));
@@ -229,6 +373,7 @@ function renderProgress(): void {
     : formatSpeed(mapTelemetry.speedKmh ?? frame.speedKmh ?? sample.speedKmh);
   phaseReadout.textContent = frame.phase;
   renderTourStory(frame);
+  updateMissionFlow(frame);
 
   const chartX = frame.routeProgress * 1_000;
   const chartY = 184 - speedFactorAt(selectedVehicle, frame.routeProgress) * 142;
@@ -256,7 +401,7 @@ function animate(timestamp: number): void {
   if (animationStart === undefined) animationStart = timestamp;
   const duration = selectedTour.totalDurationMs;
   const elapsed = timestamp - animationStart;
-  progress = Math.min(1, startProgress + (elapsed / duration) * (1 - startProgress));
+  progress = advanceTourProgress(startProgress, elapsed, duration, playbackRate);
   renderProgress();
 
   if (progress < 1) {
@@ -265,35 +410,26 @@ function animate(timestamp: number): void {
   }
 
   animationFrame = undefined;
-  consoleElement.dataset.state = "complete";
-  launchLabel.textContent = replayLabel(selectedVehicle);
+  setPlaybackState("complete");
 }
 
 function toggleLaunch(): void {
   if (reducedMotion.matches) {
     progress = progress >= 1 ? 0 : 1;
-    consoleElement.dataset.state = progress >= 1 ? "complete" : "ready";
-    launchLabel.textContent = progress >= 1
-      ? replayLabel(selectedVehicle)
-      : readyLaunchLabel(selectedVehicle);
+    setPlaybackState(progress >= 1 ? "complete" : "ready");
     renderProgress();
     return;
   }
 
   if (animationFrame !== undefined) {
-    cancelAnimationFrame(animationFrame);
-    animationFrame = undefined;
-    animationStart = undefined;
-    consoleElement.dataset.state = "paused";
-    launchLabel.textContent = resumeLabel(selectedVehicle);
+    cancelAnimation("paused");
     return;
   }
 
   if (progress >= 1) progress = 0;
   startProgress = progress;
   animationStart = undefined;
-  consoleElement.dataset.state = "running";
-  launchLabel.textContent = "PAUSE MISSION";
+  setPlaybackState("running");
   animationFrame = requestAnimationFrame(animate);
 }
 
@@ -317,21 +453,34 @@ for (const [index, button] of vehicleButtons.entries()) {
 }
 
 launchButton.addEventListener("click", toggleLaunch);
+transportButton.addEventListener("click", toggleLaunch);
 
 resetButton.addEventListener("click", () => {
-  cancelAnimation();
   progress = 0;
-  launchLabel.textContent = readyLaunchLabel(selectedVehicle);
+  cancelAnimation("ready");
   renderProgress();
 });
 
 progressInput.addEventListener("input", () => {
-  cancelAnimation();
   progress = Number(progressInput.value) / 1_000;
-  launchLabel.textContent = progress >= 1
-    ? replayLabel(selectedVehicle)
-    : resumeLabel(selectedVehicle);
+  cancelAnimation(progress >= 1 ? "complete" : "paused");
   renderProgress();
+});
+
+playbackRateSelect.addEventListener("change", () => {
+  const nextRate = Number(playbackRateSelect.value);
+  if (!Number.isFinite(nextRate) || nextRate <= 0) {
+    playbackRateSelect.value = String(playbackRate);
+    return;
+  }
+
+  playbackRate = nextRate;
+  if (animationFrame === undefined) return;
+  cancelAnimationFrame(animationFrame);
+  animationFrame = undefined;
+  startProgress = progress;
+  animationStart = undefined;
+  animationFrame = requestAnimationFrame(animate);
 });
 
 renderVehicle(selectedVehicle);
