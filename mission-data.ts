@@ -21,6 +21,62 @@ export interface Phase {
   to: number;
 }
 
+export type EphemerisTrajectoryId = "voyager1" | "parkerSolarProbe";
+
+export type MissionPath =
+  | {
+      kind: "ephemeris";
+      trajectoryId: EphemerisTrajectoryId;
+      outcome: "outbound" | "bound";
+      summary: string;
+    }
+  | {
+      kind: "profile";
+      targetStarId: "proxima-centauri";
+      targetLabel: "Proxima Centauri";
+      targetAu: number;
+      summary: string;
+    }
+  | { kind: "none" }
+  | { kind: "off-map"; reason: string };
+
+export type RouteDirection =
+  | { kind: "last-velocity" }
+  | { kind: "catalogue-target"; starId: "proxima-centauri" };
+
+export type RouteDestination =
+  | {
+      kind: "target";
+      starId: "proxima-centauri";
+      label: "Proxima Centauri";
+      au: number;
+    }
+  | {
+      kind: "distance-equivalent";
+      label: "Proxima distance-equivalent";
+      au: number;
+    };
+
+export type OnwardPath =
+  | {
+      kind: "constant";
+      start: "earth" | "ephemeris-end" | "peak-ephemeris";
+      startAu: number;
+      speedSource: "vehicle-max" | "ephemeris-end" | "ephemeris-peak";
+      speedKmh: number;
+      direction: RouteDirection;
+      destination: RouteDestination;
+      evidence: "COUNTERFACTUAL";
+      discontinuity: boolean;
+      note: string;
+    }
+  | { kind: "none"; reason?: string };
+
+export interface VehicleRoute {
+  mission: MissionPath;
+  onward: OnwardPath;
+}
+
 export interface Vehicle {
   id: string;
   name: string;
@@ -35,6 +91,7 @@ export interface Vehicle {
   modelNote: string;
   sourceIds: string[];
   unavailableReason?: string;
+  route: VehicleRoute;
 }
 
 export interface Milestone {
@@ -71,6 +128,53 @@ const constant = (label: string): Phase[] => [
   { label, start: 0, end: 1, from: 1, to: 1 },
 ];
 
+function proximaTarget(): RouteDestination {
+  return {
+    kind: "target",
+    starId: "proxima-centauri",
+    label: "Proxima Centauri",
+    au: PROXIMA_AU,
+  };
+}
+
+function comparisonFromEarth(speedKmh: number, note: string): VehicleRoute {
+  return {
+    mission: { kind: "none" },
+    onward: {
+      kind: "constant",
+      start: "earth",
+      startAu: 1,
+      speedSource: "vehicle-max",
+      speedKmh,
+      direction: { kind: "catalogue-target", starId: "proxima-centauri" },
+      destination: proximaTarget(),
+      evidence: "COUNTERFACTUAL",
+      discontinuity: false,
+      note,
+    },
+  };
+}
+
+function profileToProxima(summary: string): VehicleRoute {
+  return {
+    mission: {
+      kind: "profile",
+      targetStarId: "proxima-centauri",
+      targetLabel: "Proxima Centauri",
+      targetAu: PROXIMA_AU,
+      summary,
+    },
+    onward: { kind: "none" },
+  };
+}
+
+function offMap(reason: string): VehicleRoute {
+  return {
+    mission: { kind: "off-map", reason },
+    onward: { kind: "none", reason },
+  };
+}
+
 export const VEHICLES: Vehicle[] = [
   {
     id: "voyager",
@@ -83,6 +187,30 @@ export const VEHICLES: Vehicle[] = [
     description: "Humanity's most distant spacecraft supplies the honest baseline: fast enough to cross the heliopause, nowhere near fast enough to clear the Oort Cloud in a lifetime.",
     modelNote: "Straight-line comparison at Voyager 1's current Sun-relative speed. NASA's actual estimate is about 300 years to enter the Oort Cloud and about 30,000 years to pass beyond it.",
     sourceIds: ["voyager", "oort"],
+    route: {
+      mission: {
+        kind: "ephemeris",
+        trajectoryId: "voyager1",
+        outcome: "outbound",
+        summary: "Recorded JPL path from Earth past Jupiter, Saturn and the heliopause to the current endpoint.",
+      },
+      onward: {
+        kind: "constant",
+        start: "ephemeris-end",
+        startAu: 171.5,
+        speedSource: "ephemeris-end",
+        speedKmh: 61_198,
+        direction: { kind: "last-velocity" },
+        destination: {
+          kind: "distance-equivalent",
+          label: "Proxima distance-equivalent",
+          au: PROXIMA_AU,
+        },
+        evidence: "COUNTERFACTUAL",
+        discontinuity: false,
+        note: "The continuation follows Voyager's last measured velocity direction. Proxima is only a distance-equivalent marker; Voyager is not aimed at the star.",
+      },
+    },
   },
   {
     id: "f1",
@@ -95,6 +223,7 @@ export const VEHICLES: Vehicle[] = [
     description: "A Bonneville speed-run car makes interstellar distance human-sized for a moment—then the calendar makes it absurd again.",
     modelNote: "Counterfactual: a Formula 1 car cannot operate in space. The model holds its sanctioned 397.36 km/h record speed forever in a straight line.",
     sourceIds: ["f1"],
+    route: comparisonFromEarth(397.36, "An impossible constant-speed comparison aimed at Proxima Centauri."),
   },
   {
     id: "737",
@@ -107,6 +236,7 @@ export const VEHICLES: Vehicle[] = [
     description: "Even the speed that folds continents into hours barely moves the marker on an interstellar clock.",
     modelNote: "Counterfactual: 839 km/h is an approximate conversion of Mach 0.79 at a typical cruise altitude, held forever in vacuum.",
     sourceIds: ["boeing"],
+    route: comparisonFromEarth(839, "An airliner cannot fly in vacuum; its cruise speed is frozen solely to expose distance."),
   },
   {
     id: "concorde",
@@ -119,6 +249,7 @@ export const VEHICLES: Vehicle[] = [
     description: "Mach 2 once made the Atlantic feel small. On this route it changes millions of years into merely millions of years.",
     modelNote: "Counterfactual straight-line travel at Concorde's quoted maximum cruise speed; the aircraft cannot fly in vacuum.",
     sourceIds: ["concorde"],
+    route: comparisonFromEarth(2_179, "A counterfactual straight-line comparison at Concorde's quoted cruise speed."),
   },
   {
     id: "apollo10",
@@ -131,6 +262,7 @@ export const VEHICLES: Vehicle[] = [
     description: "The fastest humans in history reached their record while falling home. Holding that instant forever still leaves a five-digit journey to Proxima.",
     modelNote: "Counterfactual: 39,897 km/h was Apollo 10's return-to-Earth peak, not a sustainable outbound cruise speed.",
     sourceIds: ["apollo"],
+    route: comparisonFromEarth(39_897, "Apollo 10's return peak is frozen and redirected outward; this is not a flown mission."),
   },
   {
     id: "parker",
@@ -153,6 +285,26 @@ export const VEHICLES: Vehicle[] = [
     description: "Parker owns the speed record because it repeatedly falls into the Sun's gravity well. Venus flybys remove orbital energy; the probe does not escape toward the stars.",
     modelNote: "The chart sketches the real accelerate–decelerate orbit pattern, so there is no outward arrival model. Only as a separate, impossible thought experiment would freezing the 430,000 mph perihelion instant reduce the Proxima crossing to about 6,628 years.",
     sourceIds: ["parker", "parker-orbits"],
+    route: {
+      mission: {
+        kind: "ephemeris",
+        trajectoryId: "parkerSolarProbe",
+        outcome: "bound",
+        summary: "Recorded JPL path through Venus gravity assists and repeated bound solar perihelia.",
+      },
+      onward: {
+        kind: "constant",
+        start: "peak-ephemeris",
+        startAu: 0.046,
+        speedSource: "ephemeris-peak",
+        speedKmh: 692_018,
+        direction: { kind: "catalogue-target", starId: "proxima-centauri" },
+        destination: proximaTarget(),
+        evidence: "COUNTERFACTUAL",
+        discontinuity: true,
+        note: "Impossible branch: freeze Parker's perihelion speed and redirect it outward. The real probe remains bound to the Sun.",
+      },
+    },
   },
   {
     id: "daedalus",
@@ -170,6 +322,7 @@ export const VEHICLES: Vehicle[] = [
     description: "The 1970s BIS study takes interstellar travel seriously: two fusion stages, years of acceleration, then a decades-long coast and a high-speed flyby.",
     modelNote: "Model extrapolation: Daedalus targeted Barnard's Star, not Proxima. Its published 3.8-year boost and >0.12c cruise are applied to the shorter 4.25 ly route; no arrival braking is included.",
     sourceIds: ["daedalus"],
+    route: profileToProxima("The published two-stage fusion profile is reapplied to a clearly labelled Proxima comparison."),
   },
   {
     id: "starshot",
@@ -186,6 +339,7 @@ export const VEHICLES: Vehicle[] = [
     description: "A ground laser trades spacecraft mass for speed: a gram-scale sail accelerates in minutes, coasts for about twenty years, and flashes through the destination.",
     modelNote: "Concept target, not a flown system. The probe reaches about 0.2c, has no published arrival braking phase, and needs roughly another 4.25 years to radio data home.",
     sourceIds: ["starshot"],
+    route: profileToProxima("A concept profile: laser boost near Earth followed by an unbraked coast to Proxima."),
   },
   {
     id: "orion",
@@ -197,6 +351,7 @@ export const VEHICLES: Vehicle[] = [
     modelNote: "No universal speed is plotted. A trustworthy calculation requires choosing a specific Orion point design, mass, pulse unit and mission.",
     sourceIds: ["orion"],
     unavailableReason: "NO SINGLE ORION PROFILE",
+    route: offMap("Project Orion is a propulsion family; no single point design is selected for a finite route."),
   },
   {
     id: "wandering-earth",
@@ -216,6 +371,7 @@ export const VEHICLES: Vehicle[] = [
     description: "This is not a ship but an entire world, whose interstellar crossing is told as historical eras: departure, acceleration, wandering, deceleration and capture.",
     modelNote: "Film-continuity narrative diagram: 2,500 years and a quoted 0.5% c ceiling. The phases are story structure, not a physically integrated flight plan, and are not mixed with the novel's differing details.",
     sourceIds: ["wandering-earth"],
+    route: profileToProxima("A film-continuity story profile, not a numerically integrated propulsion solution."),
   },
   {
     id: "natural-selection",
@@ -232,6 +388,7 @@ export const VEHICLES: Vehicle[] = [
     description: "The Three-Body Problem turns acceleration into a moral and political choice: who gets to leave, and who can still turn back.",
     modelNote: "Continuity-derived comparison using the commonly described 15% c capability. The exact Proxima transfer and braking curve are modelled here, not specified by the novel.",
     sourceIds: ["three-body"],
+    route: profileToProxima("A continuity-derived acceleration, cruise and modelled braking profile."),
   },
   {
     id: "discovery",
@@ -243,6 +400,7 @@ export const VEHICLES: Vehicle[] = [
     modelNote: "The film travels to Jupiter; the novel continues toward Saturn after a Jupiter assist. No invented km/h value is used.",
     sourceIds: ["discovery"],
     unavailableReason: "NO CANONICAL INTERSTELLAR SPEED",
+    route: offMap("Discovery's Jupiter or Saturn mission can be described, but it supplies no canonical interstellar transfer profile."),
   },
   {
     id: "enterprise",
@@ -254,6 +412,7 @@ export const VEHICLES: Vehicle[] = [
     modelNote: "Warp factors vary by Star Trek continuity and are not converted into a fake km/h figure. The affectionate 'Silver Lady' name refers here to NCC-1701, especially the refit-era ship.",
     sourceIds: ["enterprise"],
     unavailableReason: "WARP SCALE · OFF THIS PHYSICS",
+    route: offMap("Warp changes the fictional geometry of travel and has no finite velocity on this linear map."),
   },
   {
     id: "millennium-falcon",
@@ -265,6 +424,7 @@ export const VEHICLES: Vehicle[] = [
     modelNote: "No canon-consistent linear speed is plotted; screen travel times vary with route and story.",
     sourceIds: ["falcon"],
     unavailableReason: "HYPERSPACE · OFF THIS PHYSICS",
+    route: offMap("Hyperspace does not trace a finite-speed route through this normal-space coordinate system."),
   },
   {
     id: "droplet",
@@ -276,6 +436,7 @@ export const VEHICLES: Vehicle[] = [
     modelNote: "No unsupported decimal fraction of light speed is invented for this comparison.",
     sourceIds: ["three-body"],
     unavailableReason: "NO COMPLETE TRANSFER PROFILE",
+    route: offMap("The source does not define a complete departure-to-destination transfer profile."),
   },
   {
     id: "warhammer",
@@ -287,6 +448,7 @@ export const VEHICLES: Vehicle[] = [
     modelNote: "FTL setting logic is shown as incomparable rather than reduced to a misleading speed.",
     sourceIds: ["warhammer"],
     unavailableReason: "THE WARP · OFF THIS PHYSICS",
+    route: offMap("Warp transit is deliberately non-linear and temporally uncertain, so no finite crossing time is assigned."),
   },
 ];
 
@@ -375,10 +537,19 @@ export function journeySample(vehicle: Vehicle, progress: number): JourneySample
 
 export function milestoneYears(vehicle: Vehicle, milestoneAu: number): number | undefined {
   const total = totalTravelYears(vehicle);
-  if (total === undefined || !vehicle.phases?.length) return undefined;
+  const progress = journeyProgressAtAu(vehicle, milestoneAu);
+  if (total === undefined || progress === undefined) return undefined;
+  return total * progress;
+}
+
+export function journeyProgressAtAu(
+  vehicle: Vehicle,
+  milestoneAu: number,
+): number | undefined {
+  if (totalTravelYears(vehicle) === undefined || !vehicle.phases?.length) return undefined;
   const targetFraction = (milestoneAu - 1) / (PROXIMA_AU - 1);
   if (targetFraction <= 0) return 0;
-  if (targetFraction >= 1) return total;
+  if (targetFraction >= 1) return 1;
   let lower = 0;
   let upper = 1;
   for (let iteration = 0; iteration < 48; iteration += 1) {
@@ -386,7 +557,7 @@ export function milestoneYears(vehicle: Vehicle, milestoneAu: number): number | 
     if (integratedFraction(vehicle, midpoint) < targetFraction) lower = midpoint;
     else upper = midpoint;
   }
-  return total * upper;
+  return upper;
 }
 
 export function profilePoints(vehicle: Vehicle, count = 120): string {
