@@ -195,10 +195,13 @@ function constantChapters(path: Extract<OnwardPath, { kind: "constant" }>): Tour
 
 function profileChapters(vehicle: Vehicle): TourChapter[] {
   const mission = vehicle.route.mission;
-  if (mission.kind !== "profile") return [];
+  if (mission.kind !== "profile" && mission.kind !== "in-system-profile") return [];
   const totalYears = totalTravelYears(vehicle);
   if (totalYears === undefined) return [];
-  const stops = DISTANCE_STOPS.filter(({ au }) => au < mission.targetAu);
+  const inSystem = mission.kind === "in-system-profile";
+  const stops = inSystem
+    ? []
+    : DISTANCE_STOPS.filter(({ au }) => au < mission.targetAu);
   const endpoints: Array<DistanceStop | undefined> = [...stops, undefined];
   const chapters: TourChapter[] = [];
   let startAu = 1;
@@ -206,7 +209,9 @@ function profileChapters(vehicle: Vehicle): TourChapter[] {
 
   for (const [index, stop] of endpoints.entries()) {
     const endAu = stop?.au ?? mission.targetAu;
-    const endProgress = journeyProgressAtAu(vehicle, endAu) ?? 1;
+    const endProgress = inSystem
+      ? 1
+      : journeyProgressAtAu(vehicle, endAu) ?? 1;
     chapters.push({
       id: index === 0 ? "mission" : stop?.id ?? "destination",
       title: index === 0
@@ -223,12 +228,18 @@ function profileChapters(vehicle: Vehicle): TourChapter[] {
       endAu,
       elapsedStartYears: totalYears * startProgress,
       elapsedEndYears: totalYears * endProgress,
-      destination: {
-        kind: "target",
-        starId: mission.targetStarId,
-        label: mission.targetLabel,
-        au: mission.targetAu,
-      },
+      destination: mission.kind === "profile"
+        ? {
+            kind: "target",
+            starId: mission.targetStarId,
+            label: mission.targetLabel,
+            au: mission.targetAu,
+          }
+        : {
+            kind: "distance-equivalent",
+            label: mission.targetLabel,
+            au: mission.targetAu,
+          },
       discontinuity: false,
     });
     startAu = endAu;
@@ -271,7 +282,7 @@ export function buildMissionTour(vehicle: Vehicle): MissionTour {
       trajectoryId: mission.trajectoryId,
       discontinuity: false,
     });
-  } else if (mission.kind === "profile") {
+  } else if (mission.kind === "profile" || mission.kind === "in-system-profile") {
     chapters.push(...profileChapters(vehicle));
   }
 

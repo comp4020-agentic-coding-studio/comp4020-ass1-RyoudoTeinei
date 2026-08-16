@@ -348,6 +348,219 @@ h1 em {
   margin: 0;
 }
 
+.familiar-scale-section {
+  width: min(100% - 4rem, var(--max-width));
+  margin-inline: auto;
+  padding-top: clamp(5rem, 9vw, 9rem);
+}
+
+.familiar-scale-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.55fr);
+  column-gap: 5rem;
+  align-items: end;
+  margin-bottom: clamp(3rem, 6vw, 6rem);
+}
+
+.familiar-scale-heading .eyebrow {
+  grid-column: 1 / -1;
+}
+
+.familiar-scale-heading h2 {
+  margin: 0;
+  font-size: clamp(3.2rem, 6vw, 7.5rem);
+  line-height: 0.86;
+  letter-spacing: -0.065em;
+}
+
+.off-map-section .familiar-scale-heading h2 em {
+  color: var(--violet);
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+}
+
+.familiar-scale-heading > p:last-child {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.familiar-reference-list {
+  border: 1px solid var(--line);
+  box-shadow: 12px 12px 0 #000;
+}
+
+.familiar-reference {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.85fr) minmax(0, 1.15fr);
+  min-height: 650px;
+  border-bottom: 1px solid var(--line);
+  background: #071511;
+}
+
+.familiar-reference:last-child {
+  border-bottom: 0;
+}
+
+.familiar-reference figure {
+  position: relative;
+  min-width: 0;
+  min-height: 100%;
+  margin: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--line);
+  background: #020605;
+}
+
+.familiar-reference:nth-child(even) figure {
+  order: 2;
+  border-right: 0;
+  border-left: 1px solid var(--line);
+}
+
+.familiar-reference figure::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgb(2 6 5 / 82%));
+  content: "";
+  pointer-events: none;
+}
+
+.familiar-reference img {
+  width: 100%;
+  height: 100%;
+  min-height: 650px;
+  object-fit: cover;
+  filter: saturate(0.72) contrast(1.08);
+}
+
+.familiar-reference figcaption {
+  position: absolute;
+  z-index: 1;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  left: 1.25rem;
+}
+
+.familiar-reference figcaption a {
+  color: var(--paper);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.56rem;
+}
+
+.familiar-reference-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(2rem, 4vw, 5rem);
+}
+
+.reference-register {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 auto;
+  color: var(--cyan);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.65rem;
+}
+
+.familiar-reference h3 {
+  margin: clamp(3rem, 6vw, 7rem) 0 2rem;
+  font-size: clamp(2.7rem, 4.8vw, 6rem);
+  line-height: 0.88;
+  letter-spacing: -0.055em;
+}
+
+.familiar-reference h3 em {
+  color: var(--acid);
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+}
+
+.familiar-reference-copy > p:not(.reference-register, .reference-caveat) {
+  max-width: 46rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.boundary-duration {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  margin-top: auto;
+  padding-top: clamp(3rem, 6vw, 6rem);
+  color: var(--paper);
+}
+
+.boundary-duration span {
+  grid-column: 1 / -1;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--faint);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.62rem;
+}
+
+.boundary-duration strong {
+  overflow-wrap: anywhere;
+  color: var(--acid);
+  font-size: clamp(5.5rem, 9vw, 11rem);
+  line-height: 0.78;
+  letter-spacing: -0.075em;
+}
+
+.familiar-reference:nth-child(3) .boundary-duration strong {
+  font-size: clamp(4.2rem, 7vw, 8.5rem);
+}
+
+.off-map-reference .boundary-duration strong {
+  color: var(--violet);
+}
+
+.off-map-reference[data-off-map-vehicle="droplet"] img {
+  object-fit: contain;
+  padding: clamp(1rem, 3vw, 3rem);
+  background: radial-gradient(circle, #19332e, #020605 68%);
+}
+
+.boundary-duration-range strong {
+  font-size: clamp(3.5rem, 6vw, 7rem);
+  line-height: 0.72;
+}
+
+.boundary-duration em {
+  max-width: 7ch;
+  padding-bottom: 0.2em;
+  color: var(--paper);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.5rem, 2.4vw, 3rem);
+  font-weight: 400;
+  line-height: 0.9;
+  text-align: right;
+}
+
+.reference-caveat,
+.reference-method {
+  color: var(--faint);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.58rem;
+  line-height: 1.6;
+}
+
+.reference-caveat {
+  margin: 1.4rem 0 0;
+}
+
+.reference-method {
+  margin: 0;
+  padding: 1.25rem 0 0;
+  text-align: right;
+}
+
 .journey-section {
   width: min(100% - 4rem, var(--max-width));
   margin-inline: auto;
@@ -1852,6 +2065,28 @@ footer p:first-child {
 }
 
 @media (width <= 1000px) {
+  .familiar-scale-heading {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .familiar-reference {
+    grid-template-columns: 1fr;
+  }
+
+  .familiar-reference figure,
+  .familiar-reference:nth-child(even) figure {
+    order: 0;
+    min-height: 420px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .familiar-reference img {
+    min-height: 420px;
+  }
+
   .hero {
     grid-template-columns: 1fr;
   }
@@ -1900,10 +2135,63 @@ footer p:first-child {
 
   .site-nav,
   .hero,
+  .familiar-scale-section,
   .journey-section,
   .method-section,
   .sources-section {
     width: min(100% - 1.5rem, var(--max-width));
+  }
+
+  .familiar-scale-section {
+    padding-top: 5rem;
+  }
+
+  .familiar-scale-heading h2 {
+    font-size: clamp(3.2rem, 17vw, 5.5rem);
+  }
+
+  .familiar-reference {
+    min-height: 0;
+  }
+
+  .familiar-reference figure,
+  .familiar-reference:nth-child(even) figure,
+  .familiar-reference img {
+    min-height: 270px;
+    height: 270px;
+  }
+
+  .familiar-reference-copy {
+    padding: 1.5rem;
+  }
+
+  .reference-register {
+    font-size: 0.56rem;
+  }
+
+  .familiar-reference h3 {
+    margin-block: 3rem 1.5rem;
+    font-size: clamp(2.5rem, 13vw, 4rem);
+  }
+
+  .boundary-duration {
+    grid-template-columns: 1fr;
+    padding-top: 4rem;
+  }
+
+  .boundary-duration strong,
+  .familiar-reference:nth-child(3) .boundary-duration strong {
+    font-size: clamp(4.5rem, 22vw, 7rem);
+  }
+
+  .boundary-duration em {
+    max-width: none;
+    padding-top: 0.4rem;
+    text-align: left;
+  }
+
+  .reference-method {
+    text-align: left;
   }
 
   .site-nav {

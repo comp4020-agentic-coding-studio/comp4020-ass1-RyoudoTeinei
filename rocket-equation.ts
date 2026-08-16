@@ -37,7 +37,6 @@ const launchRatio = requireElement("launch-ratio");
 const stopRatio = requireElement("stop-ratio");
 const launchExponent = requireElement("launch-exponent");
 const stopExponent = requireElement("stop-exponent");
-const massStack = requireElement("mass-stack");
 
 function selectedEngine(): EnginePreset {
   return ENGINE_PRESETS.find((engine) => engine.id === engineInput.value) ?? ENGINE_PRESETS[0];
@@ -59,8 +58,6 @@ function renderCalculator(): void {
   launchExponent.textContent = `ln R = ${launch.lnRatio.toLocaleString("en-US", { maximumFractionDigits: 2 })} · log₁₀ R = ${launch.log10Ratio.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
   stopExponent.textContent = `ln R = ${stop.lnRatio.toLocaleString("en-US", { maximumFractionDigits: 2 })} · log₁₀ R = ${stop.log10Ratio.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
 
-  const visualScale = Math.min(100, Math.max(4, Math.log10(1 + stop.log10Ratio) * 30));
-  massStack.style.setProperty("--propellant-height", `${visualScale}%`);
   speedInput.setAttribute("aria-valuetext", `${(beta * 100).toFixed(1)} percent of light speed`);
 }
 
@@ -82,4 +79,3 @@ document.querySelectorAll<HTMLButtonElement>("[data-speed]").forEach((button) =>
 speedInput.addEventListener("input", renderCalculator);
 engineInput.addEventListener("change", renderCalculator);
 renderCalculator();
-

@@ -24,6 +24,18 @@ describe("journey model", () => {
     expect(formatDuration(21.25)).toBe("21.3 YEARS");
   });
 
+  it("keeps Discovery's 18-month Jupiter mission separate from its Proxima analogy", () => {
+    const discovery = VEHICLES.find(({ id }) => id === "discovery");
+    expect(discovery).toBeTruthy();
+    expect(totalTravelYears(discovery!)).toBe(1.5);
+    expect(discovery?.route.mission).toMatchObject({
+      kind: "in-system-profile",
+      targetBody: "jupiter",
+      targetAu: 5.2,
+    });
+    expect(discovery?.arrivalEstimate?.years).toBeCloseTo(95_900, -2);
+  });
+
   it("never invents arrival times for incomparable fiction", () => {
     for (const id of ["enterprise", "millennium-falcon", "droplet", "warhammer"]) {
       const vehicle = VEHICLES.find((item) => item.id === id);
@@ -40,10 +52,10 @@ describe("journey model", () => {
 
     expect(estimates.orion?.years).toBeCloseTo(42.5, 1);
     expect(estimates.discovery?.years).toBeCloseTo(95_900, -2);
-    expect((estimates.enterprise?.years ?? 0) * 365.25).toBeCloseTo(7.2, 1);
-    expect((estimates["millennium-falcon"]?.years ?? 0) * 8_766).toBeCloseTo(4.25, 1);
-    expect(estimates.droplet?.years).toBeCloseTo(42.5, 1);
-    expect(estimates.warhammer?.display).toBe("HOURS–WEEKS");
+    expect((estimates.enterprise?.years ?? 0) * 365.25).toBeCloseTo(3.0, 1);
+    expect((estimates["millennium-falcon"]?.years ?? 0) * 365.25 * 24 * 60).toBeCloseTo(14.9, 1);
+    expect(estimates.droplet?.years).toBeCloseTo(50.9, 1);
+    expect(estimates.warhammer?.display).toBe("HOURS–WEEKS / OR WORSE");
 
     for (const vehicle of VEHICLES) {
       if (totalTravelYears(vehicle) !== undefined) continue;

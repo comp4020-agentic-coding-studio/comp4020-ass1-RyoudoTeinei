@@ -464,51 +464,9 @@
   color: var(--ink);
 }
 
-.mass-stack {
-  --propellant-height: 100%;
-
-  position: relative;
-  height: 240px;
-  margin: clamp(1.5rem, 3vw, 3rem);
-  overflow: hidden;
-  border: 1px solid var(--line);
-  background: #030706;
-}
-
-.propellant-field {
-  position: absolute;
-  inset: auto 0 0;
-  height: var(--propellant-height);
-  background-image:
-    linear-gradient(45deg, rgb(184 255 61 / 8%) 25%, transparent 25%),
-    linear-gradient(-45deg, rgb(184 255 61 / 8%) 25%, transparent 25%);
-  background-size: 12px 12px;
-  border-top: 1px solid var(--acid);
-}
-
-.payload-pixel {
-  position: absolute;
-  right: 1rem;
-  bottom: 1rem;
-  width: 8px;
-  height: 8px;
-  background: var(--cyan);
-  box-shadow: 0 0 0 3px var(--ink);
-}
-
-.payload-pixel span {
-  position: absolute;
-  right: 1rem;
-  bottom: -0.2rem;
-  width: max-content;
-  color: var(--cyan);
-  font-family: "Cascadia Mono", Consolas, monospace;
-  font-size: 0.58rem;
-}
-
 .console-note {
   margin: 0;
-  padding: 0 clamp(1.5rem, 3vw, 3rem) clamp(1.5rem, 3vw, 3rem);
+  padding: clamp(1.5rem, 3vw, 3rem);
   line-height: 1.6;
 }
 
@@ -729,10 +687,6 @@
 
   .ratio-results strong {
     font-size: clamp(2.4rem, 12vw, 4rem);
-  }
-
-  .mass-stack {
-    height: 180px;
   }
 
   .final-statement {

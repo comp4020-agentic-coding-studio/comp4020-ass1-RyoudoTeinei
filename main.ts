@@ -36,6 +36,14 @@ import {
 import { getVehicleDossier } from "./vehicle-dossiers";
 import { timeAnalogyAt } from "./time-analogies";
 
+// In the novel, the mobile Earth spends fifteen years widening its solar
+// orbit before the planned Jupiter assist. Treat that 42–58 year interval as
+// one continuous playback window so the final passes do not suddenly race
+// ahead just because the mission-flow copy changes at the Jupiter marker.
+const WANDERING_EARTH_ESCAPE_START_SECONDS = 42 * JULIAN_YEAR_SECONDS;
+const WANDERING_EARTH_JUPITER_EXIT_SECONDS = 58 * JULIAN_YEAR_SECONDS;
+const WANDERING_EARTH_ESCAPE_WALL_SECONDS = 16;
+
 function required<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
   if (!element) throw new Error(`Required element not found: ${selector}`);
@@ -76,6 +84,7 @@ const chartCursor = required<SVGLineElement>("#chart-cursor");
 const chartPoint = required<SVGCircleElement>("#chart-point");
 const chartTitle = required<SVGTitleElement>("#speed-chart-title");
 const chartDescription = required<SVGDescElement>("#speed-chart-desc");
+const profileDestination = required<SVGTextElement>("#profile-destination");
 const phaseKey = required<HTMLElement>("#phase-key");
 const vehicleDescription = required<HTMLElement>("#vehicle-description");
 const modelNote = required<HTMLElement>("#model-note");
@@ -223,6 +232,15 @@ function openingFlowStages(vehicle: Vehicle): MissionFlowStage[] | undefined {
     ];
   }
 
+  if (vehicle.id === "discovery") {
+    return [
+      { label: "EARTH DEPARTURE", description: "Discovery leaves Earth's 1 AU orbit on the film's eighteen-month Jupiter mission.", chapterIndex: 0, routeStart: 0, routeEnd: 0.08 },
+      { label: "HIBERNATION CRUISE · HAL 9000", description: "Most of the transfer is a long isolated cruise with three crew members in hibernation.", chapterIndex: 0, routeStart: 0.08, routeEnd: 0.82 },
+      { label: "JUPITER APPROACH", description: "The reconstructed transfer closes on Jupiter's true 5.2 AU orbital radius.", chapterIndex: 0, routeStart: 0.82, routeEnd: 0.985 },
+      { label: "MONOLITH / STARGATE", description: "Bowman's ordinary flight path ends at the monolith; the Stargate is shown as a discontinuity, not a velocity curve.", chapterIndex: 0, routeStart: 0.985, routeEnd: 1.01 },
+    ];
+  }
+
   return undefined;
 }
 
@@ -250,6 +268,8 @@ function buildMissionFlow(vehicle: Vehicle): void {
   const mission = vehicle.route.mission;
   missionFlowContext.textContent = vehicle.id === "wandering-earth"
     ? "NOVEL CANON · EARTH IS THE VEHICLE · GEOMETRY SCHEMATIC"
+    : vehicle.id === "discovery"
+    ? "FILM CONTINUITY · 18-MONTH JUPITER MISSION · TRANSFER GEOMETRY SCHEMATIC"
     : mission.kind === "ephemeris"
     ? "SUN = MAP ORIGIN · EARTH = HISTORICAL LAUNCH · LOCATOR NOT TO SCALE"
     : mission.kind === "off-map"
@@ -479,6 +499,22 @@ function effectiveTimeFlow(): {
 } {
   const stage = timedMissionStage();
   if (timeFlowMode === "auto" && stage) {
+    if (
+      selectedVehicle.id === "wandering-earth"
+      && physicalElapsedSeconds >= WANDERING_EARTH_ESCAPE_START_SECONDS
+      && physicalElapsedSeconds < WANDERING_EARTH_JUPITER_EXIT_SECONDS
+    ) {
+      const sharedEscapePace = autoTimeFlowForStage({
+        ...stage,
+        startSeconds: WANDERING_EARTH_ESCAPE_START_SECONDS,
+        endSeconds: WANDERING_EARTH_JUPITER_EXIT_SECONDS,
+      }, physicalElapsedSeconds, WANDERING_EARTH_ESCAPE_WALL_SECONDS);
+      return {
+        multiplier: sharedEscapePace.multiplier,
+        stage,
+        remainingSeconds: Math.max(0, stage.endSeconds - physicalElapsedSeconds),
+      };
+    }
     const pace = autoTimeFlowForStage(stage, physicalElapsedSeconds);
     return {
       multiplier: pace.multiplier,
@@ -521,6 +557,7 @@ function currentTourFrame(): MissionTourSample | PhysicalMissionTourSample {
 }
 
 function crossingTime(vehicle: Vehicle, au: number): number | undefined {
+  if (vehicle.route.mission.kind === "in-system-profile") return undefined;
   return milestoneYears(vehicle, au) ?? onwardComparisonYears(vehicle, au);
 }
 
@@ -561,6 +598,9 @@ function renderProfile(vehicle: Vehicle): void {
   profileScale.textContent = vehicle.maxSpeedKmh
     ? `MAX ${formatSpeed(vehicle.maxSpeedKmh)}`
     : "NO LINEAR SCALE";
+  profileDestination.textContent = vehicle.route.mission.kind === "in-system-profile"
+    ? "JUPITER / STARGATE"
+    : "PROXIMA";
   renderPhaseKey(vehicle);
 }
 

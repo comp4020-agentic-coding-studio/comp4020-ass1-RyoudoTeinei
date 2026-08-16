@@ -26,6 +26,42 @@ describe("Assignment 1: interstellar journey explainer", () => {
     expect(doc.querySelector('[aria-live="polite"]')).toBeTruthy();
   });
 
+  it("separates familiar atmospheric speeds from the spacecraft map", () => {
+    const references = doc.querySelectorAll("[data-reference-vehicle]");
+    expect(references).toHaveLength(3);
+    expect(
+      Array.from(references, (element) =>
+        element.getAttribute("data-reference-vehicle"),
+      ),
+    ).toEqual(["f1", "737", "concorde"]);
+    for (const id of ["f1", "737", "concorde"]) {
+      expect(doc.querySelector(`[data-vehicle="${id}"]`)).toBeFalsy();
+    }
+    expect(doc.querySelector('[data-reference-vehicle="f1"]')?.textContent).toMatch(/4\.29.*million years/is);
+    expect(doc.querySelector('[data-reference-vehicle="737"]')?.textContent).toMatch(/2\.03.*million years/is);
+    expect(doc.querySelector('[data-reference-vehicle="concorde"]')?.textContent).toMatch(/783,000.*years/is);
+  });
+
+  it("separates off-map fictional travel systems from the spacecraft map", () => {
+    const references = doc.querySelectorAll("[data-off-map-vehicle]");
+    expect(references).toHaveLength(4);
+    expect(
+      Array.from(references, (element) =>
+        element.getAttribute("data-off-map-vehicle"),
+      ),
+    ).toEqual(["enterprise", "millennium-falcon", "droplet", "warhammer"]);
+
+    for (const id of ["enterprise", "millennium-falcon", "droplet", "warhammer"]) {
+      expect(doc.querySelector(`[data-vehicle="${id}"]`)).toBeFalsy();
+      expect(doc.querySelector(`[data-off-map-vehicle="${id}"] img`)).toBeTruthy();
+    }
+
+    expect(doc.querySelector('[data-off-map-vehicle="enterprise"]')?.textContent).toMatch(/3\.0.*days/is);
+    expect(doc.querySelector('[data-off-map-vehicle="millennium-falcon"]')?.textContent).toMatch(/14\.9.*minutes/is);
+    expect(doc.querySelector('[data-off-map-vehicle="droplet"]')?.textContent).toMatch(/50\.9.*years/is);
+    expect(doc.querySelector('[data-off-map-vehicle="warhammer"]')?.textContent).toMatch(/hours.*weeks.*or worse/is);
+  });
+
   it("keeps the true-scale space map and speed profile in the explanation", () => {
     const map = doc.querySelector('[data-testid="space-map"]');
     expect(map).toBeTruthy();

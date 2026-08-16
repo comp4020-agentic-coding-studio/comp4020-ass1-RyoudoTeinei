@@ -3,11 +3,13 @@ import { VEHICLES } from "../mission-data";
 import {
   automaticCameraBand,
   buildCanonicalMapRoute,
+  buildDiscoveryMapRoute,
   canonicalMapRoutePrefix,
   sampleCanonicalMapRoute,
 } from "../space-map-controller";
 
 const wanderingEarth = VEHICLES.find(({ id }) => id === "wandering-earth");
+const discovery = VEHICLES.find(({ id }) => id === "discovery");
 
 describe("Wandering Earth canonical map route", () => {
   it("expands a craft-centred true-linear camera at physical boundaries", () => {
@@ -67,5 +69,21 @@ describe("Wandering Earth canonical map route", () => {
 
     const complete = canonicalMapRoutePrefix(route!, 1);
     expect(complete.at(-1)).toEqual(route!.destinationPoint);
+  });
+});
+
+describe("Discovery One film-continuity map route", () => {
+  it("draws a true-radius Earth-to-Jupiter transfer and ends at the Stargate", () => {
+    expect(discovery).toBeTruthy();
+    const route = buildDiscoveryMapRoute(discovery!);
+    expect(route).toBeTruthy();
+    expect(Math.hypot(route!.launchPoint.x, route!.launchPoint.y)).toBeCloseTo(1, 10);
+    expect(Math.hypot(route!.jupiterPoint.x, route!.jupiterPoint.y)).toBeCloseTo(5.2, 10);
+    expect(route!.points.every((point, index) =>
+      index === 0 || point.routeProgress >= route!.points[index - 1]!.routeProgress,
+    )).toBe(true);
+    expect(route!.points.at(-1)?.leg).toBe("stargate");
+    expect(route!.evidence).toMatch(/KUBRICK FILM.*SCHEMATIC/);
+    expect(canonicalMapRoutePrefix(route!, 1).at(-1)).toEqual(route!.destinationPoint);
   });
 });

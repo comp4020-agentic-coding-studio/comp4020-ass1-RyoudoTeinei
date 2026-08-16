@@ -38,6 +38,13 @@ export type MissionPath =
       targetAu: number;
       summary: string;
     }
+  | {
+      kind: "in-system-profile";
+      targetBody: "jupiter";
+      targetLabel: "Jupiter";
+      targetAu: number;
+      summary: string;
+    }
   | { kind: "none" }
   | { kind: "off-map"; reason: string };
 
@@ -54,7 +61,7 @@ export type RouteDestination =
     }
   | {
       kind: "distance-equivalent";
-      label: "Proxima distance-equivalent";
+      label: string;
       au: number;
     };
 
@@ -130,10 +137,23 @@ export interface CanonicalRouteSequence {
   stages: readonly CanonicalRouteStage[];
 }
 
+export interface InSystemRouteSequence {
+  kind: "in-system-sequence";
+  continuity: "KUBRICK FILM · 1968";
+  launchAu: 1;
+  targetBody: "jupiter";
+  targetAu: number;
+  totalYears: number;
+  transferEndProgress: number;
+  stargateProgress: number;
+  geometry: "SCHEMATIC HELIOCENTRIC TRANSFER";
+}
+
 export interface VehicleRoute {
   mission: MissionPath;
   onward: OnwardPath;
   canonicalSequence?: CanonicalRouteSequence;
+  inSystemSequence?: InSystemRouteSequence;
 }
 
 export interface Vehicle {
@@ -155,7 +175,7 @@ export interface Vehicle {
     years?: number;
     display?: string;
     context: string;
-    evidence: "DERIVED" | "ILLUSTRATIVE" | "LORE RANGE";
+    evidence: "DERIVED" | "ILLUSTRATIVE" | "COMMUNITY ESTIMATE" | "LORE RANGE";
   };
   route: VehicleRoute;
 }
@@ -339,6 +359,18 @@ const WANDERING_EARTH_NOVEL_ROUTE: CanonicalRouteSequence = {
       note: "The novel reserves the final century for capture into the new star system; its drawn curve remains schematic.",
     },
   ],
+};
+
+const DISCOVERY_ONE_FILM_ROUTE: InSystemRouteSequence = {
+  kind: "in-system-sequence",
+  continuity: "KUBRICK FILM · 1968",
+  launchAu: 1,
+  targetBody: "jupiter",
+  targetAu: 5.2,
+  totalYears: 1.5,
+  transferEndProgress: 0.92,
+  stargateProgress: 0.985,
+  geometry: "SCHEMATIC HELIOCENTRIC TRANSFER",
 };
 
 export const VEHICLES: Vehicle[] = [
@@ -572,18 +604,35 @@ export const VEHICLES: Vehicle[] = [
     name: "Discovery One",
     kicker: "2001: A SPACE ODYSSEY",
     category: "fiction",
-    evidence: "NOT COMPARABLE",
-    description: "Discovery makes Jupiter feel like a destination, not a waypoint. Neither film nor novel gives one canonical interstellar cruise speed suitable for this scale.",
-    modelNote: "The film's Jupiter voyage is treated as an 18-month narrative benchmark. Reapplying that average Earth-to-Jupiter pace to Proxima gives about 95,900 years; it is not a reconstructed burn plan or canonical interstellar mission.",
+    evidence: "FICTION / INFERRED",
+    maxSpeedKmh: 60_000,
+    totalYears: 1.5,
+    phases: [
+      { label: "EARTH DEPARTURE BURN", start: 0, end: 0.08, from: 0.15, to: 1 },
+      { label: "HIBERNATION CRUISE · HAL 9000", start: 0.08, end: 0.82, from: 1, to: 1 },
+      { label: "JUPITER APPROACH", start: 0.82, end: 0.985, from: 1, to: 0.35 },
+      { label: "MONOLITH / STARGATE", start: 0.985, end: 1, from: 0.35, to: 0 },
+    ],
+    description: "Discovery One is a nuclear-powered deep-space ship built around a spherical crew module, rotating centrifuge, long structural spine and an isolated propulsion section. In Kubrick's film it carries five astronauts and HAL 9000 on an eighteen-month mission to Jupiter after the lunar monolith transmits a signal there.",
+    modelNote: "Film continuity. The route now draws an 18-month Earth-to-Jupiter mission, followed by a labelled monolith/Stargate endpoint. The duration and destination belong to the story; the heliocentric transfer curve, burn timing and displayed speed profile are an explanatory reconstruction, not canonical orbital elements.",
     sourceIds: ["discovery"],
-    unavailableReason: "NO CANONICAL INTERSTELLAR SPEED",
     arrivalEstimate: {
       routeLabel: "DISCOVERY JUPITER PACE → PROXIMA DISTANCE",
       years: ((PROXIMA_AU - 1) / (5.2 - 1)) * 1.5,
       context: "18-MONTH FILM VOYAGE REAPPLIED AS AN AVERAGE PACE",
       evidence: "DERIVED",
     },
-    route: offMap("Discovery's Jupiter or Saturn mission can be described, but it supplies no canonical interstellar transfer profile."),
+    route: {
+      mission: {
+        kind: "in-system-profile",
+        targetBody: "jupiter",
+        targetLabel: "Jupiter",
+        targetAu: 5.2,
+        summary: "Film-continuity reconstruction from Earth's orbit to Jupiter; the normal trajectory ends at the monolith/Stargate event.",
+      },
+      onward: { kind: "none", reason: "The Stargate is not modelled as ordinary motion through heliocentric space." },
+      inSystemSequence: DISCOVERY_ONE_FILM_ROUTE,
+    },
   },
   {
     id: "enterprise",
@@ -591,17 +640,17 @@ export const VEHICLES: Vehicle[] = [
     kicker: "THE SILVER LADY",
     category: "fiction",
     evidence: "NOT COMPARABLE",
-    description: "Warp travel changes the geometry of the trip rather than offering a conventional engine speed that belongs on this chart.",
-    modelNote: "Warp factors vary by Star Trek continuity. The headline explicitly chooses the TOS-era cubic convention at warp 6 (216c), producing about 7.2 days to the present Proxima distance; it is an illustrative rule selection, not a universal Star Trek timetable.",
+    description: "The original Enterprise's emergency maximum is Warp 8; under the original-series cubic convention that is approximately 512c.",
+    modelNote: "Warp scales vary between Star Trek eras. This comparison uses the original-series cubic convention and the Constitution class's emergency maximum of Warp 8, producing about 3.0 days across the present Proxima distance.",
     sourceIds: ["enterprise"],
     unavailableReason: "WARP SCALE · OFF THIS PHYSICS",
     arrivalEstimate: {
-      routeLabel: "ENTERPRISE WARP 6 → PROXIMA DISTANCE",
-      years: PROXIMA_LY / 216,
-      context: "TOS-ERA CUBIC CONVENTION · WARP 6 = 216C",
+      routeLabel: "ENTERPRISE WARP 8 → PROXIMA DISTANCE",
+      years: PROXIMA_LY / 512,
+      context: "TOS-ERA CUBIC CONVENTION · EMERGENCY MAXIMUM WARP 8 ≈ 512C",
       evidence: "ILLUSTRATIVE",
     },
-    route: offMap("Warp changes the fictional geometry of travel and has no finite velocity on this linear map."),
+    route: offMap("Warp 8 is presented in the separate setting-performance section rather than on the normal-space map."),
   },
   {
     id: "millennium-falcon",
@@ -609,35 +658,35 @@ export const VEHICLES: Vehicle[] = [
     kicker: "HYPERSPACE IS NOT A SPEEDOMETER",
     category: "fiction",
     evidence: "NOT COMPARABLE",
-    description: "A hyperdrive rating describes a fictional travel system, not a sustained velocity through ordinary space.",
-    modelNote: "Class 0.5 is a hyperdrive rating, not a velocity. Because screen travel times vary by route and story, the headline uses a deliberately round 1 light-year-per-hour yardstick—about 4.2 hours to Proxima—and labels it illustrative rather than canonical.",
+    description: "The Falcon's upgraded Class 0.5 hyperdrive is among the fastest in its setting; this explainer adopts the widely circulated Legends-era estimate of 150,000c.",
+    modelNote: "The Kessel Run demonstrates route efficiency and survivability. For a numerical comparison, this explainer applies the community estimate of 150,000c to the present Proxima distance.",
     sourceIds: ["falcon"],
     unavailableReason: "HYPERSPACE · OFF THIS PHYSICS",
     arrivalEstimate: {
       routeLabel: "FALCON HYPERSPACE → PROXIMA DISTANCE",
-      years: PROXIMA_LY / HOURS_PER_YEAR,
-      context: "ILLUSTRATIVE 1 LIGHT-YEAR / HOUR · NOT A CLASS 0.5 CONVERSION",
-      evidence: "ILLUSTRATIVE",
+      years: PROXIMA_LY / 150_000,
+      context: "LEGENDS-ERA COMMUNITY ESTIMATE · 150,000C",
+      evidence: "COMMUNITY ESTIMATE",
     },
-    route: offMap("Hyperspace does not trace a finite-speed route through this normal-space coordinate system."),
+    route: offMap("The adopted 150,000c hyperspace benchmark is presented in the separate setting-performance section."),
   },
   {
     id: "droplet",
     name: "The Droplet",
-    kicker: "NEAR-LIGHT ATTACK VECTOR",
+    kicker: "25,000 KM/S ATTACK VECTOR",
     category: "fiction",
     evidence: "NOT COMPARABLE",
-    description: "The Droplet's terrifying manoeuvres matter more than a single cruise figure, and the story does not provide a clean Proxima mission profile.",
-    modelNote: "The headline borrows a 0.1c interstellar cruise scale from the Trisolaran journey context, giving about 42.5 years across the present Proxima distance. It is not the Droplet's fleet-attack speed or a complete canonical transfer profile.",
+    description: "Later in the trilogy, droplets are explicitly detected at 25,000 km/s—about 8.3% of light speed—while retaining their terrifying manoeuvrability.",
+    modelNote: "The headline applies the setting's stated 25,000 km/s droplet maximum as a constant-speed comparison across the present Proxima distance, producing about 50.9 years.",
     sourceIds: ["three-body"],
-    unavailableReason: "NO COMPLETE TRANSFER PROFILE",
+    unavailableReason: "FICTIONAL ATTACK VECTOR · STATIC COMPARISON",
     arrivalEstimate: {
-      routeLabel: "DROPLET 0.1C → PROXIMA DISTANCE",
-      years: PROXIMA_LY / 0.1,
-      context: "NOVEL-DERIVED INTERSTELLAR CRUISE SCALE · NOT ITS ATTACK SPEED",
+      routeLabel: "DROPLET 25,000 KM/S → PROXIMA DISTANCE",
+      years: constantTravelYears(25_000 * 3_600),
+      context: "SETTING MAXIMUM · 25,000 KM/S · CONSTANT-SPEED COMPARISON",
       evidence: "DERIVED",
     },
-    route: offMap("The source does not define a complete departure-to-destination transfer profile."),
+    route: offMap("The stated 25,000 km/s maximum is presented as a constant-speed comparison in the setting-performance section."),
   },
   {
     id: "warhammer",
@@ -646,16 +695,16 @@ export const VEHICLES: Vehicle[] = [
     category: "fiction",
     evidence: "NOT COMPARABLE",
     description: "The Ultramarines' 26-kilometre Gloriana-class flagship crosses realspace under conventional power, then translates into the Warp for interstellar voyages.",
-    modelNote: "Macragge's Honour has no dependable Warp-to-normal-space speed conversion. The headline therefore gives a deliberately broad hours-to-weeks lore range for a short routine hop, while warning that the Immaterium can make even that estimate fail.",
+    modelNote: "Imperial accounts make variability part of Warp performance: a short passage may take hours or weeks, while hostile currents and time displacement can produce much worse outcomes.",
     sourceIds: ["warhammer"],
     unavailableReason: "THE WARP · OFF THIS PHYSICS",
     arrivalEstimate: {
       routeLabel: "MACRAGGE'S HONOUR WARP HOP → PROXIMA DISTANCE",
-      display: "HOURS–WEEKS",
-      context: "LORE-SCALE RANGE · WARP ARRIVAL TIME IS UNRELIABLE",
+      display: "HOURS–WEEKS / OR WORSE",
+      context: "IMPERIAL LORE RANGE · WARP CURRENTS AND TIME DISPLACEMENT",
       evidence: "LORE RANGE",
     },
-    route: offMap("Macragge's Honour translates through the Warp rather than tracing a finite-speed line across this normal-space map."),
+    route: offMap("The best-case Imperial Warp benchmark is presented in the separate setting-performance section."),
   },
 ];
 

@@ -56,6 +56,31 @@ describe("automatic physical time flow", () => {
     expect(thirtyThousandYears.multiplier / secondsPerYear).toBeCloseTo(1_000);
   });
 
+  it("can hold one physical rate across neighbouring mission-flow stages", () => {
+    const secondsPerYear = 365.25 * 86_400;
+    const sharedEscapeWindow = {
+      label: "15 solar passes and Jupiter assist",
+      description: "One continuous inner-system escape sequence",
+      startSeconds: 42 * secondsPerYear,
+      endSeconds: 58 * secondsPerYear,
+    };
+    const duringSolarPasses = autoTimeFlowForStage(
+      sharedEscapeWindow,
+      48 * secondsPerYear,
+      16,
+    );
+    const duringJupiterAssist = autoTimeFlowForStage(
+      sharedEscapeWindow,
+      57.5 * secondsPerYear,
+      16,
+    );
+
+    expect(duringSolarPasses.multiplier).toBe(secondsPerYear);
+    expect(duringJupiterAssist.multiplier).toBe(duringSolarPasses.multiplier);
+    expect(duringSolarPasses.estimatedWallSeconds).toBe(10);
+    expect(duringJupiterAssist.estimatedWallSeconds).toBe(0.5);
+  });
+
   it("reports readable physical pace labels", () => {
     expect(formatAutoPace(1)).toBe("1 SECOND / REAL SECOND");
     expect(formatAutoPace(86_400)).toBe("1 DAY / REAL SECOND");

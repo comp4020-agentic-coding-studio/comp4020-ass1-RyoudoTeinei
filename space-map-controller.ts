@@ -114,7 +114,15 @@ function starById(id: string): Cns5NearbyStarRecord {
 
 export interface CanonicalMapRoutePoint extends Vec2 {
   routeProgress: number;
-  leg: "braking" | "solar-pass" | "jupiter-assist" | "outbound";
+  leg:
+    | "braking"
+    | "solar-pass"
+    | "jupiter-assist"
+    | "outbound"
+    | "earth-departure"
+    | "jupiter-transfer"
+    | "jupiter-approach"
+    | "stargate";
 }
 
 export interface CanonicalMapRoute {
@@ -258,6 +266,87 @@ export function buildCanonicalMapRoute(vehicle: Vehicle): CanonicalMapRoute | un
   };
 }
 
+/**
+ * Reconstruct the film-continuity Discovery One mission as a readable
+ * heliocentric transfer. The 1 AU and 5.2 AU radii are true on the map; the
+ * transfer orientation and burn geometry are deliberately labelled schematic
+ * because the film never publishes orbital elements.
+ */
+export function buildDiscoveryMapRoute(vehicle: Vehicle): CanonicalMapRoute | undefined {
+  const sequence = vehicle.route.inSystemSequence;
+  if (!sequence || vehicle.id !== "discovery") return undefined;
+
+  const angle = -0.58;
+  const majorAxis = { x: Math.cos(angle), y: Math.sin(angle) };
+  const minorAxis = { x: -majorAxis.y, y: majorAxis.x };
+  const launchPoint = {
+    x: majorAxis.x * sequence.launchAu,
+    y: majorAxis.y * sequence.launchAu,
+  };
+  const semiMajor = (sequence.launchAu + sequence.targetAu) / 2;
+  const eccentricity = (sequence.targetAu - sequence.launchAu)
+    / (sequence.targetAu + sequence.launchAu);
+  const semiMinor = semiMajor * Math.sqrt(1 - eccentricity * eccentricity);
+  const transfer: CanonicalMapRoutePoint[] = [];
+  const transferSamples = 220;
+  for (let index = 0; index <= transferSamples; index += 1) {
+    const local = index / transferSamples;
+    const eccentricAnomaly = Math.PI * local;
+    transfer.push({
+      x: majorAxis.x * semiMajor * (Math.cos(eccentricAnomaly) - eccentricity)
+        + minorAxis.x * semiMinor * Math.sin(eccentricAnomaly),
+      y: majorAxis.y * semiMajor * (Math.cos(eccentricAnomaly) - eccentricity)
+        + minorAxis.y * semiMinor * Math.sin(eccentricAnomaly),
+      routeProgress: sequence.transferEndProgress * local,
+      leg: index === 0 ? "earth-departure" : "jupiter-transfer",
+    });
+  }
+
+  const jupiterPoint = {
+    x: -majorAxis.x * sequence.targetAu,
+    y: -majorAxis.y * sequence.targetAu,
+  };
+  const approachEnd = {
+    x: jupiterPoint.x + minorAxis.x * 0.22 - majorAxis.x * 0.08,
+    y: jupiterPoint.y + minorAxis.y * 0.22 - majorAxis.y * 0.08,
+  };
+  const approach: CanonicalMapRoutePoint[] = [];
+  for (let index = 1; index <= 40; index += 1) {
+    const local = index / 40;
+    const bend = Math.sin(local * Math.PI) * 0.075;
+    approach.push({
+      x: jupiterPoint.x + (approachEnd.x - jupiterPoint.x) * local + majorAxis.x * bend,
+      y: jupiterPoint.y + (approachEnd.y - jupiterPoint.y) * local + majorAxis.y * bend,
+      routeProgress: sequence.transferEndProgress
+        + (sequence.stargateProgress - sequence.transferEndProgress) * local,
+      leg: "jupiter-approach",
+    });
+  }
+  const stargatePoint = {
+    x: approachEnd.x + minorAxis.x * 0.035,
+    y: approachEnd.y + minorAxis.y * 0.035,
+  };
+  const points = [
+    ...transfer,
+    ...approach,
+    {
+      ...stargatePoint,
+      routeProgress: 1,
+      leg: "stargate" as const,
+    },
+  ];
+
+  return {
+    points,
+    solarPasses: [transfer],
+    launchPoint,
+    jupiterPoint,
+    destinationPoint: stargatePoint,
+    jupiterProgress: sequence.transferEndProgress,
+    evidence: `${sequence.continuity} · ${sequence.geometry}`,
+  };
+}
+
 export function sampleCanonicalMapRoute(route: CanonicalMapRoute, progress: number): Vec2 {
   const amount = Math.max(0, Math.min(1, progress));
   let previous = route.points[0];
@@ -311,7 +400,7 @@ const CANONICAL_MAP_ROUTE_CACHE = new WeakMap<Vehicle, CanonicalMapRoute | undef
 function canonicalMapRoute(vehicle: Vehicle | undefined): CanonicalMapRoute | undefined {
   if (!vehicle) return undefined;
   if (CANONICAL_MAP_ROUTE_CACHE.has(vehicle)) return CANONICAL_MAP_ROUTE_CACHE.get(vehicle);
-  const route = buildCanonicalMapRoute(vehicle);
+  const route = buildCanonicalMapRoute(vehicle) ?? buildDiscoveryMapRoute(vehicle);
   CANONICAL_MAP_ROUTE_CACHE.set(vehicle, route);
   return route;
 }
@@ -1262,6 +1351,73 @@ export function createSpaceMapController(): SpaceMapController {
   }
 
   function drawCanonicalSequence(route: CanonicalMapRoute, routeProgress: number): void {
+    if (selectedVehicle?.route.inSystemSequence) {
+      const sequence = selectedVehicle.route.inSystemSequence;
+      const color = "#c6a8ff";
+      const entity: CanvasMapEntity = {
+        id: `trajectory-film-${selectedVehicle.id}`,
+        kind: "trajectory",
+        name: `${selectedVehicle.name} Jupiter mission reconstruction`,
+        meta: route.evidence,
+        description: "An 18-month film-continuity route from Earth's 1 AU orbit to Jupiter. True orbital radii share the map scale; the transfer curve and timing profile are explanatory reconstruction.",
+      };
+      drawPath(canonicalRoutePoints(route), color, [5, 7], 0.2, 1.4);
+      const travelled = drawPath(
+        canonicalMapRoutePrefix(route, routeProgress),
+        color,
+        [],
+        emphasized(entity.id) ? 1 : 0.94,
+        emphasized(entity.id) ? 4 : 2.9,
+      );
+      hits.push({ type: "path", entity, points: travelled, tolerance: 9, priority: 12 });
+
+      const jupiterScreen = worldToScreen(route.jupiterPoint, camera, viewport);
+      if (
+        jupiterScreen.x > -20 && jupiterScreen.x < viewport.width + 20
+        && jupiterScreen.y > -20 && jupiterScreen.y < viewport.height + 20
+      ) {
+        elements.context.beginPath();
+        elements.context.arc(jupiterScreen.x, jupiterScreen.y, 8, 0, Math.PI * 2);
+        elements.context.fillStyle = "#020906";
+        elements.context.fill();
+        elements.context.strokeStyle = "#ff9a55";
+        elements.context.lineWidth = 2.4;
+        elements.context.stroke();
+        queueFixedLocator(
+          jupiterScreen,
+          route.jupiterPoint,
+          ["JUPITER ARRIVAL · FILM CONTINUITY", `TRUE ORBITAL RADIUS · ${sequence.targetAu.toFixed(1)} AU`],
+          "#ff9a55",
+          124,
+          "ring",
+        );
+      }
+
+      const stargateScreen = worldToScreen(route.destinationPoint, camera, viewport);
+      if (
+        stargateScreen.x > -20 && stargateScreen.x < viewport.width + 20
+        && stargateScreen.y > -20 && stargateScreen.y < viewport.height + 20
+      ) {
+        const size = routeProgress >= sequence.stargateProgress ? 8 : 5;
+        elements.context.save();
+        elements.context.translate(stargateScreen.x, stargateScreen.y);
+        elements.context.rotate(Math.PI / 4);
+        elements.context.strokeStyle = "#b8ff3d";
+        elements.context.lineWidth = 2;
+        elements.context.strokeRect(-size / 2, -size / 2, size, size);
+        elements.context.restore();
+        queueFixedLocator(
+          stargateScreen,
+          route.destinationPoint,
+          ["MONOLITH / STARGATE", "NORMAL TRAJECTORY ENDS HERE"],
+          "#b8ff3d",
+          126,
+          "square",
+        );
+      }
+      return;
+    }
+
     if (!selectedVehicle?.route.canonicalSequence) return;
     const sequence = selectedVehicle.route.canonicalSequence;
     const color = "#c6a8ff";
@@ -1499,6 +1655,8 @@ export function createSpaceMapController(): SpaceMapController {
         elapsedYears >= startYear && (elapsedYears < endYear || startYear === endYear && elapsedYears === startYear),
       ) ?? stages.at(-1);
       craftReadout = `${selectedVehicle.name.toUpperCase()} · ${formatDistance(craft.radialAu)} FROM SUN · ${stage?.label ?? canonical.evidence}`;
+    } else if (canonical && selectedVehicle.route.inSystemSequence) {
+      craftReadout = `${selectedVehicle.name.toUpperCase()} · ${formatDistance(craft.radialAu)} FROM SUN · ${tourFrame?.phase ?? "EARTH–JUPITER TRANSFER"}`;
     } else if (craft.target) {
       const targetAu = craft.target.distanceLy * AU_PER_LIGHT_YEAR;
       craftReadout = `${selectedVehicle.name.toUpperCase()} · ${formatDistance(craft.radialAu)} · ${(craft.radialAu / targetAu * 100).toFixed(1)}% TO ${craft.target.name.toUpperCase()}`;

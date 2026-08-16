@@ -147,6 +147,27 @@ describe("mission tour semantics", () => {
     expect(samples.every(({ evidence }) => evidence === "DESIGN STUDY")).toBe(true);
   });
 
+  it("plays Discovery One as a finite Earth-to-Jupiter film mission", () => {
+    const discovery = vehicle("discovery");
+    const tour = buildMissionTour(discovery);
+    const sample = sampleMissionTour(tour, 0.5);
+
+    expect(discovery.route.mission).toMatchObject({
+      kind: "in-system-profile",
+      targetBody: "jupiter",
+      targetAu: 5.2,
+    });
+    expect(tour.playable).toBe(true);
+    expect(tour.chapters).toHaveLength(1);
+    expect(tour.chapters[0]).toMatchObject({
+      routeMode: "profile",
+      endAu: 5.2,
+      elapsedEndYears: 1.5,
+      evidence: "FICTION / INFERRED",
+    });
+    expect(sample.phase).toMatch(/HIBERNATION CRUISE/);
+  });
+
   it("labels constant comparators as counterfactual at every boundary", () => {
     const tour = buildMissionTour(vehicle("f1"));
     expect(tour.playable).toBe(true);
