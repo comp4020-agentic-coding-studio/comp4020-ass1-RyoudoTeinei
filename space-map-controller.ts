@@ -14,7 +14,6 @@ import {
   type Bounds,
   type Camera,
   type Vec2,
-  type Vec3,
   type Viewport,
 } from "./space-map";
 import {
@@ -154,6 +153,11 @@ interface CanvasLabel {
   priority: number;
   color: string;
   placements?: Vec2[];
+  leader?: {
+    color: string;
+    dash?: number[];
+    marker?: "diamond" | "ring" | "square";
+  };
 }
 
 interface CanvasPlanet {
@@ -317,6 +321,17 @@ export function createSpaceMapController(): SpaceMapController {
     return { x: direction.x * distanceAu, y: direction.y * distanceAu };
   }
 
+  function earthLaunchWorld(vehicle = selectedVehicle): Vec2 | undefined {
+    if (!vehicle) return undefined;
+    const trajectory = actualTrajectory(vehicle);
+    const first = trajectory?.samples[0];
+    if (first) return { x: first.x, y: first.y };
+    const target = targetStar(vehicle);
+    if (!target) return undefined;
+    const direction = unit(starWorld(target));
+    return { x: direction.x, y: direction.y };
+  }
+
   function craftPosition(): { point: Vec2; radialAu: number; source?: HorizonsSample; target?: Cns5NearbyStarRecord } {
     const trajectory = actualTrajectory();
     if (trajectory && (!tourFrame || tourFrame.routeMode === "ephemeris")) {
@@ -330,10 +345,14 @@ export function createSpaceMapController(): SpaceMapController {
     const target = targetStar();
     if (!selectedVehicle || !target) return { point: { x: 0, y: 0 }, radialAu: 0 };
     const destination = starWorld(target);
+    const launch = earthLaunchWorld() ?? { x: 0, y: 0 };
     const routeProgress = tourFrame?.routeMode === "profile" ? tourFrame.routeProgress : progress;
     const sample = journeySample(selectedVehicle, routeProgress);
     return {
-      point: { x: destination.x * sample.distanceFraction, y: destination.y * sample.distanceFraction },
+      point: {
+        x: launch.x + (destination.x - launch.x) * sample.distanceFraction,
+        y: launch.y + (destination.y - launch.y) * sample.distanceFraction,
+      },
       radialAu: sample.currentAu,
       target,
     };
@@ -557,6 +576,41 @@ export function createSpaceMapController(): SpaceMapController {
         continue;
       }
       occupiedLabels.push(placement.box);
+      if (label.leader) {
+        const target = {
+          x: Math.max(placement.box.minX, Math.min(placement.box.maxX, label.anchor.x)),
+          y: Math.max(placement.box.minY, Math.min(placement.box.maxY, label.anchor.y)),
+        };
+        ctx.beginPath();
+        ctx.moveTo(label.anchor.x, label.anchor.y);
+        ctx.lineTo(target.x, target.y);
+        ctx.strokeStyle = label.leader.color;
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash(label.leader.dash ?? [4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.translate(label.anchor.x, label.anchor.y);
+        if (label.leader.marker === "diamond") {
+          ctx.rotate(Math.PI / 4);
+          ctx.fillStyle = "rgba(2, 9, 6, 0.92)";
+          ctx.fillRect(-4, -4, 8, 8);
+          ctx.strokeStyle = label.leader.color;
+          ctx.strokeRect(-4, -4, 8, 8);
+        } else if (label.leader.marker === "square") {
+          ctx.fillStyle = "rgba(2, 9, 6, 0.92)";
+          ctx.fillRect(-4, -4, 8, 8);
+          ctx.strokeStyle = label.leader.color;
+          ctx.strokeRect(-4, -4, 8, 8);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, 4.5, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(2, 9, 6, 0.92)";
+          ctx.fill();
+          ctx.strokeStyle = label.leader.color;
+          ctx.stroke();
+        }
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
       ctx.fillStyle = "rgba(2, 9, 6, 0.84)";
       ctx.fillRect(placement.box.minX, placement.box.minY, width, height);
       ctx.textAlign = placement.align;
@@ -695,8 +749,8 @@ export function createSpaceMapController(): SpaceMapController {
     const centre = worldToScreen({ x: 0, y: 0 }, camera, viewport);
     const ctx = elements.context;
     const sun: CanvasMapEntity = {
-      id: "origin-sun", kind: "origin", name: "Sun", meta: "MAP ORIGIN · 0 AU",
-      description: "The origin of the ecliptic map. The visible marker is a locator at wide scales.", world: { x: 0, y: 0 }, focusSpanAu: 0.08,
+      id: "origin-sun", kind: "origin", name: "Sun", meta: "COORDINATE ORIGIN · 0 AU",
+      description: "The coordinate origin of the ecliptic map, not the route's launch point. The visible marker is a locator at wide scales.", world: { x: 0, y: 0 }, focusSpanAu: 0.08,
     };
     if (centre.x > -20 && centre.x < viewport.width + 20 && centre.y > -20 && centre.y < viewport.height + 20) {
       const physicalRadius = 0.004_650_47 * camera.pxPerAu;
@@ -709,7 +763,12 @@ export function createSpaceMapController(): SpaceMapController {
       ctx.lineWidth = 2;
       ctx.stroke();
       hits.push({ type: "point", entity: sun, point: centre, radius: Math.max(10, Math.min(radius, 40)), priority: 20 });
-      queueLabel({ anchor: centre, lines: ["SUN · ORIGIN"], priority: 98, color: "#f1eee2" });
+      queueLabel({
+        anchor: centre,
+        lines: selectedVehicle ? ["SUN · COORDINATE ORIGIN", "NOT THE LAUNCH POINT"] : ["SUN · COORDINATE ORIGIN"],
+        priority: 98,
+        color: "#f1eee2",
+      });
     }
     for (const planet of CANVAS_PLANETS) {
       const entity: CanvasMapEntity = {
@@ -850,6 +909,104 @@ export function createSpaceMapController(): SpaceMapController {
     queueLabel({ anchor: point, lines: [name], priority: 52, color: "#6adfff" });
   }
 
+  function locatorPlacements(worldDirection: Vec2): Vec2[] {
+    const screenDirection = unit({ x: worldDirection.x, y: -worldDirection.y });
+    const horizontal = screenDirection.x < -0.18 ? -58 : 58;
+    const vertical = screenDirection.y > 0.18 ? 48 : -28;
+    return [
+      { x: horizontal, y: vertical },
+      { x: -horizontal, y: vertical },
+      { x: horizontal, y: vertical > 0 ? -28 : 48 },
+      { x: -horizontal, y: vertical > 0 ? -28 : 48 },
+      { x: 0, y: 72 },
+      { x: 0, y: -48 },
+      { x: 58, y: 48 },
+      { x: -58, y: -28 },
+    ];
+  }
+
+  function queueFixedLocator(
+    screenPoint: Vec2,
+    worldDirection: Vec2,
+    lines: string[],
+    color: string,
+    priority: number,
+    marker: "diamond" | "ring" | "square" = "ring",
+  ): void {
+    if (
+      screenPoint.x < -14 || screenPoint.x > viewport.width + 14 ||
+      screenPoint.y < -14 || screenPoint.y > viewport.height + 14
+    ) return;
+    queueLabel({
+      anchor: screenPoint,
+      lines,
+      priority,
+      color,
+      placements: locatorPlacements(worldDirection),
+      leader: { color, dash: [4, 4], marker },
+    });
+  }
+
+  function drawEarthLaunchLocator(actual?: HorizonsTrajectory): void {
+    const launch = earthLaunchWorld();
+    if (!launch) return;
+    const first = actual?.samples[0];
+    const detail = first
+      ? `${selectedVehicle?.name.toUpperCase() ?? "SPACECRAFT"} · ${first.date.slice(0, 4)}`
+      : "ROUTE START · 1 AU";
+    queueFixedLocator(
+      worldToScreen(launch, camera, viewport),
+      launch,
+      ["EARTH LAUNCH · LOCATOR NOT TO SCALE", detail],
+      "#6adfff",
+      122,
+      "diamond",
+    );
+  }
+
+  function drawContinuationCallouts(
+    actual: HorizonsTrajectory,
+    modelOrigin: Vec2,
+    evidenceColor: string,
+  ): void {
+    const last = actual.samples.at(-1);
+    if (!last) return;
+    const realEndpoint = { x: last.x, y: last.y };
+    const realScreen = worldToScreen(realEndpoint, camera, viewport);
+    const modelScreen = worldToScreen(modelOrigin, camera, viewport);
+    const collapsed = Math.hypot(realScreen.x - modelScreen.x, realScreen.y - modelScreen.y) < 34;
+
+    if (collapsed) {
+      const anchor = { x: (realScreen.x + modelScreen.x) / 2, y: (realScreen.y + modelScreen.y) / 2 };
+      queueFixedLocator(
+        anchor,
+        { x: realEndpoint.x + modelOrigin.x, y: realEndpoint.y + modelOrigin.y },
+        ["REAL EPHEMERIS END / MODEL START", `${last.date.slice(0, 10)} · ${tourFrame?.evidence ?? "MODEL"}`],
+        evidenceColor,
+        118,
+        "square",
+      );
+      return;
+    }
+
+    queueFixedLocator(
+      realScreen,
+      realEndpoint,
+      ["REAL EPHEMERIS END", last.date.slice(0, 10)],
+      "#6adfff",
+      118,
+      "ring",
+    );
+    queueFixedLocator(
+      modelScreen,
+      modelOrigin,
+      ["MODEL CONTINUATION START", tourFrame?.evidence ?? "MODEL"],
+      evidenceColor,
+      117,
+      "square",
+    );
+  }
+
   function drawTrajectory(): void {
     if (!selectedVehicle) {
       craftReadout = "SUN · 0 AU";
@@ -857,6 +1014,7 @@ export function createSpaceMapController(): SpaceMapController {
     }
     const actual = actualTrajectory();
     const craft = craftPosition();
+    drawEarthLaunchLocator(actual);
     if (actual) {
       const entity: CanvasMapEntity = {
         id: `trajectory-${actual.id}`, kind: "trajectory", name: `${actual.name} ephemeris`, meta: "NASA/JPL HORIZONS · J2000 ECLIPTIC XY",
@@ -899,6 +1057,7 @@ export function createSpaceMapController(): SpaceMapController {
         meta: `${tourFrame.evidence} · ${tourFrame.destination.label.toUpperCase()}`,
         description: tourFrame.chapter.note,
       };
+      if (actual) drawContinuationCallouts(actual, origin, evidenceColor);
       drawPath([origin, destination], evidenceColor, [9, 8], 0.16, 1.2);
       const path = drawPath([origin, craft.point], evidenceColor, [9, 6], emphasized(entity.id) ? 1 : 0.92, emphasized(entity.id) ? 3.6 : 2.6);
       hits.push({ type: "path", entity, points: path, tolerance: 7, priority: 9 });
@@ -914,13 +1073,14 @@ export function createSpaceMapController(): SpaceMapController {
       const target = targetStar();
       if (target) {
         const destination = starWorld(target);
+        const launch = earthLaunchWorld() ?? { x: 0, y: 0 };
         const color = selectedVehicle.category === "fiction" ? "#c6a8ff" : "#b3ff3f";
         const entity: CanvasMapEntity = {
           id: `trajectory-model-${selectedVehicle.id}`, kind: "trajectory", name: `${selectedVehicle.name} route model`,
           meta: `${selectedVehicle.evidence} · ECLIPTIC XY PROJECTION`, description: selectedVehicle.modelNote,
         };
-        drawPath([{ x: 0, y: 0 }, destination], color, [4, 8], 0.14, 1.1);
-        const path = drawPath([{ x: 0, y: 0 }, craft.point], color, selectedVehicle.category === "fiction" ? [4, 7] : [10, 7], emphasized(entity.id) ? 1 : 0.82, emphasized(entity.id) ? 3.6 : 2.4);
+        drawPath([launch, destination], color, [4, 8], 0.14, 1.1);
+        const path = drawPath([launch, craft.point], color, selectedVehicle.category === "fiction" ? [4, 7] : [10, 7], emphasized(entity.id) ? 1 : 0.82, emphasized(entity.id) ? 3.6 : 2.4);
         hits.push({ type: "path", entity, points: path, tolerance: 7, priority: 8 });
       }
     }
