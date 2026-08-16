@@ -72,9 +72,67 @@ export type OnwardPath =
     }
   | { kind: "none"; reason?: string };
 
+export type CanonicalRouteEvidence =
+  | "CANON"
+  | "CANON SEQUENCE · SCHEMATIC GEOMETRY"
+  | "INFERRED TIMING";
+
+export interface CanonicalRouteStage {
+  id:
+    | "rotation-brake"
+    | "solar-escape"
+    | "jupiter-assist"
+    | "interstellar-acceleration"
+    | "interstellar-coast"
+    | "interstellar-deceleration"
+    | "proxima-approach"
+    | "proxima-capture";
+  label: string;
+  startYear: number;
+  endYear: number;
+  evidence: CanonicalRouteEvidence;
+  note: string;
+}
+
+export interface CanonicalRouteSequence {
+  kind: "canon-sequence";
+  continuity: "LIU CIXIN NOVEL";
+  coordinateOrigin: {
+    body: "sun";
+    label: "SUN = COORDINATE ORIGIN · NOT THE LAUNCH POINT";
+  };
+  launch: {
+    body: "earth";
+    au: 1;
+    label: "EARTH IS THE VEHICLE · LAUNCH POINT = 1 AU";
+  };
+  target: {
+    body: "proxima-centauri";
+    au: number;
+    label: "PROXIMA CENTAURI";
+    arrivalYear: number;
+    captureEndYear: number;
+  };
+  totalYears: number;
+  geometry: "SCHEMATIC";
+  escapeSequence: {
+    orbitCount: 15;
+    startYear: 42;
+    endYear: 57;
+    startAu: 1;
+    finalAphelionAu: number;
+    shapeProgression: "increasingly-eccentric";
+    encounterBody: "jupiter";
+    encounterKind: "planned-gravity-assist";
+    evidence: "CANON SEQUENCE · ORBIT SHAPE SCHEMATIC";
+  };
+  stages: readonly CanonicalRouteStage[];
+}
+
 export interface VehicleRoute {
   mission: MissionPath;
   onward: OnwardPath;
+  canonicalSequence?: CanonicalRouteSequence;
 }
 
 export interface Vehicle {
@@ -174,6 +232,106 @@ function offMap(reason: string): VehicleRoute {
     onward: { kind: "none", reason },
   };
 }
+
+const WANDERING_EARTH_NOVEL_ROUTE: CanonicalRouteSequence = {
+  kind: "canon-sequence",
+  continuity: "LIU CIXIN NOVEL",
+  coordinateOrigin: {
+    body: "sun",
+    label: "SUN = COORDINATE ORIGIN · NOT THE LAUNCH POINT",
+  },
+  launch: {
+    body: "earth",
+    au: 1,
+    label: "EARTH IS THE VEHICLE · LAUNCH POINT = 1 AU",
+  },
+  target: {
+    body: "proxima-centauri",
+    au: PROXIMA_AU,
+    label: "PROXIMA CENTAURI",
+    arrivalYear: 2_400,
+    captureEndYear: 2_500,
+  },
+  totalYears: 2_500,
+  geometry: "SCHEMATIC",
+  escapeSequence: {
+    orbitCount: 15,
+    startYear: 42,
+    endYear: 57,
+    startAu: 1,
+    finalAphelionAu: 5.2,
+    shapeProgression: "increasingly-eccentric",
+    encounterBody: "jupiter",
+    encounterKind: "planned-gravity-assist",
+    evidence: "CANON SEQUENCE · ORBIT SHAPE SCHEMATIC",
+  },
+  stages: [
+    {
+      id: "rotation-brake",
+      label: "BRAKING ERA · ROTATION HALTED",
+      startYear: 0,
+      endYear: 42,
+      evidence: "CANON",
+      note: "The Earth Engines first stop the planet's rotation during the novel's 42-year Braking Era.",
+    },
+    {
+      id: "solar-escape",
+      label: "ESCAPE ERA · 15 SOLAR PASSES",
+      startYear: 42,
+      endYear: 57,
+      evidence: "CANON SEQUENCE · SCHEMATIC GEOMETRY",
+      note: "Fifteen increasingly extended solar passes are the canon sequence; one displayed year per pass and the drawn orbital shapes are schematic.",
+    },
+    {
+      id: "jupiter-assist",
+      label: "JUPITER GRAVITY ASSIST · PLANNED",
+      startYear: 57,
+      endYear: 57,
+      evidence: "CANON SEQUENCE · SCHEMATIC GEOMETRY",
+      note: "Jupiter is a planned gravity-assist encounter at the end of the escape sequence, not the launch point and not an accidental crisis.",
+    },
+    {
+      id: "interstellar-acceleration",
+      label: "WANDERING ERA I · ACCELERATE TO 0.005C",
+      startYear: 57,
+      endYear: 557,
+      evidence: "CANON",
+      note: "The novel gives five centuries of full-thrust acceleration to 0.005c; displayed spatial positions are normalised to the stated Proxima destination.",
+    },
+    {
+      id: "interstellar-coast",
+      label: "WANDERING ERA I · INTERSTELLAR COAST",
+      startYear: 557,
+      endYear: 1857,
+      evidence: "CANON",
+      note: "The novel gives a 1,300-year coast at 0.005c; the map labels it as narrative canon rather than a physical ephemeris.",
+    },
+    {
+      id: "interstellar-deceleration",
+      label: "WANDERING ERA II · ENGINES REVERSED",
+      startYear: 1857,
+      endYear: 2357,
+      evidence: "CANON",
+      note: "The novel gives five centuries of reversed-engine deceleration; the rendered curve remains a distance-normalised story route.",
+    },
+    {
+      id: "proxima-approach",
+      label: "NEW SUN APPROACH · ARRIVAL YEAR 2400",
+      startYear: 2357,
+      endYear: 2400,
+      evidence: "INFERRED TIMING",
+      note: "This 43-year approach closes the stated 2,400-year arrival clock without pretending that the novel supplies exact orbital elements.",
+    },
+    {
+      id: "proxima-capture",
+      label: "NEW SUN ERA · 100-YEAR CAPTURE",
+      startYear: 2400,
+      endYear: 2500,
+      evidence: "CANON",
+      note: "The novel reserves the final century for capture into the new star system; its drawn curve remains schematic.",
+    },
+  ],
+};
 
 export const VEHICLES: Vehicle[] = [
   {
@@ -356,22 +514,27 @@ export const VEHICLES: Vehicle[] = [
   {
     id: "wandering-earth",
     name: "The Wandering Earth",
-    kicker: "A PLANET-SCALE STORY ARC",
+    kicker: "EARTH IS THE VEHICLE",
     category: "fiction",
     evidence: "FICTION / CANON",
     maxSpeedKmh: C_KMH * 0.005,
     totalYears: 2_500,
     phases: [
-      { label: "STOP ROTATION / DEPART", start: 0, end: 0.2, from: 0, to: 1 },
-      { label: "ACCELERATE / JUPITER CRISIS", start: 0.2, end: 0.42, from: 0.3, to: 1 },
-      { label: "WANDERING", start: 0.42, end: 0.72, from: 1, to: 1 },
-      { label: "DECELERATE", start: 0.72, end: 0.92, from: 1, to: 0.18 },
-      { label: "CAPTURE", start: 0.92, end: 1, from: 0.18, to: 0 },
+      { label: "BRAKING ERA · 42 YEARS", start: 0, end: 42 / 2_500, from: 0, to: 0 },
+      { label: "ESCAPE ERA · 15 SOLAR PASSES", start: 42 / 2_500, end: 57 / 2_500, from: 0, to: 0.01 },
+      { label: "ACCELERATE · 500 YEARS", start: 57 / 2_500, end: 557 / 2_500, from: 0.01, to: 1 },
+      { label: "INTERSTELLAR COAST · 1,300 YEARS", start: 557 / 2_500, end: 1_857 / 2_500, from: 1, to: 1 },
+      { label: "DECELERATE · 500 YEARS", start: 1_857 / 2_500, end: 2_357 / 2_500, from: 1, to: 0.15 },
+      { label: "PROXIMA APPROACH · YEAR 2400", start: 2_357 / 2_500, end: 2_400 / 2_500, from: 0.15, to: 0.05 },
+      { label: "CAPTURE · FINAL 100 YEARS", start: 2_400 / 2_500, end: 1, from: 0.05, to: 0 },
     ],
-    description: "This is not a ship but an entire world, whose interstellar crossing is told as historical eras: departure, acceleration, wandering, deceleration and capture.",
-    modelNote: "Film-continuity narrative diagram: 2,500 years and a quoted 0.5% c ceiling. The phases are story structure, not a physically integrated flight plan, and are not mixed with the novel's differing details.",
+    description: "Earth itself is the vehicle: engines halt its rotation, fifteen widening solar passes lead to a planned Jupiter gravity assist, and the planet then begins the long acceleration–coast–deceleration journey to Proxima.",
+    modelNote: "Liu Cixin novel continuity. The 42-year Braking Era, fifteen-pass escape sequence, planned Jupiter assist and 2,500-year destination plan are kept as story facts. Orbit shapes and the interactive era timings are explicitly schematic or inferred—not a fabricated ephemeris.",
     sourceIds: ["wandering-earth"],
-    route: profileToProxima("A film-continuity story profile, not a numerically integrated propulsion solution."),
+    route: {
+      ...profileToProxima("Novel-continuity sequence: Earth departs from 1 AU, makes fifteen widening solar passes, uses a planned Jupiter gravity assist, then follows a labelled interstellar era model to Proxima."),
+      canonicalSequence: WANDERING_EARTH_NOVEL_ROUTE,
+    },
   },
   {
     id: "natural-selection",
