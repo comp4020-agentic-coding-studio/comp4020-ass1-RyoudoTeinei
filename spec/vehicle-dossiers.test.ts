@@ -49,4 +49,16 @@ describe("vehicle dossiers", () => {
     expect(orion.media.credit).toContain("Real Engineering");
     expect(orion.media.license).not.toMatch(/public domain/i);
   });
+
+  it("introduces Orion and Daedalus before discussing model limits", () => {
+    const daedalus = getVehicleDossier("daedalus");
+    const orion = getVehicleDossier("orion");
+
+    expect(daedalus.missionSummary).toMatch(/British Interplanetary Society/i);
+    expect(daedalus.missionSummary).toMatch(/Barnard's Star/i);
+    expect(daedalus.missionSummary).toMatch(/fusion pellets/i);
+    expect(orion.missionSummary).toMatch(/General Atomics/i);
+    expect(orion.missionSummary).toMatch(/chemical rockets/i);
+    expect(orion.missionSummary).toMatch(/pusher plate/i);
+  });
 });

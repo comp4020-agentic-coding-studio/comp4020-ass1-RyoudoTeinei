@@ -167,7 +167,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "The reference destination was Barnard's Star, not Proxima Centauri.",
       "The study planned a high-speed flyby with no arrival braking.",
     ],
-    missionSummary: "A study-derived boost and coast profile is reapplied to the shorter Proxima distance for comparison.",
+    missionSummary: "Project Daedalus was a 1973–1978 British Interplanetary Society study asking whether an uncrewed probe could reach Barnard's Star within fifty years using credible near-future technology. Its enormous two-stage craft would fire electron-beam-triggered fusion pellets for a 3.8-year boost, coast at more than 12 percent of light speed, and fly past the star without braking.",
     canonicalNote: "Daedalus was a detailed design study, never a built vehicle; the Proxima endpoint is this explainer's adaptation.",
   },
   starshot: {
@@ -205,7 +205,7 @@ export const VEHICLE_DOSSIERS: Record<string, VehicleDossier> = {
       "Many vehicle masses, pulse units, and mission profiles were studied.",
       "No single Orion design provides one defensible interstellar travel time.",
     ],
-    missionSummary: "The dossier explains the pulse-propulsion sequence but stops before drawing a false universal trajectory.",
+    missionSummary: "Project Orion began in 1958 as a United States effort led by General Atomics to move payloads far beyond the limits of chemical rockets. It would detonate nuclear pulse units behind a massive pusher plate and use a two-stage shock-absorber system to turn each blast into acceleration—an architecture studied for crewed interplanetary missions and immense interstellar vehicles.",
     canonicalNote: "Orion names a design family. A specific point design must be selected before speed or arrival claims become meaningful.",
   },
   "wandering-earth": {
