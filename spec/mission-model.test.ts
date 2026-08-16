@@ -34,6 +34,27 @@ describe("journey model", () => {
       targetAu: 5.2,
     });
     expect(discovery?.arrivalEstimate?.years).toBeCloseTo(95_900, -2);
+    expect(discovery?.route.onward).toMatchObject({
+      kind: "constant",
+      startAu: 5.2,
+      speedSource: "mission-average",
+      evidence: "COUNTERFACTUAL",
+      discontinuity: true,
+    });
+    expect(discovery?.route.onward.kind === "constant"
+      ? discovery.route.onward.speedKmh
+      : 0).toBeCloseTo(47_784, 0);
+  });
+
+  it("turns the selected 0.1c Orion benchmark into a finite design-study route", () => {
+    const orion = VEHICLES.find(({ id }) => id === "orion");
+    expect(orion).toBeTruthy();
+    expect(orion?.route.mission).toMatchObject({
+      kind: "profile",
+      targetStarId: "proxima-centauri",
+    });
+    expect(orion?.maxSpeedKmh).toBeCloseTo(107_925_284.88, 0);
+    expect(totalTravelYears(orion!)).toBeCloseTo(42.5, 1);
   });
 
   it("never invents arrival times for incomparable fiction", () => {

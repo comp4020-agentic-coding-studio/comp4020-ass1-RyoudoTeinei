@@ -70,7 +70,7 @@ export type OnwardPath =
       kind: "constant";
       start: "earth" | "ephemeris-end" | "peak-ephemeris";
       startAu: number;
-      speedSource: "vehicle-max" | "ephemeris-end" | "ephemeris-peak";
+      speedSource: "vehicle-max" | "mission-average" | "ephemeris-end" | "ephemeris-peak";
       speedKmh: number;
       direction: RouteDirection;
       destination: RouteDestination;
@@ -545,17 +545,22 @@ export const VEHICLES: Vehicle[] = [
     kicker: "NUCLEAR PULSES, MANY POSSIBLE SHIPS",
     category: "study",
     evidence: "DESIGN STUDY",
+    maxSpeedKmh: C_KMH * 0.1,
+    totalYears: PROXIMA_LY / 0.1,
+    phases: [
+      { label: "NUCLEAR-PULSE BOOST", start: 0, end: 0.04, from: 1, to: 1 },
+      { label: "0.1C INTERSTELLAR COAST", start: 0.04, end: 1, from: 1, to: 1 },
+    ],
     description: "Orion accelerates by detonating nuclear pulse units behind a pusher plate. It is a propulsion family, not one vehicle with one honest arrival time.",
-    modelNote: "Orion has no universal speed, so the headline deliberately selects the 0.1c interstellar benchmark discussed in NASA's survey of Orion-era concepts. The 42.5-year result is a coast-only distance scale, not one finished Orion point design.",
+    modelNote: "Orion has no universal speed, so this tour explicitly selects the 0.1c interstellar benchmark discussed in NASA's survey of Orion-era concepts. It is a flyby-scale design-study route: an Earth-orbit departure, nuclear-pulse boost and coast to the Proxima distance, not one finished Orion point design.",
     sourceIds: ["orion"],
-    unavailableReason: "NO SINGLE ORION PROFILE",
     arrivalEstimate: {
       routeLabel: "SELECTED ORION 0.1C → PROXIMA DISTANCE",
       years: PROXIMA_LY / 0.1,
       context: "0.1C INTERSTELLAR ORION BENCHMARK · COAST-ONLY SCALE",
       evidence: "DERIVED",
     },
-    route: offMap("Project Orion is a propulsion family; no single point design is selected for a finite route."),
+    route: profileToProxima("Selected 0.1c Orion design-study benchmark: depart Earth orbit, accelerate by nuclear pulse propulsion, then coast through the heliopause and Oort-cloud scale to the Proxima distance."),
   },
   {
     id: "wandering-earth",
@@ -614,7 +619,7 @@ export const VEHICLES: Vehicle[] = [
       { label: "MONOLITH / STARGATE", start: 0.985, end: 1, from: 0.35, to: 0 },
     ],
     description: "Discovery One is a nuclear-powered deep-space ship built around a spherical crew module, rotating centrifuge, long structural spine and an isolated propulsion section. In Kubrick's film it carries five astronauts and HAL 9000 on an eighteen-month mission to Jupiter after the lunar monolith transmits a signal there.",
-    modelNote: "Film continuity. The route now draws an 18-month Earth-to-Jupiter mission, followed by a labelled monolith/Stargate endpoint. The duration and destination belong to the story; the heliocentric transfer curve, burn timing and displayed speed profile are an explanatory reconstruction, not canonical orbital elements.",
+    modelNote: "Film continuity. The route draws the 18-month Earth-to-Jupiter mission and labels the monolith/Stargate endpoint. It then makes an explicit counterfactual cut and reapplies that mission's average pace to the heliopause, Oort Cloud and Proxima distance. The transfer curve, burn timing, speed profile and continuation are explanatory reconstructions, not canonical orbital elements.",
     sourceIds: ["discovery"],
     arrivalEstimate: {
       routeLabel: "DISCOVERY JUPITER PACE → PROXIMA DISTANCE",
@@ -630,7 +635,25 @@ export const VEHICLES: Vehicle[] = [
         targetAu: 5.2,
         summary: "Film-continuity reconstruction from Earth's orbit to Jupiter; the normal trajectory ends at the monolith/Stargate event.",
       },
-      onward: { kind: "none", reason: "The Stargate is not modelled as ordinary motion through heliocentric space." },
+      onward: {
+        kind: "constant",
+        start: "earth",
+        startAu: 5.2,
+        speedSource: "mission-average",
+        speedKmh: (5.2 - 1) * AU_KM / (1.5 * HOURS_PER_YEAR),
+        direction: {
+          kind: "catalogue-target",
+          starId: "proxima-centauri",
+        },
+        destination: {
+          kind: "distance-equivalent",
+          label: "Proxima distance-equivalent",
+          au: PROXIMA_AU,
+        },
+        evidence: "COUNTERFACTUAL",
+        discontinuity: true,
+        note: "The film mission ends at Jupiter and the monolith/Stargate event. After this explicit cut, the tour reapplies Discovery's reconstructed Earth–Jupiter average pace only as a normal-space distance comparison; it is not a canonical continuation through the Stargate.",
+      },
       inSystemSequence: DISCOVERY_ONE_FILM_ROUTE,
     },
   },

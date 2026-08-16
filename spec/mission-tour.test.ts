@@ -147,10 +147,10 @@ describe("mission tour semantics", () => {
     expect(samples.every(({ evidence }) => evidence === "DESIGN STUDY")).toBe(true);
   });
 
-  it("plays Discovery One as a finite Earth-to-Jupiter film mission", () => {
+  it("plays Discovery's Jupiter mission before an explicit comparison continuation", () => {
     const discovery = vehicle("discovery");
     const tour = buildMissionTour(discovery);
-    const sample = sampleMissionTour(tour, 0.5);
+    const sample = sampleMissionTour(tour, progressInside(tour, "mission", 0.5));
 
     expect(discovery.route.mission).toMatchObject({
       kind: "in-system-profile",
@@ -158,14 +158,47 @@ describe("mission tour semantics", () => {
       targetAu: 5.2,
     });
     expect(tour.playable).toBe(true);
-    expect(tour.chapters).toHaveLength(1);
+    expect(tour.chapters.map(({ id }) => id)).toEqual([
+      "mission",
+      "counterfactual-cut",
+      "pluto",
+      "heliopause",
+      "inner-oort",
+      "outer-oort",
+      "destination",
+    ]);
     expect(tour.chapters[0]).toMatchObject({
       routeMode: "profile",
       endAu: 5.2,
       elapsedEndYears: 1.5,
       evidence: "FICTION / INFERRED",
     });
+    expect(tour.chapters[1]).toMatchObject({
+      id: "counterfactual-cut",
+      routeMode: "comparison",
+      evidence: "COUNTERFACTUAL",
+      discontinuity: true,
+    });
+    expect(tour.chapters.at(-1)).toMatchObject({
+      id: "destination",
+      endAu: PROXIMA_AU,
+      evidence: "COUNTERFACTUAL",
+    });
     expect(sample.phase).toMatch(/HIBERNATION CRUISE/);
+  });
+
+  it("plays the selected Orion benchmark across every Solar System boundary", () => {
+    const tour = buildMissionTour(vehicle("orion"));
+    expect(tour.playable).toBe(true);
+    expect(tour.chapters.map(({ id }) => id)).toEqual([
+      "mission",
+      "heliopause",
+      "inner-oort",
+      "outer-oort",
+      "destination",
+    ]);
+    expect(tour.chapters.every(({ evidence }) => evidence === "DESIGN STUDY")).toBe(true);
+    expect(tour.chapters.at(-1)?.endAu).toBeCloseTo(PROXIMA_AU, 5);
   });
 
   it("labels constant comparators as counterfactual at every boundary", () => {
