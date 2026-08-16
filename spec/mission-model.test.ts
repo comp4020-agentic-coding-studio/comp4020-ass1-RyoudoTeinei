@@ -39,6 +39,13 @@ describe("journey model", () => {
     }
   });
 
+  it("does not turn Parker's perihelion record into an outbound mission", () => {
+    const parker = VEHICLES.find(({ id }) => id === "parker");
+    expect(parker).toBeTruthy();
+    expect(parker?.phases?.length).toBeGreaterThan(2);
+    expect(totalTravelYears(parker!)).toBeUndefined();
+  });
+
   it("moves a simulated craft from Earth to Proxima without overshooting", () => {
     const daedalus = VEHICLES.find(({ id }) => id === "daedalus");
     expect(daedalus).toBeTruthy();

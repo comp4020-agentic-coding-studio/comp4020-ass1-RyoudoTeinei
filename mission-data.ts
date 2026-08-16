@@ -28,6 +28,7 @@ export interface Vehicle {
   evidence: EvidenceLevel;
   maxSpeedKmh?: number;
   totalYears?: number;
+  outbound?: boolean;
   phases?: Phase[];
   description: string;
   modelNote: string;
@@ -135,7 +136,8 @@ export const VEHICLES: Vehicle[] = [
     name: "Parker Solar Probe",
     kicker: "THE FASTEST OBJECT—GOING NOWHERE OUTWARD",
     category: "measured",
-    evidence: "COUNTERFACTUAL",
+    evidence: "MEASURED",
+    outbound: false,
     maxSpeedKmh: 692_018,
     phases: [
       { label: "FALL TOWARD SUN", start: 0, end: 0.12, from: 0.08, to: 1 },
@@ -148,7 +150,7 @@ export const VEHICLES: Vehicle[] = [
       { label: "BOUND ORBIT CONTINUES", start: 0.82, end: 1, from: 1, to: 0.05 },
     ],
     description: "Parker owns the speed record because it repeatedly falls into the Sun's gravity well. Venus flybys remove orbital energy; the probe does not escape toward the stars.",
-    modelNote: "The chart sketches the real accelerate–decelerate orbit pattern. The arrival numbers are a deliberately impossible comparison that freezes Parker's 430,000 mph perihelion instant forever.",
+    modelNote: "The chart sketches the real accelerate–decelerate orbit pattern, so there is no outward arrival model. Only as a separate, impossible thought experiment would freezing the 430,000 mph perihelion instant reduce the Proxima crossing to about 6,628 years.",
     sourceIds: ["parker", "parker-orbits"],
   },
   {
@@ -297,9 +299,18 @@ export function constantTravelYears(speedKmh: number, targetAu = PROXIMA_AU): nu
 }
 
 export function totalTravelYears(vehicle: Vehicle): number | undefined {
+  if (vehicle.outbound === false) return undefined;
   if (vehicle.totalYears !== undefined) return vehicle.totalYears;
   if (vehicle.maxSpeedKmh === undefined) return undefined;
-  return constantTravelYears(vehicle.maxSpeedKmh);
+  const phases = vehicle.phases;
+  if (!phases?.length) return undefined;
+  const sampleCount = 500;
+  const averageFactor = Array.from(
+    { length: sampleCount },
+    (_, index) => speedFactorAt(vehicle, (index + 0.5) / sampleCount),
+  ).reduce((sum, factor) => sum + factor, 0) / sampleCount;
+  if (averageFactor <= 0) return undefined;
+  return constantTravelYears(vehicle.maxSpeedKmh * averageFactor);
 }
 
 export function speedFactorAt(vehicle: Vehicle, progress: number): number {

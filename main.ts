@@ -60,7 +60,7 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 if (!selectedVehicle) throw new Error("The launch manifest is empty.");
 
 function isRunnable(vehicle: Vehicle): boolean {
-  return Boolean(vehicle.maxSpeedKmh && vehicle.phases?.length);
+  return Boolean(totalTravelYears(vehicle) && vehicle.phases?.length);
 }
 
 function cancelAnimation(): void {
@@ -101,11 +101,11 @@ function renderPhaseKey(vehicle: Vehicle): void {
 }
 
 function renderProfile(vehicle: Vehicle): void {
-  const runnable = isRunnable(vehicle);
-  speedLine.setAttribute("points", runnable ? profilePoints(vehicle) : "");
-  speedLine.classList.toggle("is-unavailable", !runnable);
+  const hasProfile = Boolean(vehicle.phases?.length);
+  speedLine.setAttribute("points", hasProfile ? profilePoints(vehicle) : "");
+  speedLine.classList.toggle("is-unavailable", !hasProfile);
   chartTitle.textContent = `${vehicle.name} speed and mission profile`;
-  chartDescription.textContent = runnable
+  chartDescription.textContent = hasProfile
     ? `${vehicle.phases?.map(({ label }) => label).join(", ")}.`
     : `${vehicle.unavailableReason ?? "No comparable linear speed profile"}.`;
   profileScale.textContent = vehicle.maxSpeedKmh
@@ -115,8 +115,8 @@ function renderProfile(vehicle: Vehicle): void {
 }
 
 function arrivalContext(vehicle: Vehicle): string {
+  if (vehicle.id === "parker") return "BOUND SOLAR ORBIT · NO OUTWARD ARRIVAL";
   if (!isRunnable(vehicle)) return vehicle.unavailableReason ?? "NO ARRIVAL MODEL";
-  if (vehicle.id === "parker") return "PEAK HELD FOREVER · IMPOSSIBLE SCALE COMPARISON";
   if (vehicle.evidence === "DESIGN STUDY") return "PUBLISHED PROFILE · MODELLED TO PROXIMA";
   if (vehicle.category === "fiction") return "FICTIONAL PROFILE · CONTINUITY LABELLED";
   return `AT ${formatSpeed(vehicle.maxSpeedKmh ?? 0)} · STRAIGHT-LINE MODEL`;
@@ -128,7 +128,7 @@ function renderVehicle(vehicle: Vehicle): void {
   evidenceTag.textContent = vehicle.evidence;
   evidenceTag.dataset.category = vehicle.category;
   const totalYears = totalTravelYears(vehicle);
-  journeyTime.textContent = formatDuration(totalYears);
+  journeyTime.textContent = vehicle.id === "parker" ? "NO OUTWARD ARRIVAL" : formatDuration(totalYears);
   arrivalSubline.textContent = arrivalContext(vehicle);
   vehicleDescription.textContent = vehicle.description;
   setTextWithPrefix(modelNote, "MODEL NOTE / ", vehicle.modelNote);
