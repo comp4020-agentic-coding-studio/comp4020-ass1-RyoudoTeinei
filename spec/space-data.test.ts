@@ -4,6 +4,7 @@ import {
   AU_PER_LIGHT_YEAR,
   CNS5_NEARBY_STARS,
   CNS5_SOURCE,
+  lightYearsFromParallaxMas,
 } from "../space-data";
 
 interface Sample {
@@ -14,11 +15,22 @@ interface Sample {
 }
 
 describe("vendored astronomy data", () => {
-  it("uses twelve sourced CNS5 anchors with true radial distances", () => {
-    expect(CNS5_NEARBY_STARS).toHaveLength(12);
+  it("uses the complete published CNS5 slice within twelve light-years", () => {
+    expect(CNS5_NEARBY_STARS).toHaveLength(28);
+    expect(CNS5_SOURCE.subsetRecordCount).toBe(CNS5_NEARBY_STARS.length);
     expect(CNS5_SOURCE.catalogueUrl).toMatch(/^https:\/\/vizier\.cds\.unistra\.fr\//);
+    expect(new Set(CNS5_NEARBY_STARS.map(({ cns5Id }) => cns5Id)).size).toBe(28);
+    expect(new Set(CNS5_NEARBY_STARS.map(({ id }) => id)).size).toBe(28);
+    expect(CNS5_NEARBY_STARS.every(({ distanceLy }) => distanceLy <= 12)).toBe(true);
+    expect(CNS5_NEARBY_STARS.map(({ distanceLy }) => distanceLy)).toEqual(
+      [...CNS5_NEARBY_STARS].map(({ distanceLy }) => distanceLy).sort((a, b) => a - b),
+    );
     const proxima = CNS5_NEARBY_STARS.find(({ id }) => id === "proxima-centauri");
     expect(proxima?.distanceLy).toBeCloseTo(4.2465, 4);
+    expect(proxima?.distanceLy).toBeCloseTo(
+      lightYearsFromParallaxMas(proxima?.parallaxMas ?? 1),
+      10,
+    );
     expect(
       Math.hypot(
         proxima?.eclipticAu.x ?? 0,
@@ -26,6 +38,16 @@ describe("vendored astronomy data", () => {
         proxima?.eclipticAu.z ?? 0,
       ) / AU_PER_LIGHT_YEAR,
     ).toBeCloseTo(proxima?.distanceLy ?? 0, 3);
+  });
+
+  it("derives every ecliptic vector from the sourced ICRS direction and parallax", () => {
+    for (const star of CNS5_NEARBY_STARS) {
+      expect(Math.hypot(star.eclipticLy.x, star.eclipticLy.y, star.eclipticLy.z)).toBeCloseTo(
+        star.distanceLy,
+        10,
+      );
+      expect(star.shell).toBe(star.distanceLy <= 10 ? "within-10-ly" : "10-to-12-ly");
+    }
   });
 
   it("keeps JPL trajectories local and identifies their coordinate frame", () => {
