@@ -8,6 +8,22 @@ viewports --- 1920×1080 (desktop) and 390×844 (phone) --- and both count in
 full, so make that artefact good at both and use the checks below to know
 whether it is.
 
+## Assignment 1 direction
+
+- The page makes one claim: crossing the heliopause is not the same as leaving
+  the Solar System; use the outer Oort Cloud as the final Solar System boundary.
+- Keep one core interaction: choose a vehicle, launch it, and watch the same
+  logarithmic route and speed/phase profile change. New facts must support that
+  mechanic rather than become a second explainer.
+- Never present a perihelion peak speed as a sustainable cruise speed. Label
+  constant-speed comparisons as counterfactual, real mission profiles as real,
+  and speculative or fictional values as such.
+- Gravity assists and acceleration stages are named route/profile data, never
+  arbitrary bonuses the visitor can stack.
+- Preserve interaction state during responsive resize, make every control work
+  from the keyboard, and verify at 1920×1080 and 390×844 before accepting a UI
+  change.
+
 What you're building this week — the spec — is published on the course website,
 and this repo's name tells you which deliverable it is. Run the course plugin's
 **start** skill at the start of each week: it pulls the right spec from the
