@@ -16,12 +16,13 @@ const JULIAN_YEAR_SECONDS = 365.25 * 86_400;
 
 function automaticStageWallSeconds(durationSeconds: number): number {
   const durationYears = durationSeconds / JULIAN_YEAR_SECONDS;
-  if (durationYears < 1_000) return DEFAULT_STAGE_WALL_SECONDS;
+  if (durationYears < 50) return DEFAULT_STAGE_WALL_SECONDS;
+  if (durationYears < 1_000) return 24;
 
-  // Once the story reaches millennia, keep the visual pace near 1,200 years
-  // per real second. The bounds stop a short threshold chapter lingering and
-  // prevent multi-million-year comparisons from becoming unusably long.
-  return Math.min(40, Math.max(14, durationYears / 1_200));
+  // Once the story reaches millennia, keep the visual pace near 1,000 years
+  // per real second. A generous minimum makes the first Oort-bound leg
+  // readable; the cap keeps multi-million-year comparisons usable.
+  return Math.min(45, Math.max(28, durationYears / 1_000));
 }
 
 /**

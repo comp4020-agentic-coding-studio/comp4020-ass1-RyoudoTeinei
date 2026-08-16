@@ -30,6 +30,12 @@ describe("automatic physical time flow", () => {
 
   it("slows automatic playback once a stage spans millennia", () => {
     const secondsPerYear = 365.25 * 86_400;
+    const fiveHundredYears = autoTimeFlowForStage({
+      label: "heliopause to inner Oort",
+      description: "First counterfactual outward leg",
+      startSeconds: 0,
+      endSeconds: 500 * secondsPerYear,
+    }, 0);
     const tenThousandYears = autoTimeFlowForStage({
       label: "inner Oort",
       description: "Cross the inner Oort region",
@@ -43,9 +49,11 @@ describe("automatic physical time flow", () => {
       endSeconds: 30_000 * secondsPerYear,
     }, 0);
 
-    expect(tenThousandYears.estimatedWallSeconds).toBe(14);
-    expect(thirtyThousandYears.estimatedWallSeconds).toBe(25);
-    expect(thirtyThousandYears.multiplier / secondsPerYear).toBeCloseTo(1_200);
+    expect(fiveHundredYears.estimatedWallSeconds).toBe(24);
+    expect(fiveHundredYears.multiplier / secondsPerYear).toBeCloseTo(20.83, 1);
+    expect(tenThousandYears.estimatedWallSeconds).toBe(28);
+    expect(thirtyThousandYears.estimatedWallSeconds).toBe(30);
+    expect(thirtyThousandYears.multiplier / secondsPerYear).toBeCloseTo(1_000);
   });
 
   it("reports readable physical pace labels", () => {
