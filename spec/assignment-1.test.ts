@@ -62,6 +62,20 @@ describe("Assignment 1: interstellar journey explainer", () => {
     expect(doc.querySelectorAll('[data-testid="playback-rate"] option').length).toBeGreaterThanOrEqual(6);
   });
 
+  it("uses a literal physical clock whose lowest rate is real time", () => {
+    const options = Array.from(
+      doc.querySelectorAll<HTMLOptionElement>('[data-testid="playback-rate"] option'),
+    );
+    const rates = options.map(({ value }) => Number(value));
+    expect(rates[0]).toBe(1);
+    expect(rates.every((rate) => rate >= 1)).toBe(true);
+    expect(rates).toContain(31_557_600);
+    expect(Math.max(...rates)).toBeGreaterThanOrEqual(31_557_600_000_000);
+    expect(options[0]?.textContent).toMatch(/real time/i);
+    expect(doc.querySelector('[data-testid="map-time-flow"]')).toBeTruthy();
+    expect(doc.querySelector('.rate-control span')?.textContent).toMatch(/physical time/i);
+  });
+
   it("keeps the runtime entirely client-side", () => {
     for (const script of doc.querySelectorAll("script[src]")) {
       expect(script.getAttribute("src")).toMatch(/^\.\//);

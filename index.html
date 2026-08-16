@@ -240,6 +240,7 @@
 
                 <div class="map-hud map-hud-top">
                   <span id="map-scale">VIEW WIDTH · 12.00 LY</span>
+                  <strong data-testid="map-time-flow" id="map-time-flow">TIME FLOW · 1× REAL TIME · 1 SECOND / REAL SECOND</strong>
                   <span id="map-resolution">NEPTUNE ORBIT = &lt;0.01 PX</span>
                 </div>
                 <div class="map-hud map-hud-bottom">
@@ -283,14 +284,19 @@
                 <input data-testid="journey-progress" id="journey-progress" type="range" min="0" max="1000" value="0" step="1" />
               </label>
               <label class="rate-control" for="playback-rate">
-                <span>TOUR PLAYBACK RATE</span>
+                <span>PHYSICAL TIME FLOW</span>
                 <select data-testid="playback-rate" id="playback-rate">
-                  <option value="0.25">0.25×</option>
-                  <option value="0.5">0.5×</option>
-                  <option value="1" selected>1×</option>
-                  <option value="2">2×</option>
-                  <option value="4">4×</option>
-                  <option value="8">8×</option>
+                  <option value="1" selected>1× · REAL TIME</option>
+                  <option value="60">60× · 1 MIN / SEC</option>
+                  <option value="3600">3,600× · 1 HOUR / SEC</option>
+                  <option value="86400">86,400× · 1 DAY / SEC</option>
+                  <option value="2629800">2.63M× · 1 MONTH / SEC</option>
+                  <option value="31557600">31.56M× · 1 YEAR / SEC</option>
+                  <option value="3155760000">3.16B× · 100 YEARS / SEC</option>
+                  <option value="31557600000">31.56B× · 1,000 YEARS / SEC</option>
+                  <option value="315576000000">315.58B× · 10,000 YEARS / SEC</option>
+                  <option value="3155760000000">3.16T× · 100,000 YEARS / SEC</option>
+                  <option value="31557600000000">31.56T× · 1,000,000 YEARS / SEC</option>
                 </select>
               </label>
               <button class="reset-button" type="button" id="reset-button">RESET ↺</button>
@@ -368,7 +374,8 @@
             <a id="source-starshot" href="https://breakthroughinitiatives.org/initiative/3">Breakthrough Initiatives · Starshot ↗</a>
             <a id="source-orion" href="https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20000096503.pdf">NASA NTRS · Project Orion ↗</a>
             <a id="source-wandering-earth" href="https://us.macmillan.com/books/9781250796844/thewanderingearth/">Macmillan · The Wandering Earth ↗</a>
-            <a href="https://tech.chinadaily.com.cn/a/201902/19/WS5c6b93e2a31010568bdca94c.html">China Daily · film-era journey stages ↗</a>
+            <a href="https://www.bloomsbury.com/uk/wandering-earth-9781784978518/">Bloomsbury · novel edition and Proxima destination ↗</a>
+            <a href="https://www.cnsa.gov.cn/n6758968/n6758973/c6771590/content.html">CNSA · Jupiter gravity-assist context ↗</a>
             <a id="source-three-body" href="https://us.macmillan.com/series/remembranceofearthspast">Macmillan · Remembrance of Earth's Past ↗</a>
             <a id="source-discovery" href="https://www.penguinrandomhouse.com/books/325356/2001-a-space-odyssey-by-arthur-c-clarke/">Penguin Random House · 2001 ↗</a>
             <a id="source-enterprise" href="https://www.startrek.com/database_article/enterprise-ncc-1701">StarTrek.com · USS Enterprise ↗</a>

@@ -1027,6 +1027,12 @@ h1 em {
   color: var(--cyan);
 }
 
+#map-time-flow {
+  color: var(--acid);
+  font-weight: 700;
+  text-align: center;
+}
+
 .map-thesis {
   position: absolute;
   z-index: 4;
@@ -1292,7 +1298,8 @@ h1 em {
 }
 
 .rate-control select {
-  min-width: 92px;
+  width: min(235px, 24vw);
+  min-width: 190px;
   min-height: 48px;
   border: 1px solid var(--line);
   border-radius: 0;
@@ -1777,6 +1784,13 @@ footer p:first-child {
     display: none;
   }
 
+  #map-time-flow {
+    max-width: 55%;
+    font-size: 0.43rem;
+    line-height: 1.35;
+    text-align: right;
+  }
+
   .map-thesis {
     display: none;
   }
@@ -1829,7 +1843,7 @@ footer p:first-child {
 
   .mission-controls {
     position: static;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 0.6rem;
     padding: 0.75rem;
     background: #071511;
@@ -1842,12 +1856,28 @@ footer p:first-child {
   }
 
   .transport-button {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    width: 100%;
     min-width: 0;
     padding-inline: 0.65rem;
   }
 
+  .rate-control {
+    grid-row: 3;
+    grid-column: 1;
+    min-width: 0;
+  }
+
+  .reset-button {
+    grid-row: 3;
+    grid-column: 2;
+  }
+
   .rate-control select {
-    min-width: 76px;
+    width: 100%;
+    min-width: 0;
+    font-size: 0.56rem;
   }
 
   .rate-control span {

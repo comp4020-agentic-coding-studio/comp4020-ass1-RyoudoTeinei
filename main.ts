@@ -16,7 +16,17 @@ import {
   type MissionTour,
   type MissionTourSample,
 } from "./mission-tour";
-import { advanceTourProgress } from "./playback-clock";
+import {
+  buildMissionPhysicalTimeline,
+  sampleMissionTourAtPhysicalTime,
+  type MissionPhysicalTimeline,
+  type PhysicalMissionTourSample,
+} from "./mission-physical-time";
+import {
+  JULIAN_YEAR_SECONDS,
+  SIMULATION_RATE_OPTIONS,
+  advanceSimulationClock,
+} from "./simulation-clock";
 import { getVehicleDossier } from "./vehicle-dossiers";
 
 function required<T extends Element>(selector: string): T {
@@ -73,20 +83,23 @@ const vehicleCredit = required<HTMLAnchorElement>("#vehicle-credit");
 const missionSummary = required<HTMLElement>("#mission-summary");
 const dossierFacts = required<HTMLElement>("#dossier-facts");
 const canonicalNote = required<HTMLElement>("#canonical-note");
+const mapTimeFlow = required<HTMLElement>("#map-time-flow");
 const spaceMap = createSpaceMapController();
 
 let selectedVehicle = VEHICLES[0];
 let selectedTour: MissionTour;
+let selectedTimeline: MissionPhysicalTimeline | undefined;
 let progress = 0;
+let physicalElapsedSeconds = 0;
 let animationFrame: number | undefined;
-let animationStart: number | undefined;
-let startProgress = 0;
-let playbackRate = 1;
+let lastAnimationTimestamp: number | undefined;
+let simulationRate = 1;
 let activeFlowIndex = -1;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 if (!selectedVehicle) throw new Error("The launch manifest is empty.");
 selectedTour = buildMissionTour(selectedVehicle);
+selectedTimeline = buildMissionPhysicalTimeline(selectedTour);
 
 function isRunnable(vehicle: Vehicle): boolean {
   return buildMissionTour(vehicle).playable;
@@ -111,6 +124,8 @@ interface MissionFlowStage {
   chapterIndex: number;
   chapterStart?: number;
   chapterEnd?: number;
+  routeStart?: number;
+  routeEnd?: number;
 }
 
 let missionFlowStages: MissionFlowStage[] = [];
@@ -166,6 +181,19 @@ function openingFlowStages(vehicle: Vehicle): MissionFlowStage[] | undefined {
     ];
   }
 
+  if (vehicle.id === "wandering-earth") {
+    return [
+      { label: "EARTH @ 1 AU · 42-YEAR ROTATION BRAKE", chapterIndex: 0, routeStart: 0, routeEnd: 42 / 2_500 },
+      { label: "15-YEAR / 15-ORBIT ESCAPE SEQUENCE", chapterIndex: 0, routeStart: 42 / 2_500, routeEnd: 56.8 / 2_500 },
+      { label: "PLANNED JUPITER GRAVITY ASSIST", chapterIndex: 0, routeStart: 56.8 / 2_500, routeEnd: 58 / 2_500 },
+      { label: "500-YEAR FULL-THRUST ACCELERATION", chapterIndex: 0, routeStart: 58 / 2_500, routeEnd: 557 / 2_500 },
+      { label: "1,300-YEAR COAST @ 0.005C", chapterIndex: 0, routeStart: 557 / 2_500, routeEnd: 1_857 / 2_500 },
+      { label: "500-YEAR DECELERATION", chapterIndex: 0, routeStart: 1_857 / 2_500, routeEnd: 2_357 / 2_500 },
+      { label: "PROXIMA ARRIVAL · YEAR 2400", chapterIndex: 0, routeStart: 2_357 / 2_500, routeEnd: 2_400 / 2_500 },
+      { label: "100-YEAR ORBIT CAPTURE", chapterIndex: 0, routeStart: 2_400 / 2_500, routeEnd: 1.01 },
+    ];
+  }
+
   return undefined;
 }
 
@@ -184,7 +212,9 @@ function buildMissionFlow(vehicle: Vehicle): void {
   }
 
   const mission = vehicle.route.mission;
-  missionFlowContext.textContent = mission.kind === "ephemeris"
+  missionFlowContext.textContent = vehicle.id === "wandering-earth"
+    ? "NOVEL CANON · EARTH IS THE VEHICLE · GEOMETRY SCHEMATIC"
+    : mission.kind === "ephemeris"
     ? "SUN = MAP ORIGIN · EARTH = HISTORICAL LAUNCH · LOCATOR NOT TO SCALE"
     : mission.kind === "off-map"
     ? "CANON ROUTE IS NOT A LINEAR EARTH-TO-TARGET FLIGHT"
@@ -203,6 +233,11 @@ function buildMissionFlow(vehicle: Vehicle): void {
 
 function updateMissionFlow(frame: MissionTourSample): void {
   let currentIndex = missionFlowStages.findIndex((stage) => {
+    if (stage.routeStart !== undefined || stage.routeEnd !== undefined) {
+      const start = stage.routeStart ?? 0;
+      const end = stage.routeEnd ?? 1.01;
+      return frame.routeProgress >= start && frame.routeProgress < end;
+    }
     if (stage.chapterIndex !== frame.chapterIndex) return false;
     const start = stage.chapterStart ?? 0;
     const end = stage.chapterEnd ?? 1.01;
@@ -240,8 +275,57 @@ function updateMissionFlow(frame: MissionTourSample): void {
 function cancelAnimation(nextState: PlaybackState = progress >= 1 ? "complete" : "ready"): void {
   if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
   animationFrame = undefined;
-  animationStart = undefined;
+  lastAnimationTimestamp = undefined;
   setPlaybackState(nextState);
+}
+
+function formatPhysicalElapsed(seconds: number): string {
+  if (seconds < 60) {
+    return `${seconds.toLocaleString("en-AU", {
+      minimumFractionDigits: seconds < 10 ? 1 : 0,
+      maximumFractionDigits: 1,
+    })} SECONDS`;
+  }
+  if (seconds < 3_600) {
+    const minutes = Math.floor(seconds / 60);
+    const remainder = Math.floor(seconds % 60);
+    return `${minutes} MIN ${remainder.toString().padStart(2, "0")} SEC`;
+  }
+  if (seconds < 86_400) {
+    const hours = Math.floor(seconds / 3_600);
+    const minutes = Math.floor((seconds % 3_600) / 60);
+    return `${hours} HR ${minutes.toString().padStart(2, "0")} MIN`;
+  }
+  if (seconds < JULIAN_YEAR_SECONDS) {
+    return `${(seconds / 86_400).toLocaleString("en-AU", {
+      maximumFractionDigits: 1,
+    })} DAYS`;
+  }
+  return formatDuration(seconds / JULIAN_YEAR_SECONDS);
+}
+
+function updateTimeFlow(): void {
+  if (!selectedTimeline) {
+    mapTimeFlow.textContent = "TIME FLOW · NO FINITE PHYSICAL CLOCK";
+    playbackRateSelect.disabled = true;
+    return;
+  }
+  playbackRateSelect.disabled = false;
+  const option = SIMULATION_RATE_OPTIONS.find(
+    ({ multiplier }) => multiplier === simulationRate,
+  );
+  const label = option?.label ?? `${simulationRate.toLocaleString("en-AU")}×`;
+  const pace = option?.paceLabel ?? `${simulationRate.toLocaleString("en-AU")} SECONDS / SECOND`;
+  mapTimeFlow.textContent = `TIME FLOW · ${label} · ${pace.replace(" / SECOND", " / REAL SECOND")}`;
+}
+
+function currentTourFrame(): MissionTourSample | PhysicalMissionTourSample {
+  if (!selectedTimeline) return sampleMissionTour(selectedTour, progress);
+  return sampleMissionTourAtPhysicalTime(
+    selectedTour,
+    selectedTimeline,
+    physicalElapsedSeconds,
+  );
 }
 
 function crossingTime(vehicle: Vehicle, au: number): number | undefined {
@@ -334,6 +418,8 @@ function arrivalContext(vehicle: Vehicle): string {
 
 function renderVehicle(vehicle: Vehicle, focusMap = false): void {
   selectedTour = buildMissionTour(vehicle);
+  selectedTimeline = buildMissionPhysicalTimeline(selectedTour);
+  physicalElapsedSeconds = 0;
   buildMissionFlow(vehicle);
   selectedKicker.textContent = vehicle.kicker;
   selectedName.textContent = vehicle.name.toUpperCase();
@@ -349,7 +435,10 @@ function renderVehicle(vehicle: Vehicle, focusMap = false): void {
   launchButton.disabled = false;
   progressInput.disabled = false;
   setPlaybackState("ready");
-  progressLabel.textContent = "GUIDED MISSION TOUR";
+  progressLabel.textContent = selectedTimeline
+    ? "PHYSICAL MISSION CLOCK"
+    : "EXPLANATION POSITION · NO FINITE CLOCK";
+  updateTimeFlow();
   timeHeliopause.textContent = formatDuration(crossingTime(vehicle, 122));
   timeOort.textContent = formatDuration(crossingTime(vehicle, 100_000));
   timeProxima.textContent = formatDuration(totalYears);
@@ -358,13 +447,22 @@ function renderVehicle(vehicle: Vehicle, focusMap = false): void {
 }
 
 function renderProgress(): void {
-  const frame = sampleMissionTour(selectedTour, progress);
+  const frame = currentTourFrame();
+  if ("physicalProgress" in frame) progress = frame.physicalProgress;
   const sample = journeySample(selectedVehicle, frame.routeProgress);
   progressInput.value = String(Math.round(progress * 1_000));
+  progressInput.setAttribute(
+    "aria-valuetext",
+    selectedTimeline
+      ? `T plus ${formatPhysicalElapsed(physicalElapsedSeconds)}`
+      : `${Math.round(progress * 100)} percent of explanation`,
+  );
 
   const mapTelemetry = spaceMap.setTourFrame(frame);
   elapsedReadout.textContent = frame.routeMode === "off-map"
     ? "NOT COMPARABLE"
+    : selectedTimeline
+    ? `${formatPhysicalElapsed(physicalElapsedSeconds)}${mapTelemetry.date ? ` · ${mapTelemetry.date.slice(0, 10)}` : ""}`
     : mapTelemetry.mode === "ephemeris"
     ? `${formatDuration(mapTelemetry.elapsedYears)}${mapTelemetry.date ? ` · ${mapTelemetry.date.slice(0, 4)}` : ""}`
     : formatDuration(frame.elapsedYears ?? mapTelemetry.elapsedYears);
@@ -386,6 +484,7 @@ function renderProgress(): void {
 function selectVehicle(vehicle: Vehicle): void {
   cancelAnimation();
   progress = 0;
+  physicalElapsedSeconds = 0;
   selectedVehicle = vehicle;
   for (const button of vehicleButtons) {
     button.setAttribute(
@@ -398,13 +497,35 @@ function selectVehicle(vehicle: Vehicle): void {
 }
 
 function animate(timestamp: number): void {
-  if (animationStart === undefined) animationStart = timestamp;
-  const duration = selectedTour.totalDurationMs;
-  const elapsed = timestamp - animationStart;
-  progress = advanceTourProgress(startProgress, elapsed, duration, playbackRate);
+  if (!selectedTimeline) {
+    progress = 1;
+    renderProgress();
+    animationFrame = undefined;
+    setPlaybackState("complete");
+    return;
+  }
+
+  if (lastAnimationTimestamp === undefined) {
+    lastAnimationTimestamp = timestamp;
+    animationFrame = requestAnimationFrame(animate);
+    return;
+  }
+  const realElapsedSeconds = Math.max(
+    0,
+    (timestamp - lastAnimationTimestamp) / 1_000,
+  );
+  lastAnimationTimestamp = timestamp;
+  const clock = advanceSimulationClock(
+    physicalElapsedSeconds,
+    realElapsedSeconds,
+    simulationRate,
+    selectedTimeline.totalSeconds,
+  );
+  physicalElapsedSeconds = clock.elapsedSeconds;
+  progress = clock.progress;
   renderProgress();
 
-  if (progress < 1) {
+  if (!clock.complete) {
     animationFrame = requestAnimationFrame(animate);
     return;
   }
@@ -414,8 +535,16 @@ function animate(timestamp: number): void {
 }
 
 function toggleLaunch(): void {
-  if (reducedMotion.matches) {
+  if (!selectedTimeline) {
     progress = progress >= 1 ? 0 : 1;
+    setPlaybackState(progress >= 1 ? "complete" : "ready");
+    renderProgress();
+    return;
+  }
+
+  if (reducedMotion.matches) {
+    physicalElapsedSeconds = progress >= 1 ? 0 : selectedTimeline.totalSeconds;
+    progress = physicalElapsedSeconds / selectedTimeline.totalSeconds;
     setPlaybackState(progress >= 1 ? "complete" : "ready");
     renderProgress();
     return;
@@ -426,9 +555,11 @@ function toggleLaunch(): void {
     return;
   }
 
-  if (progress >= 1) progress = 0;
-  startProgress = progress;
-  animationStart = undefined;
+  if (progress >= 1) {
+    progress = 0;
+    physicalElapsedSeconds = 0;
+  }
+  lastAnimationTimestamp = undefined;
   setPlaybackState("running");
   animationFrame = requestAnimationFrame(animate);
 }
@@ -457,30 +588,30 @@ transportButton.addEventListener("click", toggleLaunch);
 
 resetButton.addEventListener("click", () => {
   progress = 0;
+  physicalElapsedSeconds = 0;
   cancelAnimation("ready");
   renderProgress();
 });
 
 progressInput.addEventListener("input", () => {
   progress = Number(progressInput.value) / 1_000;
+  if (selectedTimeline) {
+    physicalElapsedSeconds = selectedTimeline.totalSeconds * progress;
+  }
   cancelAnimation(progress >= 1 ? "complete" : "paused");
   renderProgress();
 });
 
 playbackRateSelect.addEventListener("change", () => {
   const nextRate = Number(playbackRateSelect.value);
-  if (!Number.isFinite(nextRate) || nextRate <= 0) {
-    playbackRateSelect.value = String(playbackRate);
+  if (!Number.isFinite(nextRate) || nextRate < 1) {
+    playbackRateSelect.value = String(simulationRate);
     return;
   }
 
-  playbackRate = nextRate;
-  if (animationFrame === undefined) return;
-  cancelAnimationFrame(animationFrame);
-  animationFrame = undefined;
-  startProgress = progress;
-  animationStart = undefined;
-  animationFrame = requestAnimationFrame(animate);
+  simulationRate = nextRate;
+  lastAnimationTimestamp = undefined;
+  updateTimeFlow();
 });
 
 renderVehicle(selectedVehicle);
