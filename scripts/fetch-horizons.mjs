@@ -39,7 +39,7 @@ const requests = [
         label: "mission trajectory",
         start: "2018-08-12 08:17",
         stop: "2026-08-16",
-        step: "5 d",
+        step: "6 h",
       },
       {
         label: "current endpoint",
@@ -123,15 +123,19 @@ function parseVectors(text, sourceUrl) {
         throw new Error(`Unexpected Horizons vector row: ${line}`);
       }
 
-      const [jdTdb, calendarTdb, x, y, z] = columns;
+      const [jdTdb, calendarTdb, x, y, z, vx, vy, vz] = columns;
       const sample = {
+        jdTdb: Number(jdTdb),
         date: normaliseTdbDate(calendarTdb),
         x: Number(x),
         y: Number(y),
         z: Number(z),
+        vx: Number(vx),
+        vy: Number(vy),
+        vz: Number(vz),
       };
 
-      if (![sample.x, sample.y, sample.z].every(Number.isFinite)) {
+      if (![sample.jdTdb, sample.x, sample.y, sample.z, sample.vx, sample.vy, sample.vz].every(Number.isFinite)) {
         throw new Error(`Non-numeric Horizons vector row: ${line}`);
       }
 
@@ -193,8 +197,7 @@ async function main() {
     }
 
     const samples = [...byJulianDate.values()]
-      .sort((a, b) => a.jdTdb - b.jdTdb)
-      .map(({ jdTdb: _jdTdb, ...sample }) => sample);
+      .sort((a, b) => a.jdTdb - b.jdTdb);
 
     trajectories.push({
       id: spacecraft.key,

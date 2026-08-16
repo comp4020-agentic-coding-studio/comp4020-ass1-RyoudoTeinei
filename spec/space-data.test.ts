@@ -8,10 +8,14 @@ import {
 } from "../space-data";
 
 interface Sample {
+  jdTdb: number;
   date: string;
   x: number;
   y: number;
   z: number;
+  vx: number;
+  vy: number;
+  vz: number;
 }
 
 describe("vendored astronomy data", () => {
@@ -68,7 +72,9 @@ describe("vendored astronomy data", () => {
   it("keeps Parker on its sub-AU bound orbit", () => {
     const parker = horizonsJson.trajectories.find(({ id }) => id === "parkerSolarProbe");
     const last = parker?.samples.at(-1) as Sample | undefined;
-    expect(parker?.samples.length).toBeGreaterThan(580);
+    expect(parker?.samples.length).toBeGreaterThan(11_000);
     expect(Math.hypot(last?.x ?? 0, last?.y ?? 0, last?.z ?? 0)).toBeLessThan(1);
+    expect([last?.jdTdb, last?.vx, last?.vy, last?.vz].every(Number.isFinite)).toBe(true);
+    expect(parker?.sampling[0]?.step).toBe("6 h");
   });
 });
