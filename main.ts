@@ -170,7 +170,7 @@ function renderProgress(): void {
   elapsedReadout.textContent = mapTelemetry.mode === "ephemeris"
     ? `${formatDuration(mapTelemetry.elapsedYears)}${mapTelemetry.date ? ` · ${mapTelemetry.date.slice(0, 4)}` : ""}`
     : formatDuration(sample.elapsedYears);
-  speedReadout.textContent = formatSpeed(sample.speedKmh);
+  speedReadout.textContent = formatSpeed(mapTelemetry.speedKmh ?? sample.speedKmh);
   phaseReadout.textContent = sample.phase;
 
   const chartX = progress * 1_000;

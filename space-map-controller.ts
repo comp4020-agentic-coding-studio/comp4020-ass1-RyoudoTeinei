@@ -8,7 +8,6 @@ import {
   boundsOf,
   eclipticLatitudeDegrees,
   fitBounds,
-  interpolatePoint,
   panByPixels,
   worldToScreen,
   zoomAt,
@@ -19,10 +18,16 @@ import {
   type Viewport,
 } from "./space-map";
 import {
+  AU_KM,
   formatDistance,
   journeySample,
   type Vehicle,
 } from "./mission-data";
+import {
+  sampleStateAtProgress,
+  trajectoryPrefix,
+  type JplStateVector,
+} from "./trajectory-math";
 
 const PROXIMA_ID = "proxima-centauri";
 const BARNARD_ID = "barnards-star";
@@ -30,9 +35,7 @@ const OUTER_OORT_AU = 100_000;
 const INNER_OORT_AU = 2_000;
 const HELIOPAUSE_AU = 121.6;
 
-interface HorizonsSample extends Vec3 {
-  date: string;
-}
+interface HorizonsSample extends JplStateVector {}
 
 interface HorizonsTrajectory {
   id: string;
@@ -57,6 +60,7 @@ export interface MapTelemetry {
   mode: "ephemeris" | "model" | "unavailable";
   date?: string;
   elapsedYears?: number;
+  speedKmh?: number;
   radialAu: number;
 }
 
@@ -78,34 +82,8 @@ function starById(id: string): Cns5NearbyStarRecord {
   return star;
 }
 
-function sampleTrajectory(
-  trajectory: HorizonsTrajectory,
-  progress: number,
-): HorizonsSample {
-  const first = trajectory.samples[0];
-  const last = trajectory.samples.at(-1);
-  if (!first || !last) throw new Error(`Empty trajectory: ${trajectory.id}`);
-  const toTime = (sample: HorizonsSample): number => Date.parse(`${sample.date}Z`);
-  const firstTime = toTime(first);
-  const lastTime = toTime(last);
-  const targetTime = firstTime + (lastTime - firstTime) * Math.max(0, Math.min(1, progress));
-  let low = 0;
-  let high = trajectory.samples.length - 1;
-  while (low + 1 < high) {
-    const middle = Math.floor((low + high) / 2);
-    const sample = trajectory.samples[middle];
-    if (!sample || toTime(sample) > targetTime) high = middle;
-    else low = middle;
-  }
-  const lower = trajectory.samples[low] ?? first;
-  const upper = trajectory.samples[high] ?? last;
-  const lowerTime = toTime(lower);
-  const upperTime = toTime(upper);
-  const amount = upperTime === lowerTime ? 0 : (targetTime - lowerTime) / (upperTime - lowerTime);
-  return {
-    ...interpolatePoint(lower, upper, amount),
-    date: new Date(targetTime).toISOString().slice(0, 19),
-  };
+function sampleTrajectory(trajectory: HorizonsTrajectory, progress: number): HorizonsSample {
+  return sampleStateAtProgress(trajectory.samples, progress);
 }
 
 function niceStep(raw: number): number {
@@ -754,7 +732,13 @@ export function createSpaceMapController(): SpaceMapController {
     }, undefined);
   }
 
-  function drawEvent(trajectory: HorizonsTrajectory, date: string, name: string): void {
+  function drawEvent(
+    trajectory: HorizonsTrajectory,
+    date: string,
+    name: string,
+    visibleThrough?: string,
+  ): void {
+    if (visibleThrough && Date.parse(`${date}T00:00:00Z`) > Date.parse(`${visibleThrough}Z`)) return;
     const sample = eventSample(trajectory, date);
     if (!sample) return;
     const point = worldToScreen({ x: sample.x, y: sample.y }, camera, viewport);
@@ -779,12 +763,14 @@ export function createSpaceMapController(): SpaceMapController {
         id: `trajectory-${actual.id}`, kind: "trajectory", name: `${actual.name} ephemeris`, meta: "NASA/JPL HORIZONS · J2000 ECLIPTIC XY",
         description: "A vendored geometric state-vector path. Source x/y samples are drawn directly, with z retained in the craft readout.",
       };
-      const path = drawPath(trajectoryPoints(actual), "#6adfff", [], emphasized(entity.id) ? 1 : 0.78, emphasized(entity.id) ? 3.6 : 2.2);
+      drawPath(trajectoryPoints(actual), "#6adfff", [3, 7], 0.16, 1);
+      const travelled = trajectoryPrefix(actual.samples, progress).map(({ x, y }) => ({ x, y }));
+      const path = drawPath(travelled, "#6adfff", [], emphasized(entity.id) ? 1 : 0.86, emphasized(entity.id) ? 3.6 : 2.4);
       hits.push({ type: "path", entity, points: path, tolerance: 7, priority: 8 });
       if (actual.id === "voyager1") {
-        drawEvent(actual, "1979-03-05", "JUPITER ASSIST");
-        drawEvent(actual, "1980-11-12", "SATURN / TITAN TURN");
-        drawEvent(actual, "2012-08-25", "HELIOPAUSE EVENT · 2012");
+        drawEvent(actual, "1979-03-05", "JUPITER ASSIST", craft.source?.date);
+        drawEvent(actual, "1980-11-12", "SATURN / TITAN TURN", craft.source?.date);
+        drawEvent(actual, "2012-08-25", "HELIOPAUSE EVENT · 2012", craft.source?.date);
       }
     } else {
       const target = targetStar();
@@ -904,7 +890,8 @@ export function createSpaceMapController(): SpaceMapController {
     if (craft.source) {
       const first = actualTrajectory()?.samples[0];
       const elapsedYears = first ? (Date.parse(`${craft.source.date}Z`) - Date.parse(`${first.date}Z`)) / (365.25 * 86_400_000) : undefined;
-      return { mode: "ephemeris", date: craft.source.date.slice(0, 10), elapsedYears, radialAu: craft.radialAu };
+      const speedKmh = Math.hypot(craft.source.vx, craft.source.vy, craft.source.vz) * AU_KM / 24;
+      return { mode: "ephemeris", date: craft.source.date.slice(0, 10), elapsedYears, speedKmh, radialAu: craft.radialAu };
     }
     if (craft.target) return { mode: "model", radialAu: craft.radialAu };
     return { mode: "unavailable", radialAu: 0 };
