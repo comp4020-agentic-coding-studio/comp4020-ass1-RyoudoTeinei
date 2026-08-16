@@ -458,16 +458,21 @@ export function createSpaceMapController(): SpaceMapController {
       if (screen.x < edgeGuard) side = 1;
       if (screen.x > viewport.width - edgeGuard) side = -1;
       const xOffset = side > 0 ? 12 : -12;
+      const labelYOffset = star.id === PROXIMA_ID
+        ? 18
+        : star.id === "alpha-centauri-ab"
+          ? -18
+          : -10;
       const label = appendLabel(star.name.toUpperCase(), screen, "map-star-label", {
         x: xOffset,
-        y: -10,
+        y: labelYOffset,
       });
       if (side < 0) label.setAttribute("text-anchor", "end");
       const meta = appendLabel(
         `${star.distanceLy.toFixed(2)} LY · β ${eclipticLatitudeDegrees(star.eclipticAu).toFixed(1)}°`,
         screen,
         "map-star-meta",
-        { x: xOffset, y: 4 },
+        { x: xOffset, y: labelYOffset + 14 },
       );
       if (side < 0) meta.setAttribute("text-anchor", "end");
     }
