@@ -36,7 +36,7 @@ factor on the same epistemic footing. I instead encoded `MEASURED`,
 `COUNTERFACTUAL`, `DESIGN STUDY`, `FICTION / INFERRED` and `NOT COMPARABLE` as
 data, and made missing arrival times a supported result rather than an error
 ([`2a36163`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/2a36163)).
-Later I vendored 2,358 NASA/JPL Horizons samples for Voyager and Parker, then
+Later I vendored NASA/JPL Horizons vectors for Voyager and Parker, then
 expanded the local map to 28 published CNS5 catalogue rows across 22 systems,
 with a reproducible fetch script and source metadata
 ([`9abba54`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/9abba54)).
@@ -60,7 +60,11 @@ and rebuilt the interaction around radial range rings, scale-dependent detail,
 label collision, object selection and a physical scale bar
 ([`6b22ae1`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/6b22ae1)).
 Voyager and Parker now use their actual JPL ecliptic x/y samples, interpolated
-by elapsed date rather than unequal sample indices. At 1920×1080 and 390×844 I
+by elapsed date rather than unequal sample indices. Parker's high-curvature
+orbit was still visibly faceted at five-day intervals, so I regenerated it at
+six-hour cadence, retained the Horizons velocity vectors and used them for
+state interpolation
+([`6a0c59a`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/6a0c59a)). At 1920×1080 and 390×844 I
 verified the catalogue, Oort, heliopause and planetary presets; resizing
 preserves camera, vehicle and progress.
 
@@ -73,6 +77,10 @@ outbound result, kept the real orbital profile visible, and made “no outward
 arrival” an explicit model state
 ([`595f3c3`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/595f3c3)).
 A regression test prevents Parker's speed record becoming an interstellar
-mission again. The final map goes further: Parker's launch control now plays its
-real Horizons ephemeris, while the impossible 6,628-year comparison survives
-only as labelled context—not as a route.
+mission again. The final interaction first plays the measured Horizons path,
+then inserts an orange **COUNTERFACTUAL CUT** before any frozen-peak comparison;
+the two paths cannot be mistaken for one continuous mission
+([`4bcecca`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/4bcecca)).
+Selecting a vehicle also reveals a locally stored, credited image and a compact
+source-labelled dossier before the same button begins the guided route
+([`9322aac`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-RyoudoTeinei/commit/9322aac)).

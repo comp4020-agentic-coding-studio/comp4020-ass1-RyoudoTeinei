@@ -17,8 +17,10 @@ clearly than a paragraph could.
 The scientific data also stopped being decoration. Twenty-eight CNS5 catalogue
 rows establish the real local neighbourhood; JPL vectors draw Voyager's
 planetary turns and Parker's repeated solar orbits. Parker's 430,000 mph record
-therefore cannot masquerade as an outbound cruise. “No outward arrival” is now
-visible in the path itself.
+therefore cannot masquerade as an outbound cruise. A guided playback shows the
+measured mission first and makes any frozen-speed thought experiment cross a
+visible counterfactual cut. The credited image dossier gives the vehicle a
+recognisable physical or cultural context before the scale animation begins.
 
 ## What did this change about the developer I want to be?
 
