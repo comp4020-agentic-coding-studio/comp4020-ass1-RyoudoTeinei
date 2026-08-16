@@ -1,7 +1,5 @@
 import {
   VEHICLES,
-  distancePosition,
-  formatDistance,
   formatDuration,
   formatSpeed,
   journeySample,
@@ -11,6 +9,7 @@ import {
   totalTravelYears,
   type Vehicle,
 } from "./mission-data";
+import { createSpaceMapController } from "./space-map-controller";
 
 function required<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -31,9 +30,7 @@ const launchButton = required<HTMLButtonElement>("#launch-button");
 const launchLabel = required<HTMLElement>("#launch-label");
 const resetButton = required<HTMLButtonElement>("#reset-button");
 const progressInput = required<HTMLInputElement>("#journey-progress");
-const routeFill = required<HTMLElement>("#route-fill");
-const journeyMarker = required<HTMLElement>("#journey-marker");
-const distanceReadout = required<HTMLElement>("#distance-readout");
+const progressLabel = required<HTMLElement>("#progress-label");
 const elapsedReadout = required<HTMLElement>("#elapsed-readout");
 const speedReadout = required<HTMLElement>("#speed-readout");
 const phaseReadout = required<HTMLElement>("#phase-readout");
@@ -49,6 +46,7 @@ const modelNote = required<HTMLElement>("#model-note");
 const timeHeliopause = required<HTMLElement>("#time-heliopause");
 const timeOort = required<HTMLElement>("#time-oort");
 const timeProxima = required<HTMLElement>("#time-proxima");
+const spaceMap = createSpaceMapController();
 
 let selectedVehicle = VEHICLES[0];
 let progress = 0;
@@ -60,7 +58,27 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 if (!selectedVehicle) throw new Error("The launch manifest is empty.");
 
 function isRunnable(vehicle: Vehicle): boolean {
-  return Boolean(totalTravelYears(vehicle) && vehicle.phases?.length);
+  return Boolean(
+    vehicle.phases?.length &&
+    (totalTravelYears(vehicle) !== undefined || hasEphemeris(vehicle)),
+  );
+}
+
+function hasEphemeris(vehicle: Vehicle): boolean {
+  return vehicle.id === "voyager" || vehicle.id === "parker";
+}
+
+function readyLaunchLabel(vehicle: Vehicle): string {
+  if (!isRunnable(vehicle)) return "PROFILE UNAVAILABLE";
+  return hasEphemeris(vehicle) ? "PLAY REAL TRACK" : "LAUNCH MODEL";
+}
+
+function replayLabel(vehicle: Vehicle): string {
+  return hasEphemeris(vehicle) ? "REPLAY TRACK" : "REPLAY MODEL";
+}
+
+function resumeLabel(vehicle: Vehicle): string {
+  return hasEphemeris(vehicle) ? "RESUME TRACK" : "RESUME MODEL";
 }
 
 function cancelAnimation(): void {
@@ -122,7 +140,7 @@ function arrivalContext(vehicle: Vehicle): string {
   return `AT ${formatSpeed(vehicle.maxSpeedKmh ?? 0)} · STRAIGHT-LINE MODEL`;
 }
 
-function renderVehicle(vehicle: Vehicle): void {
+function renderVehicle(vehicle: Vehicle, focusMap = false): void {
   selectedKicker.textContent = vehicle.kicker;
   selectedName.textContent = vehicle.name.toUpperCase();
   evidenceTag.textContent = vehicle.evidence;
@@ -135,22 +153,23 @@ function renderVehicle(vehicle: Vehicle): void {
 
   launchButton.disabled = !isRunnable(vehicle);
   progressInput.disabled = !isRunnable(vehicle);
-  launchLabel.textContent = isRunnable(vehicle) ? "LAUNCH MODEL" : "PROFILE UNAVAILABLE";
+  launchLabel.textContent = readyLaunchLabel(vehicle);
+  progressLabel.textContent = hasEphemeris(vehicle) ? "JPL EPHEMERIS TIMELINE" : "MISSION TIME";
   timeHeliopause.textContent = formatDuration(crossingTime(vehicle, 122));
   timeOort.textContent = formatDuration(crossingTime(vehicle, 100_000));
   timeProxima.textContent = formatDuration(totalYears);
   renderProfile(vehicle);
+  spaceMap.setVehicle(vehicle, focusMap);
 }
 
 function renderProgress(): void {
   const sample = journeySample(selectedVehicle, progress);
-  const plottedPosition = distancePosition(sample.currentAu) * 100;
-  routeFill.style.setProperty("--route-progress", `${plottedPosition}%`);
-  journeyMarker.style.setProperty("--marker-position", `${plottedPosition}%`);
   progressInput.value = String(Math.round(progress * 1_000));
 
-  distanceReadout.textContent = formatDistance(sample.currentAu);
-  elapsedReadout.textContent = formatDuration(sample.elapsedYears);
+  const mapTelemetry = spaceMap.setProgress(progress);
+  elapsedReadout.textContent = mapTelemetry.mode === "ephemeris"
+    ? `${formatDuration(mapTelemetry.elapsedYears)}${mapTelemetry.date ? ` · ${mapTelemetry.date.slice(0, 4)}` : ""}`
+    : formatDuration(sample.elapsedYears);
   speedReadout.textContent = formatSpeed(sample.speedKmh);
   phaseReadout.textContent = sample.phase;
 
@@ -172,7 +191,7 @@ function selectVehicle(vehicle: Vehicle): void {
       String(button.dataset.vehicle === vehicle.id),
     );
   }
-  renderVehicle(vehicle);
+  renderVehicle(vehicle, true);
   renderProgress();
 }
 
@@ -190,7 +209,7 @@ function animate(timestamp: number): void {
 
   animationFrame = undefined;
   consoleElement.dataset.state = "complete";
-  launchLabel.textContent = "REPLAY MODEL";
+  launchLabel.textContent = replayLabel(selectedVehicle);
 }
 
 function toggleLaunch(): void {
@@ -198,7 +217,9 @@ function toggleLaunch(): void {
   if (reducedMotion.matches) {
     progress = progress >= 1 ? 0 : 1;
     consoleElement.dataset.state = progress >= 1 ? "complete" : "ready";
-    launchLabel.textContent = progress >= 1 ? "REPLAY MODEL" : "LAUNCH MODEL";
+    launchLabel.textContent = progress >= 1
+      ? replayLabel(selectedVehicle)
+      : readyLaunchLabel(selectedVehicle);
     renderProgress();
     return;
   }
@@ -208,7 +229,7 @@ function toggleLaunch(): void {
     animationFrame = undefined;
     animationStart = undefined;
     consoleElement.dataset.state = "paused";
-    launchLabel.textContent = "RESUME MODEL";
+    launchLabel.textContent = resumeLabel(selectedVehicle);
     return;
   }
 
@@ -216,7 +237,7 @@ function toggleLaunch(): void {
   startProgress = progress;
   animationStart = undefined;
   consoleElement.dataset.state = "running";
-  launchLabel.textContent = "PAUSE MODEL";
+  launchLabel.textContent = hasEphemeris(selectedVehicle) ? "PAUSE TRACK" : "PAUSE MODEL";
   animationFrame = requestAnimationFrame(animate);
 }
 
@@ -244,14 +265,16 @@ launchButton.addEventListener("click", toggleLaunch);
 resetButton.addEventListener("click", () => {
   cancelAnimation();
   progress = 0;
-  launchLabel.textContent = isRunnable(selectedVehicle) ? "LAUNCH MODEL" : "PROFILE UNAVAILABLE";
+  launchLabel.textContent = readyLaunchLabel(selectedVehicle);
   renderProgress();
 });
 
 progressInput.addEventListener("input", () => {
   cancelAnimation();
   progress = Number(progressInput.value) / 1_000;
-  launchLabel.textContent = progress >= 1 ? "REPLAY MODEL" : "RESUME MODEL";
+  launchLabel.textContent = progress >= 1
+    ? replayLabel(selectedVehicle)
+    : resumeLabel(selectedVehicle);
   renderProgress();
 });
 

@@ -65,9 +65,9 @@
           <p class="eyebrow">01 / ONE ROUTE, MANY MACHINES</p>
           <h2>HOW LONG IS “OUT”?</h2>
           <p>
-            Every option runs against the same logarithmic route: Earth to
-            Proxima Centauri, with the conservative outer edge of the Oort Cloud
-            marked at 100,000 AU.
+            Every object now shares one undistorted AU coordinate system. Start
+            with twelve light-years, then zoom until the Solar System stops being
+            a dot.
           </p>
         </header>
 
@@ -150,39 +150,77 @@
               <span id="arrival-subline">AT 61,198 KM/H · STRAIGHT-LINE MODEL</span>
             </div>
 
-            <div class="distance-figure" data-testid="distance-track">
-              <div class="figure-title">
-                <span>DISTANCE AFTER EARTH · LOG<sub>10</sub> AU</span>
-                <span id="distance-readout">1.00 AU</span>
-              </div>
-              <div class="distance-track">
-                <div class="distance-zones" aria-hidden="true">
-                  <span class="zone zone-planetary"></span>
-                  <span class="zone zone-oort"></span>
-                  <span class="zone zone-interstellar"></span>
+            <figure class="space-figure">
+              <figcaption class="map-toolbar">
+                <div>
+                  <span>HELIOCENTRIC MAP · TRUE LINEAR SCALE</span>
+                  <strong id="map-scope">LOCAL STARS · 12 LY</strong>
                 </div>
-                <div class="route-fill" id="route-fill" aria-hidden="true"></div>
-                <div class="journey-marker" id="journey-marker" aria-hidden="true"><span></span></div>
+                <div class="map-controls" aria-label="Map controls">
+                  <button type="button" data-map-action="zoom-out" aria-label="Zoom out">−</button>
+                  <button type="button" data-map-action="zoom-in" aria-label="Zoom in">+</button>
+                  <button type="button" data-map-action="local-stars">12 LY</button>
+                  <button type="button" data-map-action="full-route">PROXIMA</button>
+                  <button type="button" data-map-action="oort">OORT</button>
+                  <button type="button" data-map-action="heliosphere">HELIOPAUSE</button>
+                  <button type="button" data-map-action="planets">PLANETS</button>
+                  <button type="button" data-map-action="follow">FOLLOW CRAFT</button>
+                </div>
+              </figcaption>
 
-                <div class="milestone milestone-earth" style="--position: 0%"><span class="milestone-tick"></span><span class="milestone-label"><strong>EARTH</strong><small>1 AU</small></span></div>
-                <div class="milestone milestone-jupiter" style="--position: 13.2%"><span class="milestone-tick"></span><span class="milestone-label"><strong>JUPITER</strong><small>5.2 AU</small></span></div>
-                <div class="milestone milestone-neptune" style="--position: 27.2%"><span class="milestone-tick"></span><span class="milestone-label"><strong>NEPTUNE</strong><small>30 AU</small></span></div>
-                <div class="milestone milestone-heliopause" style="--position: 38.4%"><span class="milestone-tick"></span><span class="milestone-label"><strong>HELIOPAUSE</strong><small>122 AU · NOT OUT</small></span></div>
-                <div class="milestone milestone-inner-oort" style="--position: 60.8%"><span class="milestone-tick"></span><span class="milestone-label"><strong>INNER OORT</strong><small>2,000 AU</small></span></div>
-                <div class="milestone milestone-outer-oort" style="--position: 92.1%"><span class="milestone-tick"></span><span class="milestone-label"><strong>OUTER OORT</strong><small>100,000 AU · OUT</small></span></div>
-                <div class="milestone milestone-proxima" style="--position: 100%"><span class="milestone-tick"></span><span class="milestone-label"><strong>PROXIMA</strong><small>4.25 LY</small></span></div>
+              <div class="space-map-stage">
+                <svg
+                  id="space-map"
+                  data-testid="space-map"
+                  viewBox="0 0 1200 700"
+                  role="img"
+                  tabindex="0"
+                  aria-labelledby="space-map-title space-map-desc"
+                >
+                  <title id="space-map-title">True-scale local space and Solar System route map</title>
+                  <desc id="space-map-desc">A zoomable linear-scale map in astronomical units. Direction uses ecliptic longitude while each radial distance remains true; latitude is reported in labels.</desc>
+                  <rect class="map-background" width="100%" height="100%"></rect>
+                  <g id="map-grid-layer" aria-hidden="true"></g>
+                  <g id="map-boundary-layer" aria-hidden="true"></g>
+                  <g id="map-star-layer"></g>
+                  <g id="map-trajectory-layer" aria-hidden="true"></g>
+                  <g id="map-marker-layer" aria-hidden="true"></g>
+                  <g id="map-label-layer"></g>
+                </svg>
+
+                <div class="map-hud map-hud-top">
+                  <span id="map-scale">1 PX = 1.00 LY</span>
+                  <span id="map-resolution">NEPTUNE ORBIT = &lt;0.01 PX</span>
+                </div>
+                <div class="map-hud map-hud-bottom">
+                  <span id="map-coordinate">SUN · 0 AU</span>
+                  <span>DRAG / WHEEL / PINCH / +/-</span>
+                </div>
+                <div class="map-thesis" id="map-thesis">
+                  <span>122 AU</span>
+                  <strong>THE HELIOPAUSE IS AN EDGE.</strong>
+                  <span>100,000 AU</span>
+                  <strong>THE OORT CLOUD IS THE EXIT.</strong>
+                </div>
               </div>
-              <p class="boundary-caption">
-                LEFT THE SUN'S WIND <span aria-hidden="true">——————</span> STILL INSIDE THE SOLAR SYSTEM
+
+              <div class="map-legend" aria-label="Map legend">
+                <span><i class="legend-line legend-ephemeris"></i>JPL EPHEMERIS</span>
+                <span><i class="legend-line legend-model"></i>COMPARISON / DESIGN MODEL</span>
+                <span><i class="legend-star"></i>CNS5 CATALOGUE STAR</span>
+                <span><i class="legend-shell"></i>REFERENCE BOUNDARY</span>
+              </div>
+              <p class="projection-note">
+                SAME LINEAR AU SCALE AT EVERY ZOOM · RADIAL DISTANCE TRUE · ECLIPTIC LONGITUDE SETS DIRECTION · LABELS AND MARKERS NOT TO SCALE
               </p>
-            </div>
+            </figure>
 
             <div class="mission-controls">
               <button class="launch-button" type="button" data-testid="launch" id="launch-button">
                 <span class="launch-icon" aria-hidden="true">▶</span><span id="launch-label">LAUNCH MODEL</span>
               </button>
               <label class="progress-control" for="journey-progress">
-                <span>MISSION TIME</span>
+                <span id="progress-label">MISSION TIME</span>
                 <input data-testid="journey-progress" id="journey-progress" type="range" min="0" max="1000" value="0" step="1" />
               </label>
               <button class="reset-button" type="button" id="reset-button">RESET ↺</button>
@@ -235,7 +273,8 @@
           <h2>THE HONESTY LAYER</h2>
         </div>
         <div class="method-copy">
-          <p>Distance uses a logarithmic scale because a linear one would compress every planet into a single pixel. The route begins at Earth's orbit; the Sun-to-Earth launch leg is deliberately outside the scale.</p>
+          <p>The map never switches to a logarithmic ruler: every object uses the same AU-per-pixel scale. At the twelve-light-year view, even Neptune's orbit is far below one pixel. Zooming changes the camera, never the proportions.</p>
+          <p>Positions use a radial ecliptic projection. Distance from the Sun is preserved exactly; ecliptic longitude sets the on-screen direction and latitude remains in the data readout. This makes the scale legible without pretending a flat screen is three-dimensional space.</p>
           <p><strong>Measured</strong> means a speed was recorded. <strong>Counterfactual</strong> means that speed is frozen forever to expose scale—not predict a mission. <strong>Design study</strong> preserves a published profile. Fiction stays labelled, and ships with no comparable linear speed receive no invented arrival time.</p>
           <p>The heliopause is represented by Voyager 1's crossing near 122 AU, not a fixed spherical wall. The Oort Cloud has not been directly observed; its 100,000 AU outer edge is a conservative model boundary, not a wall a spacecraft can photograph while crossing.</p>
         </div>
@@ -265,6 +304,8 @@
             <a id="source-enterprise" href="https://www.startrek.com/database_article/enterprise-ncc-1701">StarTrek.com · USS Enterprise ↗</a>
             <a id="source-falcon" href="https://www.starwars.com/databank/millennium-falcon">StarWars.com · Millennium Falcon ↗</a>
             <a id="source-warhammer" href="https://warhammer40000.com/">Warhammer 40,000 · setting ↗</a>
+            <a id="source-horizons" href="https://ssd-api.jpl.nasa.gov/doc/horizons.html">NASA/JPL · Horizons vectors ↗</a>
+            <a id="source-cns5" href="https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=J%2FA%2BA%2F670%2FA19">CNS5 · nearby-star catalogue ↗</a>
           </div>
         </details>
       </section>

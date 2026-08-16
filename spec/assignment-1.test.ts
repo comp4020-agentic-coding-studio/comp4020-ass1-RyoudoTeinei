@@ -23,8 +23,14 @@ describe("Assignment 1: interstellar journey explainer", () => {
     expect(doc.querySelector('[aria-live="polite"]')).toBeTruthy();
   });
 
-  it("keeps the distance scale and speed profile in the explanation", () => {
-    expect(doc.querySelector('[data-testid="distance-track"]')).toBeTruthy();
+  it("keeps the true-scale space map and speed profile in the explanation", () => {
+    const map = doc.querySelector('[data-testid="space-map"]');
+    expect(map).toBeTruthy();
+    expect(map?.tagName).toBe("svg");
+    expect(map?.querySelector("title")?.textContent).toMatch(/space|solar|route/i);
+    expect(map?.querySelector("desc")?.textContent).toMatch(/linear|scale|ecliptic/i);
+    expect(doc.querySelector('[data-map-action="zoom-in"]')).toBeTruthy();
+    expect(doc.querySelector('[data-map-action="zoom-out"]')).toBeTruthy();
     expect(doc.querySelector('[data-testid="speed-profile"]')).toBeTruthy();
     expect(doc.querySelector('[data-testid="journey-time"]')).toBeTruthy();
   });
@@ -35,7 +41,9 @@ describe("Assignment 1: interstellar journey explainer", () => {
   });
 
   it("uses native keyboard controls without positive tabindex values", () => {
-    expect(doc.querySelectorAll("[tabindex]").length).toBe(0);
+    for (const element of doc.querySelectorAll("[tabindex]")) {
+      expect(Number(element.getAttribute("tabindex"))).toBeLessThanOrEqual(0);
+    }
     for (const option of doc.querySelectorAll("[data-vehicle]")) {
       expect(option.tagName).toBe("BUTTON");
       expect(option.getAttribute("type")).toBe("button");

@@ -138,7 +138,10 @@ summary:focus-visible {
 .manifest-heading,
 .manifest-group,
 .selected-header p,
-.figure-title,
+.map-toolbar,
+.map-hud,
+.map-legend,
+.projection-note,
 .arrival-readout p,
 .arrival-readout span,
 .live-grid span,
@@ -517,189 +520,350 @@ h1 em {
   letter-spacing: -0.07em;
 }
 
-.distance-figure {
-  padding-block: 1rem;
+.space-figure {
+  margin: 0;
   border-block: 1px solid var(--line);
+  background: #030b09;
 }
 
-.figure-title {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-  color: var(--muted);
+.map-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--line);
+  background: #0a1815;
   font-size: 0.58rem;
 }
 
-.figure-title span:last-child {
-  color: var(--cyan);
-}
-
-.distance-track {
-  position: relative;
-  height: 210px;
-  margin-inline: 0.75rem;
-}
-
-.distance-zones {
-  position: absolute;
-  top: 95px;
-  right: 0;
-  left: 0;
-  display: flex;
-  height: 18px;
-  background: rgb(241 238 226 / 7%);
-}
-
-.zone {
-  height: 100%;
-  border-right: 1px solid var(--ink);
-}
-
-.zone-planetary {
-  width: 38.4%;
-  background: rgb(255 90 54 / 24%);
-}
-
-.zone-oort {
-  width: 53.7%;
-  background: rgb(184 255 61 / 15%);
-}
-
-.zone-interstellar {
-  width: 7.9%;
-  background: rgb(106 223 255 / 20%);
-}
-
-.route-fill {
-  --route-progress: 0%;
-
-  position: absolute;
-  z-index: 2;
-  top: 101px;
-  left: 0;
-  width: var(--route-progress);
-  height: 5px;
-  background: var(--cyan);
-  transition: width 120ms linear;
-}
-
-.journey-marker {
-  --marker-position: 0%;
-
-  position: absolute;
-  z-index: 4;
-  top: 91px;
-  left: var(--marker-position);
-  width: 25px;
-  height: 25px;
-  color: var(--cyan);
-  transform: translateX(-50%);
-  transition: left 120ms linear;
-}
-
-.journey-marker::before {
-  position: absolute;
-  top: -20px;
-  left: 50%;
-  content: "CURRENT";
-  color: var(--cyan);
-  font-family: "Cascadia Mono", Consolas, monospace;
-  font-size: 0.5rem;
-  transform: translateX(-50%);
-}
-
-.journey-marker span {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 2px solid currentcolor;
-  background: var(--ink);
-  transform: rotate(45deg) scale(0.55);
-  box-shadow: 0 0 18px rgb(106 223 255 / 55%);
-}
-
-.milestone {
-  position: absolute;
-  z-index: 3;
-  top: 88px;
-  left: var(--position);
-  width: 1px;
-  height: 33px;
-}
-
-.milestone-tick {
-  display: block;
-  width: 1px;
-  height: 33px;
-  background: var(--paper);
-}
-
-.milestone-label {
-  position: absolute;
-  bottom: 42px;
-  left: 0;
+.map-toolbar > div:first-child {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  width: max-content;
+  gap: 0.3rem;
+  color: var(--muted);
+}
+
+.map-toolbar strong {
+  color: var(--cyan);
+  font-weight: 400;
+}
+
+.map-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-end;
+}
+
+.map-controls button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--grid);
+  color: var(--muted);
+  background: var(--ink-soft);
   font-family: "Cascadia Mono", Consolas, monospace;
   font-size: 0.55rem;
-  transform: translateX(-50%);
+  cursor: pointer;
 }
 
-.milestone-label strong {
-  font-weight: 700;
-}
-
-.milestone-label small {
-  color: var(--muted);
-  font-size: 0.48rem;
-}
-
-.milestone-jupiter .milestone-label,
-.milestone-heliopause .milestone-label,
-.milestone-outer-oort .milestone-label {
-  top: 43px;
-  bottom: auto;
-}
-
-.milestone-earth .milestone-label {
-  transform: none;
-}
-
-.milestone-proxima .milestone-label {
-  transform: translateX(-100%);
-}
-
-.milestone-heliopause .milestone-tick {
-  background: var(--orange);
-}
-
-.milestone-heliopause .milestone-label strong {
-  color: var(--orange);
-}
-
-.milestone-outer-oort .milestone-tick {
+.map-controls button:hover,
+.map-controls button[aria-pressed="true"] {
+  border-color: var(--acid);
+  color: var(--ink);
   background: var(--acid);
 }
 
-.milestone-outer-oort .milestone-label strong {
+.space-map-stage {
+  position: relative;
+  height: clamp(560px, 68svh, 820px);
+  min-height: 560px;
+  overflow: hidden;
+  background: #020906;
+}
+
+#space-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+#space-map:active {
+  cursor: grabbing;
+}
+
+#space-map:focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: -3px;
+}
+
+.map-background {
+  fill: #020906;
+}
+
+.map-grid-line,
+.map-axis-line,
+.map-shell,
+.map-orbit,
+.map-trajectory,
+.map-connection,
+.map-leader {
+  vector-effect: non-scaling-stroke;
+}
+
+.map-grid-line {
+  stroke: rgb(106 223 255 / 9%);
+  stroke-width: 1;
+}
+
+.map-axis-line {
+  stroke: rgb(106 223 255 / 17%);
+  stroke-width: 1;
+}
+
+.map-shell {
+  fill: none;
+  stroke: var(--grid);
+  stroke-width: 1.25;
+  stroke-dasharray: 7 6;
+}
+
+.map-shell.is-heliopause {
+  stroke: var(--orange);
+}
+
+.map-shell.is-outer-oort {
+  stroke: var(--acid);
+  stroke-width: 2;
+}
+
+.map-shell.is-local {
+  stroke: rgb(198 168 255 / 35%);
+}
+
+.map-orbit {
+  fill: none;
+  stroke: rgb(241 238 226 / 30%);
+  stroke-width: 1;
+}
+
+.map-orbit.is-earth {
+  stroke: var(--cyan);
+}
+
+.map-sun {
+  fill: var(--paper);
+  stroke: var(--orange);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-star {
+  fill: var(--paper);
+  stroke: var(--cyan);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-star.is-proxima {
+  fill: var(--acid);
+  stroke: var(--acid);
+}
+
+.map-star.is-brown-dwarf {
+  fill: var(--orange);
+  stroke: var(--orange);
+}
+
+.map-connection {
+  stroke: rgb(106 223 255 / 40%);
+  stroke-width: 1;
+}
+
+.map-label,
+.map-star-label,
+.map-boundary-label,
+.map-craft-label,
+.map-star-meta {
+  paint-order: stroke;
+  stroke: #020906;
+  stroke-linejoin: round;
+  stroke-width: 5px;
+  fill: var(--paper);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+.map-star-label {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.map-star-meta {
+  fill: var(--muted);
+  font-size: 9px;
+  stroke-width: 4px;
+}
+
+.map-boundary-label {
+  fill: var(--acid);
+  font-size: 10px;
+}
+
+.map-trajectory {
+  fill: none;
+  stroke: var(--cyan);
+  stroke-linecap: square;
+  stroke-linejoin: bevel;
+  stroke-width: 2.5;
+}
+
+.map-trajectory.is-ephemeris {
+  stroke: var(--cyan);
+}
+
+.map-trajectory.is-model {
+  stroke: var(--acid);
+  stroke-dasharray: 10 7;
+}
+
+.map-trajectory.is-fiction {
+  stroke: var(--violet);
+  stroke-dasharray: 4 7;
+}
+
+.map-trajectory.is-future {
+  opacity: 0.5;
+  stroke-dasharray: 3 8;
+}
+
+.map-craft-marker {
+  fill: var(--ink);
+  stroke: var(--cyan);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-craft-label {
+  fill: var(--cyan);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.map-leader {
+  stroke: rgb(241 238 226 / 45%);
+  stroke-width: 1;
+}
+
+.map-hud {
+  position: absolute;
+  right: 0.75rem;
+  left: 0.75rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.52rem;
+  pointer-events: none;
+}
+
+.map-hud-top {
+  top: 0.75rem;
+}
+
+.map-hud-bottom {
+  bottom: 0.75rem;
+}
+
+.map-hud span:first-child {
+  color: var(--cyan);
+}
+
+.map-thesis {
+  position: absolute;
+  top: 4rem;
+  left: 1rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.25rem 0.65rem;
+  max-width: min(390px, calc(100% - 2rem));
+  padding: 0.75rem;
+  border-left: 3px solid var(--orange);
+  color: var(--muted);
+  background: rgb(2 9 6 / 82%);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.54rem;
+  pointer-events: none;
+}
+
+.map-thesis span {
+  color: var(--orange);
+}
+
+.map-thesis strong:last-child {
   color: var(--acid);
 }
 
-.boundary-caption {
-  margin: 0;
-  padding: 0.75rem;
-  color: var(--orange);
-  background: rgb(255 90 54 / 7%);
-  font-family: "Cascadia Mono", Consolas, monospace;
-  font-size: 0.58rem;
-  text-align: center;
+.map-thesis[hidden] {
+  display: none;
 }
 
-.boundary-caption span {
-  margin-inline: 1rem;
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  padding: 0.8rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.5rem;
+}
+
+.map-legend span {
+  display: inline-flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.legend-line {
+  display: inline-block;
+  width: 28px;
+  height: 0;
+  border-top: 2px solid var(--cyan);
+}
+
+.legend-model {
+  border-color: var(--acid);
+  border-top-style: dashed;
+}
+
+.legend-star {
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--cyan);
+  background: var(--paper);
+  transform: rotate(45deg);
+}
+
+.legend-shell {
+  width: 20px;
+  height: 10px;
+  border: 1px dashed var(--acid);
+  border-radius: 50%;
+}
+
+.projection-note {
+  margin: 0;
+  padding: 0 0.8rem 0.9rem;
   color: var(--faint);
+  font-size: 0.48rem;
+  line-height: 1.5;
 }
 
 .mission-controls {
@@ -1193,106 +1357,42 @@ footer p:first-child {
     font-size: clamp(2.2rem, 12vw, 4rem);
   }
 
-  .figure-title {
-    gap: 1rem;
+  .map-toolbar {
+    grid-template-columns: 1fr;
   }
 
-  .distance-track {
-    height: 640px;
-    margin: 0;
+  .map-controls {
+    justify-content: flex-start;
   }
 
-  .distance-zones {
-    top: 0;
-    bottom: 0;
-    left: calc(50% - 9px);
-    display: flex;
-    flex-direction: column;
-    width: 18px;
-    height: auto;
+  .map-controls button {
+    flex: 1 1 auto;
   }
 
-  .zone {
-    width: 100%;
-    border-right: 0;
-    border-bottom: 1px solid var(--ink);
+  .space-map-stage {
+    height: min(64svh, 560px);
+    min-height: 480px;
   }
 
-  .zone-planetary {
-    height: 38.4%;
+  .map-hud {
+    gap: 0.5rem;
+    font-size: 0.46rem;
   }
 
-  .zone-oort {
-    height: 53.7%;
+  .map-hud-top span:last-child {
+    display: none;
   }
 
-  .zone-interstellar {
-    height: 7.9%;
+  .map-thesis {
+    top: 3rem;
+    font-size: 0.48rem;
   }
 
-  .route-fill {
-    top: 0;
-    left: calc(50% - 2px);
-    width: 5px;
-    height: var(--route-progress);
-    transition: height 120ms linear;
+  .map-star-label {
+    font-size: 10px;
   }
 
-  .journey-marker {
-    top: var(--marker-position);
-    left: 50%;
-    transform: translate(-50%, -50%);
-    transition: top 120ms linear;
-  }
-
-  .journey-marker::before {
-    top: 4px;
-    left: 38px;
-    transform: none;
-  }
-
-  .milestone {
-    top: var(--position);
-    left: calc(50% - 17px);
-    width: 34px;
-    height: 1px;
-  }
-
-  .milestone-tick {
-    width: 34px;
-    height: 1px;
-  }
-
-  .milestone-label,
-  .milestone-jupiter .milestone-label,
-  .milestone-heliopause .milestone-label,
-  .milestone-outer-oort .milestone-label {
-    top: 50%;
-    bottom: auto;
-    left: 47px;
-    width: 120px;
-    transform: translateY(-50%);
-  }
-
-  .milestone:nth-of-type(even) .milestone-label,
-  .milestone-earth .milestone-label {
-    right: 47px;
-    left: auto;
-    align-items: flex-end;
-    text-align: right;
-    transform: translateY(-50%);
-  }
-
-  .milestone-proxima .milestone-label {
-    inset: auto auto 0 47px;
-    transform: none;
-  }
-
-  .boundary-caption {
-    text-align: left;
-  }
-
-  .boundary-caption span {
+  .map-star-meta {
     display: none;
   }
 
