@@ -10,8 +10,15 @@ export interface TimeAnalogy {
     | "saturn-year"
     | "cold-war"
     | "life-expectancy"
+    | "powered-flight"
     | "pluto-year"
+    | "us-independence"
+    | "jamestown"
+    | "roman-republic"
+    | "ottoman-empire"
+    | "byzantine-empire"
     | "rome"
+    | "parthenon"
     | "uruk"
     | "holocene"
     | "human-dispersal"
@@ -67,9 +74,10 @@ const TIME_ANALOGIES: readonly TimeAnalogy[] = [
     sourceId: "life-expectancy",
   },
   {
-    durationYears: 100,
-    headline: "≈ ONE CENTURY",
-    detail: "100 YEARS",
+    durationYears: 123,
+    headline: "≈ FROM THE FIRST POWERED FLIGHT TO 2026",
+    detail: "1903–2026 · 123 YEARS",
+    sourceId: "powered-flight",
   },
   {
     durationYears: 248,
@@ -78,14 +86,34 @@ const TIME_ANALOGIES: readonly TimeAnalogy[] = [
     sourceId: "pluto-year",
   },
   {
-    durationYears: 500,
-    headline: "≈ HALF A MILLENNIUM",
-    detail: "FIVE CENTURIES",
+    durationYears: 250,
+    headline: "≈ FROM U.S. INDEPENDENCE TO 2026",
+    detail: "1776–2026 · 250 YEARS",
+    sourceId: "us-independence",
   },
   {
-    durationYears: 1_000,
-    headline: "≈ ONE MILLENNIUM",
-    detail: "TEN CENTURIES",
+    durationYears: 419,
+    headline: "≈ FROM JAMESTOWN’S FOUNDING TO 2026",
+    detail: "1607–2026 · 419 YEARS",
+    sourceId: "jamestown",
+  },
+  {
+    durationYears: 482,
+    headline: "≈ THE ENTIRE ROMAN REPUBLIC",
+    detail: "509–27 BCE · ABOUT 482 YEARS",
+    sourceId: "roman-republic",
+  },
+  {
+    durationYears: 623,
+    headline: "≈ THE OTTOMAN EMPIRE",
+    detail: "c. 1299–1922 · ABOUT 623 YEARS",
+    sourceId: "ottoman-empire",
+  },
+  {
+    durationYears: 1_123,
+    headline: "≈ THE BYZANTINE EMPIRE",
+    detail: "330–1453 · ABOUT 1,123 YEARS",
+    sourceId: "byzantine-empire",
   },
   {
     durationYears: 1_228,
@@ -94,9 +122,10 @@ const TIME_ANALOGIES: readonly TimeAnalogy[] = [
     sourceId: "rome",
   },
   {
-    durationYears: 2_500,
-    headline: "≈ TWENTY-FIVE CENTURIES",
-    detail: "TWO AND A HALF MILLENNIA",
+    durationYears: 2_457,
+    headline: "≈ FROM THE PARTHENON’S COMPLETION TO 2026",
+    detail: "432 BCE–2026 · ABOUT 2,457 YEARS",
+    sourceId: "parthenon",
   },
   {
     durationYears: 6_000,
