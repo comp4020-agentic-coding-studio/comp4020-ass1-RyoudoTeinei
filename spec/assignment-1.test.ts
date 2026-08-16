@@ -38,7 +38,7 @@ describe("Assignment 1: interstellar journey explainer", () => {
     );
     expect(doc.querySelector('[data-map-action="zoom-in"]')).toBeTruthy();
     expect(doc.querySelector('[data-map-action="zoom-out"]')).toBeTruthy();
-    expect(doc.querySelector('[data-testid="map-inspector"]')).toBeTruthy();
+    expect(doc.querySelector('[data-testid="map-inspector"]')).toBeFalsy();
     expect(doc.querySelector('[role="tooltip"]')).toBeTruthy();
     expect(doc.querySelector('[data-testid="speed-profile"]')).toBeTruthy();
     expect(doc.querySelector('[data-testid="journey-time"]')).toBeTruthy();

@@ -150,6 +150,7 @@ let missionFlowItems: HTMLLIElement[] = [];
 
 function setPlaybackState(state: PlaybackState): void {
   consoleElement.dataset.state = state;
+  spaceMap.setPlaybackActive(state === "running");
   const isExplanation = !selectedTour.playable;
 
   if (state === "running") {
@@ -443,25 +444,23 @@ function effectiveTimeFlow(): {
 
 function updateTimeFlow(): void {
   if (!selectedTimeline) {
-    mapTimeFlow.textContent = "NO FINITE PHYSICAL CLOCK";
-    mapTimePace.textContent = "THIS ROUTE CANNOT BE EXPRESSED AS LINEAR TIME";
+    mapTimeFlow.textContent = "NOT COMPARABLE";
+    mapTimePace.textContent = "NO LINEAR TIME SCALE";
     playbackRateSelect.disabled = true;
     return;
   }
   playbackRateSelect.disabled = false;
   const effective = effectiveTimeFlow();
   if (timeFlowMode === "auto") {
-    const stageLabel = effective.stage?.label ?? "MISSION END";
-    mapTimeFlow.textContent = `AUTO FAST-FORWARD · ${formatRateMultiplier(effective.multiplier)} REALTIME`;
-    mapTimePace.textContent = `${formatAutoPace(effective.multiplier)} · ${stageLabel}`;
+    mapTimeFlow.textContent = `${formatRateMultiplier(effective.multiplier)} REALTIME`;
+    mapTimePace.textContent = formatAutoPace(effective.multiplier);
     return;
   }
   const option = SIMULATION_RATE_OPTIONS.find(
     ({ multiplier }) => multiplier === simulationRate,
   );
-  const label = option?.label ?? `${simulationRate.toLocaleString("en-AU")}×`;
   const pace = option?.paceLabel ?? `${simulationRate.toLocaleString("en-AU")} SECONDS / SECOND`;
-  mapTimeFlow.textContent = `MANUAL TIME FLOW · ${label}`;
+  mapTimeFlow.textContent = `${formatRateMultiplier(simulationRate)} REALTIME`;
   mapTimePace.textContent = pace.replace(" / SECOND", " / REAL SECOND");
 }
 
@@ -611,11 +610,13 @@ function renderProgress(): void {
     const elapsedYears = physicalElapsedSeconds / JULIAN_YEAR_SECONDS;
     const analogy = timeAnalogyAt(elapsedYears);
     mapElapsed.textContent = `T+ ${formatPhysicalElapsed(physicalElapsedSeconds)}`;
-    mapDurationAnalogy.textContent = `HUMAN SCALE · ${analogy.headline} · ${analogy.detail}`;
+    mapDurationAnalogy.textContent = [analogy.headline, analogy.detail]
+      .filter(Boolean)
+      .join(" · ");
     mapDurationAnalogy.dataset.source = analogy.sourceId ?? "intro";
   } else {
     mapElapsed.textContent = "NO FINITE ELAPSED TIME";
-    mapDurationAnalogy.textContent = "HUMAN SCALE · NOT COMPARABLE TO A LINEAR CLOCK";
+    mapDurationAnalogy.textContent = "NOT COMPARABLE TO A LINEAR CLOCK";
     mapDurationAnalogy.dataset.source = "none";
   }
   elapsedReadout.textContent = frame.routeMode === "off-map"

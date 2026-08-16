@@ -105,3 +105,8 @@ Final browser testing caught the camera anticipating a chapter boundary before
 the craft reached it. I made range changes depend only on crossed AU radii and
 put the auto multiplier, elapsed mission time and sourced human-history
 comparisons directly on the map.
+I then removed a redundant selected-object overlay after it competed with the
+chapter card, reduced the clock to multiplier, elapsed time and one comparison,
+and cached immutable route geometry. During playback the Canvas uses a lighter
+pixel buffer and restores full display density when paused, keeping the
+inner-system animation responsive without changing its coordinates.

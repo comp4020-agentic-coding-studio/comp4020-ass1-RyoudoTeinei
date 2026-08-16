@@ -8,25 +8,25 @@ export interface TimeAnalogy {
 const TIME_ANALOGIES: readonly TimeAnalogy[] = [
   {
     thresholdYears: 0,
-    headline: "LESS THAN A HUMAN YEAR",
-    detail: "The mission clock has not yet crossed its first year.",
+    headline: "LESS THAN ONE YEAR",
+    detail: "",
   },
   {
     thresholdYears: 6,
-    headline: "ABOUT THE LENGTH OF WORLD WAR II",
-    detail: "1939–1945 · roughly six years",
+    headline: "≈ WORLD WAR II",
+    detail: "1939–1945 · SIX YEARS",
     sourceId: "wwii",
   },
   {
     thresholdYears: 73.1,
-    headline: "ABOUT ONE GLOBAL HUMAN LIFETIME",
-    detail: "WHO global life expectancy in 2019 · 73.1 years",
+    headline: "≈ ONE GLOBAL HUMAN LIFETIME",
+    detail: "73.1 YEARS · WHO 2019",
     sourceId: "life-expectancy",
   },
   {
     thresholdYears: 1_228,
-    headline: "ABOUT ROME’S TRADITIONAL FOUNDING TO THE WESTERN EMPIRE’S FALL",
-    detail: "753 BCE–476 CE · approximately 1,228 elapsed years",
+    headline: "≈ ROME’S TRADITIONAL FOUNDING TO THE WESTERN EMPIRE’S FALL",
+    detail: "753 BCE–476 CE · 1,228 YEARS",
     sourceId: "rome",
   },
 ] as const;

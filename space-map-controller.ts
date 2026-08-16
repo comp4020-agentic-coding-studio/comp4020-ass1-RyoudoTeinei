@@ -81,6 +81,7 @@ export interface SpaceMapController {
   setVehicle(vehicle: Vehicle, focus?: boolean): void;
   setProgress(progress: number): MapTelemetry;
   setTourFrame(frame: MissionTourSample): MapTelemetry;
+  setPlaybackActive(active: boolean): void;
   resetView(): void;
   destroy(): void;
 }
@@ -354,7 +355,6 @@ interface CanvasMapElements {
   coordinate: HTMLElement;
   thesis: HTMLElement;
   tooltip?: HTMLElement;
-  inspector?: HTMLElement;
   story?: HTMLElement;
   clock?: HTMLElement;
   scaleRule?: HTMLElement;
@@ -453,7 +453,6 @@ export function createSpaceMapController(): SpaceMapController {
     coordinate: required("#map-coordinate"),
     thesis: required("#map-thesis"),
     tooltip: optionalElement("#map-tooltip"),
-    inspector: optionalElement(".map-inspector"),
     story: optionalElement("#tour-story"),
     clock: optionalElement(".map-clock-panel"),
     scaleRule: optionalElement("#map-scale-rule"),
@@ -477,6 +476,7 @@ export function createSpaceMapController(): SpaceMapController {
   let followCraft = true;
   let initialized = false;
   let dpr = 1;
+  let playbackActive = false;
   let destroyed = false;
   let queued = false;
   let animationFrame = 0;
@@ -529,8 +529,23 @@ export function createSpaceMapController(): SpaceMapController {
     return starById(vehicle.id === "daedalus" ? BARNARD_ID : PROXIMA_ID);
   }
 
+  const trajectoryPointCache = new WeakMap<HorizonsTrajectory, Vec2[]>();
+  const canonicalPointCache = new WeakMap<CanonicalMapRoute, Vec2[]>();
+
   function trajectoryPoints(trajectory: HorizonsTrajectory): Vec2[] {
-    return trajectory.samples.map(({ x, y }) => ({ x, y }));
+    const cached = trajectoryPointCache.get(trajectory);
+    if (cached) return cached;
+    const points = trajectory.samples.map(({ x, y }) => ({ x, y }));
+    trajectoryPointCache.set(trajectory, points);
+    return points;
+  }
+
+  function canonicalRoutePoints(route: CanonicalMapRoute): Vec2[] {
+    const cached = canonicalPointCache.get(route);
+    if (cached) return cached;
+    const points = route.points.map(({ x, y }) => ({ x, y }));
+    canonicalPointCache.set(route, points);
+    return points;
   }
 
   function unit(vector: Vec2): Vec2 {
@@ -1251,7 +1266,7 @@ export function createSpaceMapController(): SpaceMapController {
       description: "The fifteen-pass escape and planned Jupiter assist follow the novel's sequence. AU radii are linear; orbit shapes and position angles are schematic rather than JPL ephemerides.",
     };
 
-    const routePoints = route.points.map(({ x, y }) => ({ x, y }));
+    const routePoints = canonicalRoutePoints(route);
     drawPath(routePoints, color, [4, 7], 0.14, 1.2);
     const travelled = canonicalMapRoutePrefix(route, routeProgress);
     const path = drawPath(
@@ -1556,7 +1571,6 @@ export function createSpaceMapController(): SpaceMapController {
     hits = [];
     labels = [];
     occupiedLabels = [];
-    reserveOverlayArea(elements.inspector);
     reserveOverlayArea(elements.story);
     reserveOverlayArea(elements.clock);
     drawBackground();
@@ -1595,7 +1609,7 @@ export function createSpaceMapController(): SpaceMapController {
   function resize(): void {
     const rect = canvas.getBoundingClientRect();
     viewport = { width: Math.max(1, rect.width || 1_200), height: Math.max(1, rect.height || 700) };
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = Math.min(window.devicePixelRatio || 1, playbackActive ? 1 : 1.5);
     const width = Math.max(1, Math.round(viewport.width * dpr));
     const height = Math.max(1, Math.round(viewport.height * dpr));
     if (canvas.width !== width) canvas.width = width;
@@ -1737,6 +1751,11 @@ export function createSpaceMapController(): SpaceMapController {
       followCraft = true;
       schedule();
       return telemetry();
+    },
+    setPlaybackActive(active): void {
+      if (playbackActive === active) return;
+      playbackActive = active;
+      resize();
     },
     resetView(): void {
       preset("local-stars");
